@@ -45,7 +45,7 @@ challenge *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity 
 
 ## Quick start
 
-Prerequisites: Docker, [uv](https://docs.astral.sh/uv/), Node 22+ with pnpm, and `make`
+Prerequisites: Docker, [uv](https://docs.astral.sh/uv/), Node 24+ with pnpm, and `make`
 (on Windows: `winget install ezwinports.make`, then use Git Bash).
 
 ```bash
