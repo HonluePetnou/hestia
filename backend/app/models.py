@@ -77,6 +77,8 @@ class Experiment(Base):
     description: Mapped[str | None] = mapped_column(Text)
     objectives: Mapped[str | None] = mapped_column(Text)
     psi_doi: Mapped[str | None] = mapped_column(Text)
+    years: Mapped[str | None] = mapped_column(Text)
+    fuels: Mapped[str | None] = mapped_column(Text)
 
     test_runs: Mapped[list["TestRun"]] = relationship(back_populates="experiment")
     findings: Mapped[list["Finding"]] = relationship(back_populates="experiment")
@@ -132,3 +134,13 @@ class FindingSource(Base):
 
     finding: Mapped[Finding] = relationship(back_populates="sources")
     document: Mapped[Document] = relationship()
+
+
+class AICache(Base):
+    """Cached LLM output (e.g. comparison summaries), keyed by request + provider."""
+
+    __tablename__ = "ai_cache"
+
+    key: Mapped[str] = mapped_column(Text, primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

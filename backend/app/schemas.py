@@ -57,7 +57,10 @@ class ExperimentSummary(_Base):
     name: str
     platform: str | None = None
     description: str | None = None
+    years: str | None = None
+    fuels: str | None = None
     test_run_count: int = 0
+    finding_count: int = 0
 
 
 class ExperimentDetail(ExperimentSummary):
@@ -93,8 +96,16 @@ class RankingResponse(_Base):
 # --- Ask --------------------------------------------------------------------
 
 
+class ChatMessage(_Base):
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=4000)
+
+
 class AskRequest(_Base):
     question: str = Field(min_length=3, max_length=2000)
+    history: list[ChatMessage] = Field(
+        default_factory=list, description="Previous turns, oldest first (last 6 are used)"
+    )
 
 
 class Citation(SourceRef):
@@ -111,13 +122,63 @@ class AskResponse(_Base):
 
 
 class PredictRequest(_Base):
-    fuel: str = Field(examples=["n-heptane"])
+    fuel: str = Field(examples=["n-heptane"], description="n-heptane or methanol")
     oxygen_percent: float = Field(gt=0, le=100, examples=[21.0])
     pressure_kpa: float = Field(gt=0, examples=[101.3])
     initial_diameter_mm: float = Field(gt=0, examples=[3.0])
+    co2_percent: float = Field(0.0, ge=0, le=100, description="CO2 diluent (suppressant)")
+    he_percent: float = Field(0.0, ge=0, le=100, description="Helium diluent")
 
 
 class PredictResponse(_Base):
     burn_rate_k: float = Field(description="Burning-rate constant K (mm^2/s)")
-    extinction_probability: float = Field(ge=0, le=1)
-    model: str = Field(description="Which model produced the prediction ('mock' in Phase 1)")
+    extinction_probability: float = Field(
+        ge=0, le=1, description="Probability the flame goes out before the droplet burns up"
+    )
+    droplet_lifetime_s: float = Field(description="Estimated burn time from the d^2 law, D0^2/K")
+    in_training_range: bool = Field(description="False when inputs are outside the FLEX tests")
+    model: str = Field(description="Which model produced the prediction ('mock' without data)")
+
+
+class ModelInfo(_Base):
+    model: str
+    trained: bool
+    source: str
+    k_samples: int = 0
+    extinction_samples: int = 0
+    k_r2_cv: float | None = Field(None, description="5-fold cross-validated R^2 for K")
+    k_mae_cv: float | None = Field(None, description="5-fold cross-validated MAE for K (mm^2/s)")
+    extinction_auc_cv: float | None = None
+    extinction_balanced_accuracy_cv: float | None = None
+    ranges: dict[str, tuple[float, float]] = Field(default_factory=dict)
+
+
+# --- Stats ------------------------------------------------------------------
+
+
+class StatsResponse(_Base):
+    documents: int = Field(description="NTRS reports indexed for search")
+    chunks: int = Field(description="Searchable passages")
+    pages: int = Field(description="Distinct report pages covered by passages")
+    experiments: int
+    test_runs: int
+    flex_tests: int
+    findings: int
+    year_min: int | None = None
+    year_max: int | None = None
+    llm_provider: str
+    live_data: bool = Field(description="False when the API serves built-in mock data")
+
+
+# --- Compare insights -------------------------------------------------------
+
+
+class InsightPoint(_Base):
+    text: str
+    citations: list[Citation] = Field(default_factory=list)
+
+
+class CompareInsights(_Base):
+    codes: list[str]
+    points: list[InsightPoint]
+    generated_by: str = Field(description="'llm:<provider>' or 'findings' (no LLM)")

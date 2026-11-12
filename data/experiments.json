@@ -1,0 +1,128 @@
+[
+  {
+    "code": "BASS",
+    "name": "Burning and Suppression of Solids",
+    "platform": "ISS — Microgravity Science Glovebox",
+    "years": "2011–2016 (BASS and BASS-II)",
+    "fuels": "PMMA, cotton-fiberglass (SIBAL), Delrin, thin and thick solids",
+    "description": "Small solid fuel samples burned in a low-speed forced flow aboard the ISS to see how solids ignite, spread flame and extinguish in microgravity, and how easily those flames can be put out.",
+    "objectives": "Measure flame spread, flame shape and extinction limits of solid materials in microgravity as a function of flow speed, oxygen level, fuel thickness and geometry; compare with ground flammability tests (NASA-STD-6001) and test suppression by reducing flow or adding nitrogen.",
+    "psi_doi": null,
+    "runs": []
+  },
+  {
+    "code": "SAFFIRE",
+    "name": "Spacecraft Fire Safety Experiment (Saffire)",
+    "platform": "Uncrewed Cygnus cargo vehicle, after departing the ISS",
+    "years": "2016–2023 (Saffire I–VI)",
+    "fuels": "SIBAL cotton-fiberglass, Nomex, PMMA, silicone, flight materials",
+    "description": "The first large-scale fire experiments in microgravity, run inside a Cygnus cargo vehicle after it left the ISS so that a real fire could be studied without risk to crew. Samples up to about a metre long were burned in forced flow.",
+    "objectives": "Determine how fires grow on large samples in spacecraft-like conditions, measure flame spread, heat release, oxygen consumption and smoke, and check whether small-sample results and ground flammability tests predict large-scale behaviour.",
+    "psi_doi": null,
+    "runs": [
+      {
+        "run_label": "Saffire IV-1",
+        "fuel": "SIBAL cloth",
+        "oxygen_percent": 22.0,
+        "pressure_kpa": 100.0,
+        "flow_velocity_cm_s": 20.0,
+        "gravity": "microgravity",
+        "outcome": "spread",
+        "extra": {
+          "sample_length_cm": 50,
+          "flow_direction": "concurrent",
+          "source": "NTRS 20210017780, test matrix, p.5"
+        }
+      },
+      {
+        "run_label": "Saffire IV-2",
+        "fuel": "PMMA (2-sided)",
+        "oxygen_percent": 22.0,
+        "pressure_kpa": 100.0,
+        "flow_velocity_cm_s": 20.0,
+        "gravity": "microgravity",
+        "outcome": "spread",
+        "extra": {
+          "sample_length_cm": 18,
+          "flow_direction": "concurrent",
+          "source": "NTRS 20210017780, test matrix, p.5"
+        }
+      },
+      {
+        "run_label": "Saffire V-2",
+        "fuel": "cotton jersey",
+        "oxygen_percent": 26.2,
+        "pressure_kpa": 70.7,
+        "flow_velocity_cm_s": 20.0,
+        "gravity": "microgravity",
+        "outcome": "spread",
+        "extra": {
+          "sample_length_cm": 50,
+          "flow_direction": "concurrent",
+          "source": "NTRS 20210017780, test matrix, p.5"
+        }
+      },
+      {
+        "run_label": "Saffire V-3",
+        "fuel": "PMMA (1-sided)",
+        "oxygen_percent": 25.4,
+        "pressure_kpa": 71.3,
+        "flow_velocity_cm_s": 20.0,
+        "gravity": "microgravity",
+        "outcome": "spread",
+        "extra": {
+          "sample_length_cm": 18,
+          "flow_direction": "concurrent",
+          "source": "NTRS 20210017780, test matrix, p.5"
+        }
+      },
+      {
+        "run_label": "Saffire V-4",
+        "fuel": "structured PMMA",
+        "oxygen_percent": 25.7,
+        "pressure_kpa": 72.6,
+        "flow_velocity_cm_s": 20.0,
+        "gravity": "microgravity",
+        "outcome": "spread",
+        "extra": {
+          "sample_length_cm": 20,
+          "flow_direction": "opposed",
+          "source": "NTRS 20210017780, test matrix, p.5"
+        }
+      }
+    ]
+  },
+  {
+    "code": "SAME",
+    "name": "Smoke Aerosol Measurement Experiment",
+    "platform": "ISS — Microgravity Science Glovebox",
+    "years": "2007–2011",
+    "fuels": "Teflon, Kapton, silicone rubber, cellulose, dibutyl phthalate (smoke sources, heated, not burned)",
+    "description": "Spacecraft materials were overheated (smouldering, not flaming) to produce smoke, and the particle sizes were measured to see whether spacecraft smoke detectors would notice them.",
+    "objectives": "Measure the particle size distribution of smoke from typical spacecraft materials in microgravity and use it to improve the design of smoke detectors for future vehicles.",
+    "psi_doi": null,
+    "runs": []
+  },
+  {
+    "code": "FLEX",
+    "name": "Flame Extinguishment Experiment",
+    "platform": "ISS — Combustion Integrated Rack (Multi-User Droplet Combustion Apparatus)",
+    "years": "2009–2011 (FLEX); FLEX-2 continued afterwards",
+    "fuels": "Methanol, n-heptane",
+    "description": "Isolated fuel droplets of a few millimetres were ignited in a chamber with controlled oxygen, pressure and diluent (nitrogen, carbon dioxide, helium), and filmed until they burned out or the flame went out.",
+    "objectives": "Find the conditions under which droplet flames extinguish, evaluate gaseous fire suppressants such as CO2 and helium for spacecraft cabins, and provide reference data to validate combustion models. The tests also revealed long-lived 'cool flames' around heptane droplets.",
+    "psi_doi": null,
+    "runs": []
+  },
+  {
+    "code": "ACME",
+    "name": "Advanced Combustion via Microgravity Experiments",
+    "platform": "ISS — Combustion Integrated Rack",
+    "years": "2017–2020",
+    "fuels": "Gaseous fuels: ethylene, methane, and fuel/inert mixtures",
+    "description": "A set of independent gaseous-flame experiments (laminar coflow flames, electric-field flames, burning-rate emulator, flame design, structure of flames) sharing one chamber and diagnostics.",
+    "objectives": "Improve fuel efficiency and reduce pollutants in combustion on Earth and improve spacecraft fire prevention by studying non-premixed gas flames without buoyancy: soot formation, flame stability and extinction, and the effect of electric fields.",
+    "psi_doi": null,
+    "runs": []
+  }
+]
