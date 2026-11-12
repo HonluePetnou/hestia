@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>03 — IA : RAG et réponses citées</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 03 · P4 IA / RAG · P1 pour l'évaluation</div>
+  <h1>Le <b>RAG</b> : des réponses IA qui citent la NASA</h1>
+  <p>Comment faire répondre un modèle de langage uniquement à partir de nos 36 rapports, avec des citations vérifiables — et un « je ne sais pas » quand il le faut.</p>
+  <div class="meta"><span>Temps : ~3 h</span><span>Fichiers : backend/pipeline/*, app/services/*</span></div>
+</div>
+
+<h2>1. Le principe en une image</h2>
+<pre>Question ─► embedding ─► recherche pgvector (8 passages les plus proches)
+                                   │
+          ┌────────────────────────┘
+          ▼
+Prompt = consignes + passages numérotés [NTRS-ID, p.X] + question
+          │
+          ▼
+LLM ─► réponse avec citations ─► vérification des citations ─► /ask → écran Assistant</pre>
+<p><strong>LLM</strong> : modèle qui produit du texte ; il peut inventer (« halluciner »). <strong>RAG</strong> (Retrieval-Augmented Generation) : on lui fournit d'abord les bons passages et on lui interdit de sortir de ces sources. Le RAG réduit les erreurs mais <strong>ne les supprime pas</strong> : on vérifie.</p>
+
+<h2>2. Les embeddings et la similarité</h2>
+<p>Un <strong>embedding</strong> transforme un texte en un vecteur de nombres (ex. 1536 valeurs). Deux textes de sens proche ont des vecteurs proches. On mesure la proximité par la <strong>similarité cosinus</strong> (1 = même direction, 0 = sans rapport).</p>
+<ul>
+  <li>On calcule un vecteur pour chaque passage du corpus (une fois) et pour chaque question (à chaque appel).</li>
+  <li>Il faut <strong>le même modèle d'embedding</strong> pour le corpus et les questions.</li>
+  <li>La dimension du vecteur doit égaler <code>EMBEDDING_DIM</code> (colonne <code>vector(1536)</code>) : à choisir <em>avant</em> l'ingestion.</li>
+</ul>
+
+<h2>3. Découper le texte (chunking)</h2>
+<p>Implémenter <code>chunk_pages()</code> dans <code>backend/pipeline/chunk.py</code> :</p>
+<ul>
+  <li>Entrée : <code>data/ntrs/text/&lt;id&gt;.jsonl</code> (une ligne par page : <code>{page, text}</code>).</li>
+  <li>Passages d'environ 300 à 500 tokens (~1 200 à 2 000 caractères), avec un petit chevauchement (~50 tokens).</li>
+  <li><strong>Ne jamais traverser une page</strong> : chaque passage garde un numéro de page exact → citation correcte.</li>
+  <li>Couper de préférence aux paragraphes ; ignorer les pages quasi vides (sommaire, pages blanches).</li>
+</ul>
+<div class="box tip"><b>Astuce qui paie</b><p>Préfixer chaque passage par son contexte avant l'embedding : <code>"[Titre du rapport — année — p.12] " + texte</code>. Le passage devient plus facile à retrouver (idée de la « Contextual Retrieval » d'Anthropic).</p></div>
+
+<h2>4. Stocker et rechercher avec pgvector</h2>
+<p>La table <code>chunks</code> a déjà une colonne <code>embedding vector(1536)</code> et un index HNSW cosinus. L'opérateur <code>&lt;=&gt;</code> donne la <strong>distance</strong> cosinus (plus petit = plus proche) :</p>
+<pre>SELECT d.ntrs_id, d.title, c.page, c.content,
+       1 - (c.embedding &lt;=&gt; :qvec) AS similarity
+FROM chunks c JOIN documents d ON d.id = c.document_id
+ORDER BY c.embedding &lt;=&gt; :qvec
+LIMIT 8;</pre>
+<p>En SQLAlchemy : <code>Chunk.embedding.cosine_distance(qvec)</code> dans un <code>order_by</code>. C'est le <code>TODO</code> de <code>app/services/retrieval.py</code>.</p>
+
+<h2>5. Le prompt « sources seulement »</h2>
+<pre>Système :
+Tu es Hestia, assistant de sécurité incendie spatiale. Réponds UNIQUEMENT
+avec les extraits fournis. Après chaque affirmation, cite la source au format
+[NTRS-ID, p.X] exactement comme dans les extraits. Si les extraits ne
+permettent pas de répondre, réponds : "Les sources indexées ne couvrent pas
+cette question." N'invente ni chiffre ni conclusion. Rappelle les conditions
+(matériau, O₂, pression, gravité) quand tu cites un résultat.
+
+Utilisateur :
+Extraits :
+[20170000230, p.2] ... texte ...
+[20210017787, p.6] ... texte ...
+Question : How does flame spread change at lunar gravity?</pre>
+
+<h2>6. Vérifier avant d'afficher</h2>
+<ol>
+  <li>Extraire toutes les citations de la réponse (regex <code>\[([^\]]+?), p\.\s?(\d+)\]</code>).</li>
+  <li>Chaque citation doit correspondre à un passage fourni. Sinon : la retirer, ou passer <code>insufficient_data = true</code>.</li>
+  <li>Si la meilleure similarité est trop basse (seuil à calibrer, ex. &lt; 0,3) → ne pas appeler le LLM : répondre « données insuffisantes ».</li>
+  <li>Renvoyer <code>citations: [{ntrs_id, title, page, url}]</code> → l'écran Assistant les affiche déjà.</li>
+</ol>
+
+<h2>7. Extraire les constats (findings) et le score Lune/Mars</h2>
+<p>Utiliser la <strong>sortie structurée</strong> (JSON imposé par un schéma) du fournisseur choisi, page par page ou rapport par rapport :</p>
+<pre>{"findings": [{"statement": "...", "experiment": "SAFFIRE", "page": 4,
+               "relevance_moon": 0.0-1.0, "relevance_mars": 0.0-1.0,
+               "confidence": 0.0-1.0, "rationale": "..."}]}</pre>
+<div class="box warn"><b>Le Guide d'équipe insiste : pas de score sans méthode</b><p>Le score doit suivre une <strong>grille écrite et affichée</strong>. Exemple : +0,3 si l'expérience porte sur des conditions proches de l'habitat (O₂ enrichi, pression réduite) ; +0,3 si l'effet dépend de la gravité ou de l'écoulement ; +0,2 si matériau de cabine ; +0,2 si résultat quantitatif. P1 relit le top 10 avant la démo. Le classement affiche « Pertinence × confiance » et la grille est consultable.</p></div>
+
+<h2>8. Choisir un fournisseur</h2>
+<table>
+  <tr><th></th><th>Génération</th><th>Embeddings</th><th>Remarque</th></tr>
+  <tr><td>OpenAI</td><td>oui</td><td>oui (<code>text-embedding-3-small</code>, dimension réglable)</td><td>tout-en-un, simple</td></tr>
+  <tr><td>Gemini</td><td>oui</td><td>oui (<code>gemini-embedding-001</code>, 768/1536/3072)</td><td>tout-en-un</td></tr>
+  <tr><td>Claude (Anthropic)</td><td>oui (<code>claude-opus-5-5</code> par défaut dans le code)</td><td><strong>non</strong></td><td>à combiner avec un fournisseur d'embeddings</td></tr>
+</table>
+<p>Le code gère déjà les trois via <code>LLM_PROVIDER</code> dans <code>.env</code> (<code>app/services/llm.py</code>). <code>LLM_PROVIDER=mock</code> permet de tout faire tourner sans clé — gardez-le comme plan B pour la démo.</p>
+
+<h2>9. Évaluer : le travail de P1 + P4</h2>
+<ul>
+  <li><strong>10 questions-tests</strong> issues des fiches de lecture (guide 01), avec pour chacune la ou les sources attendues.</li>
+  <li><strong>3 questions hors corpus</strong> (ex. inflammation de la poussière de régolithe) → la bonne réponse est « données insuffisantes ».</li>
+  <li>Mesurer : source attendue retrouvée dans les 8 passages ? citations toutes valides ? affirmation fidèle au texte ?</li>
+  <li>Garder les résultats dans un tableau ; les montrer au jury est un vrai argument.</li>
+</ul>
+
+<h2>10. Ordre de travail conseillé</h2>
+<ol class="check">
+  <li>Choisir fournisseur + <code>EMBEDDING_DIM</code>, mettre la clé dans <code>.env</code>.</li>
+  <li><code>chunk.py</code> testé sur 1 PDF → puis sur les 36.</li>
+  <li><code>embed.py</code> par lots (ex. 64 passages par appel), avec reprise en cas d'erreur de quota.</li>
+  <li><code>ingest.py</code> (sans <code>--mock</code>) : documents + chunks.</li>
+  <li><code>retrieval.search()</code> + <code>/ask</code> réel + vérification des citations.</li>
+  <li>Extraction des findings + validation humaine + score affiché avec sa grille.</li>
+</ol>
+
+<h2>11. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">RAG</span>Anthropic — Introducing Contextual Retrieval — <a href="https://www.anthropic.com/news/contextual-retrieval">anthropic.com/news/contextual-retrieval</a></li>
+  <li><span class="tag">pgvector</span>README (opérateurs, index HNSW, Python) — <a href="https://github.com/pgvector/pgvector">github.com/pgvector/pgvector</a> · <a href="https://github.com/pgvector/pgvector-python">pgvector-python</a></li>
+  <li><span class="tag">OpenAI</span>Guide Embeddings et guide Structured Outputs — <a href="https://platform.openai.com/docs">platform.openai.com/docs</a></li>
+  <li><span class="tag">Gemini</span>Embeddings et sortie structurée — <a href="https://ai.google.dev/gemini-api/docs">ai.google.dev/gemini-api/docs</a></li>
+  <li><span class="tag">Claude</span>Documentation de l'API (structured outputs, citations) — <a href="https://platform.claude.com/docs">platform.claude.com/docs</a></li>
+  <li><span class="tag">Projet</span><code>backend/pipeline/chunk.py</code>, <code>embed.py</code>, <code>ingest.py</code>, <code>app/services/retrieval.py</code>, <code>app/routers/ask.py</code></li>
+</ul>
+</body></html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>06 — Frontend : Next.js, design, 3D</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 06 · P5 Dashboard / UX · P6</div>
+  <h1>Le <b>frontend</b> : Next.js, design Figma, 3D</h1>
+  <p>Comment sont construits les 7 écrans, comment brancher de vraies données et éviter les pièges que nous avons déjà rencontrés.</p>
+  <div class="meta"><span>Temps : ~2 h</span><span>Next.js 16 · React 19 · Tailwind v4 · Recharts · React Three Fiber</span></div>
+</div>
+
+<h2>1. La carte des écrans</h2>
+<table>
+  <tr><th>Route</th><th>Fichier</th><th>Données</th></tr>
+  <tr><td><code>/</code> Overview</td><td><code>app/page.tsx</code></td><td>experiments, ranking moon/mars, SAFFIRE</td></tr>
+  <tr><td><code>/experiments</code></td><td><code>app/experiments/page.tsx</code> + <code>components/FilterBar.tsx</code></td><td>filtres dans l'URL → <code>/experiments?…</code></td></tr>
+  <tr><td><code>/experiments/[code]</code></td><td><code>app/experiments/[code]/page.tsx</code></td><td>détail, findings, essais, graphique</td></tr>
+  <tr><td><code>/compare</code></td><td><code>app/compare/page.tsx</code></td><td><code>/compare?codes=…</code></td></tr>
+  <tr><td><code>/relevance</code></td><td><code>app/relevance/page.tsx</code></td><td><code>/ranking?target=moon|mars</code></td></tr>
+  <tr><td><code>/assistant</code></td><td><code>components/AssistantChat.tsx</code></td><td><code>POST /ask</code></td></tr>
+  <tr><td><code>/simulator</code></td><td><code>app/simulator/page.tsx</code> + <code>DropletScene.tsx</code></td><td><code>POST /predict</code></td></tr>
+</table>
+
+<h2>2. Composants serveur vs client</h2>
+<ul>
+  <li><strong>Par défaut, un composant est « serveur »</strong> : il peut appeler l'API directement (<code>await api.listExperiments()</code>) et n'envoie pas de JavaScript au navigateur.</li>
+  <li><strong><code>"use client"</code></strong> en tête de fichier quand il faut de l'interactivité : <code>useState</code>, clics, formulaires, 3D (FilterBar, AssistantChat, Simulator, TopBar).</li>
+  <li><strong>Next 16 + <code>cacheComponents</code></strong> : toute donnée non mise en cache (fetch <code>no-store</code>, <code>searchParams</code>, <code>params</code>) doit être lue <strong>dans un <code>&lt;Suspense&gt;</code></strong>. Sinon : erreur « blocking route ». Modèle utilisé partout :</li>
+</ul>
+<pre>async function Grid({ searchParams }) {          <span class="c">// lit les données</span>
+  const { data, error } = await attempt(api.listExperiments(...));
+  if (!data) return &lt;ErrorBox error={error} /&gt;;
+  return ...;
+}
+export default function Page(props) {
+  return &lt;Suspense fallback={&lt;Loading /&gt;}&gt;&lt;Grid searchParams={props.searchParams} /&gt;&lt;/Suspense&gt;;
+}</pre>
+<div class="box warn"><b>Next.js 16 n'est pas celui des tutoriels</b><p>Beaucoup d'API ont changé. Avant de coder, lire la doc embarquée : <code>web/node_modules/next/dist/docs/</code> (fichier <code>web/AGENTS.md</code>).</p></div>
+
+<h2>3. Le design : des tokens, pas des couleurs en dur</h2>
+<p>Le design vient du fichier Figma « Hestia — UI Design » (pages Components et Screens). Ses variables sont recopiées dans <code>web/src/app/globals.css</code> :</p>
+<table>
+  <tr><th>Figma</th><th>CSS</th><th>Classe Tailwind</th></tr>
+  <tr><td>color/bg/canvas</td><td><code>--color-bg-canvas</code></td><td><code>bg-canvas</code></td></tr>
+  <tr><td>color/accent/default</td><td><code>--color-accent-default</code></td><td><code>text-ember</code>, <code>bg-ember</code></td></tr>
+  <tr><td>color/text/muted</td><td><code>--color-text-muted</code></td><td><code>text-fg-3</code></td></tr>
+  <tr><td>Display/L, Label/Caps…</td><td>—</td><td><code>t-display-l</code>, <code>t-caps</code>, <code>t-mono-s</code>…</td></tr>
+  <tr><td>Glass/Card</td><td>—</td><td><code>glass</code></td></tr>
+</table>
+<p>Composants réutilisables dans <code>components/ui.tsx</code> : <code>Badge</code>, <code>Button</code>, <code>IconButton</code>, <code>Card</code>, <code>CardHeader</code>, <code>Stat</code>, <code>Citation</code>, <code>Bar</code>, <code>Segmented</code>, <code>Fact</code>. Visuels dans <code>components/visuals.tsx</code>. Icônes : <code>lucide-react</code> (les mêmes que dans Figma).</p>
+<div class="box ok"><b>Accessibilité (brand guide Space Apps)</b><p>Contraste texte ≥ 4,5:1. Nos tokens ont été corrigés pour ça (<code>text-muted</code> = #858B9B). Ne jamais signaler un état par la couleur seule : toujours un libellé (badges, légendes).</p></div>
+
+<h2>4. Brancher une vraie donnée</h2>
+<ol>
+  <li>La route existe dans l'API ? Sinon la créer (guide 04).</li>
+  <li>API lancée → <code>pnpm gen:types</code> régénère <code>lib/api-types.ts</code>.</li>
+  <li>Ajouter une fonction dans <code>lib/api.ts</code> (typée avec <code>Schemas["…"]</code>).</li>
+  <li>L'appeler dans un composant serveur, dans un <code>&lt;Suspense&gt;</code>.</li>
+  <li>Remplacer le contenu <code>SAMPLE</code> correspondant de <code>lib/content.ts</code>.</li>
+</ol>
+
+<h2>5. Graphiques et 3D</h2>
+<h3>Recharts</h3>
+<p>Exemple : <code>components/BurnRateChart.tsx</code> (nuage de points K vs O₂). Composant client, <code>ResponsiveContainer</code> dans un conteneur de hauteur fixe. Utiliser des couleurs hexadécimales dans les props (attributs SVG), pas <code>var(--…)</code>.</p>
+<h3>React Three Fiber</h3>
+<ul>
+  <li><code>&lt;Canvas&gt;</code> = la scène ; <code>&lt;mesh&gt;</code> = un objet (géométrie + matériau) ; <code>&lt;OrbitControls/&gt;</code> (drei) = rotation/zoom à la souris.</li>
+  <li>Chargé avec <code>dynamic(() =&gt; import(...), { ssr: false })</code> car WebGL n'existe pas côté serveur.</li>
+  <li>La taille de la goutte suit la loi en d² (guide 01) pendant la lecture de la timeline.</li>
+</ul>
+
+<h2>6. Pièges déjà rencontrés (et corrigés)</h2>
+<table>
+  <tr><th>Symptôme</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>Styles absents, fond blanc</td><td>cache Turbopack obsolète</td><td>arrêter <code>pnpm dev</code>, supprimer <code>web/.next</code>, relancer</td></tr>
+  <tr><td>« useEffect must not return anything… »</td><td>effet écrit <code>() =&gt; fn()</code> qui renvoie une Promise</td><td>toujours des accolades : <code>() =&gt; { fn(); }</code></td></tr>
+  <tr><td>Erreur d'hydratation</td><td>calculs flottants différents serveur / navigateur</td><td>arrondir les coordonnées SVG</td></tr>
+  <tr><td>ESLint : JSX dans try/catch</td><td>règle React 19</td><td>helper <code>attempt()</code> puis rendu hors du try</td></tr>
+  <tr><td>Graphique invisible</td><td><code>var(--…)</code> dans des attributs SVG</td><td>couleurs hexadécimales</td></tr>
+</table>
+
+<h2>7. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">Next.js</span>Learn (bases App Router) — <a href="https://nextjs.org/learn">nextjs.org/learn</a> · Doc — <a href="https://nextjs.org/docs">nextjs.org/docs</a></li>
+  <li><span class="tag">React</span>Doc officielle (hooks, effets) — <a href="https://react.dev/learn">react.dev/learn</a> · « You might not need an effect » — <a href="https://react.dev/learn/you-might-not-need-an-effect">react.dev/learn/you-might-not-need-an-effect</a></li>
+  <li><span class="tag">Tailwind</span>Documentation v4 — <a href="https://tailwindcss.com/docs">tailwindcss.com/docs</a></li>
+  <li><span class="tag">Charts</span>Recharts — <a href="https://recharts.org/">recharts.org</a></li>
+  <li><span class="tag">3D</span>React Three Fiber — <a href="https://r3f.docs.pmnd.rs/">r3f.docs.pmnd.rs</a> · drei — <a href="https://drei.docs.pmnd.rs/">drei.docs.pmnd.rs</a></li>
+  <li><span class="tag">Icônes</span>Lucide — <a href="https://lucide.dev/">lucide.dev</a></li>
+  <li><span class="tag">Figma</span>Fichier « Hestia — UI Design » (demander l'accès à l'équipe) et Figma Help Center — <a href="https://help.figma.com/">help.figma.com</a></li>
+</ul>
+</body></html>

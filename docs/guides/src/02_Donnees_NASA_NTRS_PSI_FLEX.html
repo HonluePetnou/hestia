@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>02 — Données NASA : NTRS, PSI, FLEX</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 02 · P2 Sources &amp; données · P3 Data engineering</div>
+  <h1>Les données <b>NASA</b> : NTRS, PSI, FLEX</h1>
+  <p>Où trouver les données, comment les récupérer, les transcrire et les ranger dans Hestia sans jamais perdre l'unité ni la source.</p>
+  <div class="meta"><span>Temps : ~2 h + transcription FLEX</span><span>Outils : Python, pandas, un tableur</span></div>
+</div>
+
+<h2>1. Les trois sources et leur rôle</h2>
+<table>
+  <tr><th>Source</th><th>Contenu</th><th>Accès</th><th>Usage dans Hestia</th></tr>
+  <tr><td><strong>NTRS</strong><br>ntrs.nasa.gov</td><td>rapports techniques et articles (PDF)</td><td>API publique, sans compte</td><td>corpus du RAG, citations <code>[NTRS-ID, p.X]</code></td></tr>
+  <tr><td><strong>PSI</strong><br>psi.nasa.gov</td><td>fiches d'investigations, métadonnées, tableaux d'essais</td><td>téléchargement manuel (CC0)</td><td>table <code>experiments</code>, conditions d'essais</td></tr>
+  <tr><td><strong>FLEX Table IX</strong><br>NTRS 20150023456</td><td>~170 essais de gouttelettes</td><td>transcription manuelle</td><td><code>test_runs</code>, modèle ML, simulateur</td></tr>
+</table>
+
+<h2>2. NTRS : déjà automatisé</h2>
+<p>Le script <code>backend/pipeline/fetch_ntrs.py</code> interroge l'API de recherche avec les requêtes de <code>backend/pipeline/queries.txt</code>, déduplique, écrit <code>data/ntrs/catalog.csv</code> et télécharge les PDF.</p>
+<pre><span class="c"># depuis backend/ (Windows : pas de make → commandes directes)</span>
+uv run python -m pipeline.fetch_ntrs --max-per-query 15 --max-total 40
+uv run python -m pipeline.extract_text          <span class="c"># → data/ntrs/text/&lt;id&gt;.jsonl + extraction_report.csv</span></pre>
+<ul>
+  <li>Une requête de recherche : <code>GET https://ntrs.nasa.gov/api/citations/search?q=...&amp;page.size=15</code></li>
+  <li>Chaque résultat contient <code>id</code>, <code>title</code>, <code>authorAffiliations</code>, <code>publications[].publicationDate</code> et <code>downloads[].links.pdf</code>.</li>
+  <li>Fiche lisible par un humain : <code>https://ntrs.nasa.gov/citations/&lt;id&gt;</code> — c'est le lien affiché à côté de chaque citation.</li>
+</ul>
+<div class="box tip"><b>État actuel</b><p>40 notices, 37 PDF (204 Mo, non versionnés), 36 avec texte exploitable. Le rapport <code>extraction_report.csv</code> marque <code>low_text</code> un PDF probablement scanné (20210015913) : à exclure ou à passer en OCR.</p></div>
+<div class="box ex"><b>Exercice — élargir le corpus (P2)</b><p>Ajouter dans <code>queries.txt</code> 3 requêtes ciblées (ex. « SoFIE solid fuel ignition », « FLEX-2 cool flame », « lunar gravity flammability »), relancer le script, puis ouvrir <code>catalog.csv</code> et supprimer les notices hors sujet. Garder 2 à 3 familles d'expériences (conseil du Guide d'équipe).</p></div>
+
+<h2>3. PSI : la partie manuelle</h2>
+<ol>
+  <li>Ouvrir <a href="https://psi.nasa.gov/">psi.nasa.gov</a>, chercher l'investigation (exemples : FLEX <a href="https://psi.nasa.gov/physci/repo/data/investigations/PSI-69">PSI-69</a>, SAFFIRE-I <a href="https://psi.nasa.gov/physci/repo/data/investigations/PSI-98">PSI-98</a>).</li>
+  <li>Télécharger <strong>uniquement</strong> les métadonnées et les tableaux d'essais (CSV/XLSX). Pas de vidéos ni de données brutes de capteurs.</li>
+  <li>Ranger dans <code>data/psi/&lt;CODE&gt;/</code> (ex. <code>data/psi/FLEX/metadata.json</code>, <code>test_matrix.csv</code>).</li>
+  <li>Noter le <strong>DOI</strong> de l'investigation → colonne <code>experiments.psi_doi</code>.</li>
+  <li>Noter les conditions d'accès et la licence (CC0 pour PSI).</li>
+</ol>
+
+<h2>4. Transcrire la Table IX de FLEX</h2>
+<p>Source : <em>Detailed Results from the Flame Extinguishment Experiment (FLEX)</em>, NASA/TP-2015-216046 — <a href="https://ntrs.nasa.gov/citations/20150023456">ntrs.nasa.gov/citations/20150023456</a>. Le fichier cible existe déjà avec son en-tête : <code>data/flex/flex_table_ix.csv</code>.</p>
+<table>
+  <tr><th>Colonne</th><th>Unité / valeurs</th><th>Remarque</th></tr>
+  <tr><td><code>test_id</code></td><td>identifiant imprimé</td><td>garder le format exact</td></tr>
+  <tr><td><code>fuel</code></td><td>n-heptane, methanol…</td><td>minuscules, orthographe constante</td></tr>
+  <tr><td><code>pressure_atm</code></td><td>atm</td><td>1 atm = 101,325 kPa (conversion faite plus tard, pas dans le CSV)</td></tr>
+  <tr><td><code>o2_mole_fraction</code>, <code>co2_mole_fraction</code>, <code>n2_mole_fraction</code></td><td>0 à 1</td><td>vérifier que la somme ≈ 1 (avec He si présent)</td></tr>
+  <tr><td><code>initial_diameter_mm</code></td><td>mm</td><td></td></tr>
+  <tr><td><code>outcome</code></td><td>extinction, disruption, complete_burn, unknown</td><td>uniquement ces 4 valeurs</td></tr>
+  <tr><td><code>burn_rate_k_mm2_s</code></td><td>mm²/s</td><td><strong>vide</strong> si non rapporté — jamais estimé</td></tr>
+</table>
+<div class="box ok"><b>Protocole anti-erreurs (2 personnes)</b><ul>
+  <li>Couper la table en deux moitiés ; chacun transcrit la sienne.</li>
+  <li>Chacun relit 10 lignes au hasard de l'autre, contre le PDF.</li>
+  <li>Script de contrôle pandas (ci-dessous) avant tout commit.</li>
+</ul></div>
+<pre>import pandas as pd
+df = pd.read_csv("data/flex/flex_table_ix.csv")
+print(df.shape, df["outcome"].value_counts(dropna=False))
+assert df["outcome"].isin(["extinction", "disruption", "complete_burn", "unknown"]).all()
+gas = df[["o2_mole_fraction", "co2_mole_fraction", "n2_mole_fraction"]].fillna(0).sum(axis=1)
+print("lignes à vérifier (somme gaz) :", df[(gas &lt; 0.9) | (gas &gt; 1.01)]["test_id"].tolist())
+print(df.describe())   <span class="c"># repérer les valeurs aberrantes (diamètre 30 au lieu de 3.0…)</span></pre>
+
+<h2>5. Où vont les données dans la base</h2>
+<table>
+  <tr><th>Table</th><th>Une ligne =</th><th>Rempli par</th></tr>
+  <tr><td><code>documents</code></td><td>un rapport NTRS (id, titre, auteurs, année, url)</td><td><code>pipeline/ingest.py</code> depuis <code>catalog.csv</code></td></tr>
+  <tr><td><code>chunks</code></td><td>un passage de texte + sa page + son vecteur</td><td>chunk → embed → ingest (guide 03)</td></tr>
+  <tr><td><code>experiments</code></td><td>une investigation (BASS, FLEX…)</td><td>métadonnées PSI</td></tr>
+  <tr><td><code>test_runs</code></td><td>un essai (carburant, O₂, pression, gravité, diamètre, résultat, K)</td><td>Table IX FLEX + tableaux PSI</td></tr>
+  <tr><td><code>findings</code> + <code>finding_sources</code></td><td>un constat + ses sources (document, page)</td><td>extraction IA validée par P1 (guide 03)</td></tr>
+</table>
+<p>Valeurs autorisées : <code>gravity</code> ∈ {microgravity, lunar, martian, earth} ; <code>outcome</code> ∈ {spread, extinction, disruption, complete_burn, unknown}. Le champ <code>extra</code> (JSON) accueille ce qui ne rentre pas ailleurs (ex. diluant hélium).</p>
+
+<h2>6. Règles de qualité (non négociables)</h2>
+<ul>
+  <li><strong>Unité dans le nom de colonne</strong> (<code>pressure_kpa</code>, <code>burn_rate_k_mm2_s</code>) et une seule unité par colonne.</li>
+  <li><strong>Pas de valeur inventée</strong> : case vide → affichée « non renseigné » / « — » dans l'interface.</li>
+  <li><strong>Traçabilité</strong> : toute ligne doit pouvoir remonter à un document et une page.</li>
+  <li><strong>Comparabilité</strong> : deux essais ne sont comparés que si leurs conditions sont définies de la même façon.</li>
+  <li><strong>Pas de PDF ni de gros fichiers dans Git</strong> (déjà protégé par <code>.gitignore</code>).</li>
+</ul>
+
+<h2>7. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">API</span>Documentation OpenAPI de NTRS — <a href="https://ntrs.nasa.gov/api/openapi/">ntrs.nasa.gov/api/openapi</a></li>
+  <li><span class="tag">PSI</span>Physical Sciences Informatics — <a href="https://psi.nasa.gov/">psi.nasa.gov</a></li>
+  <li><span class="tag">pandas</span>10 minutes to pandas — <a href="https://pandas.pydata.org/docs/user_guide/10min.html">pandas.pydata.org/docs/user_guide/10min.html</a></li>
+  <li><span class="tag">PDF</span>PyMuPDF (extraction de texte) — <a href="https://pymupdf.readthedocs.io/">pymupdf.readthedocs.io</a></li>
+  <li><span class="tag">Projet</span><code>data/README.md</code> du dépôt : étapes détaillées NTRS / PSI / FLEX.</li>
+</ul>
+</body></html>

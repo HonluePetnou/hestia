@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>05 — Machine Learning sur les données FLEX</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 05 · Bonus · P3 · P4</div>
+  <h1>Un petit modèle <b>honnête</b> sur FLEX</h1>
+  <p>Prédire la constante de combustion K et le risque d'extinction d'une gouttelette à partir de ~170 essais — et savoir dire ce que le modèle ne sait pas.</p>
+  <div class="meta"><span>Temps : ~2 h</span><span>pandas · scikit-learn</span><span>Prérequis : Table IX transcrite (guide 02)</span></div>
+</div>
+
+<h2>1. Faut-il vraiment du ML ?</h2>
+<p>Le Guide d'équipe le rappelle : le ML est une <strong>extension</strong>, pas un prérequis. Avec ~170 lignes, on peut faire un modèle utile <em>si</em> on reste modeste :</p>
+<ul>
+  <li>il interpole dans la plage des essais FLEX (O₂, pression, diamètre testés) — il n'extrapole pas à la Lune ;</li>
+  <li>il est comparé à une <strong>baseline</strong> simple ; s'il ne la bat pas, on ne le montre pas ;</li>
+  <li>l'écran Simulator affiche « Model · … » et les limites.</li>
+</ul>
+
+<h2>2. Les deux problèmes</h2>
+<table>
+  <tr><th></th><th>Régression</th><th>Classification</th></tr>
+  <tr><td>Cible</td><td><code>burn_rate_k_mm2_s</code> (nombre)</td><td><code>outcome == "extinction"</code> (oui/non)</td></tr>
+  <tr><td>Lignes utilisables</td><td>celles où K est renseigné</td><td>toutes celles avec un résultat connu</td></tr>
+  <tr><td>Baseline</td><td>prédire la moyenne de K</td><td>prédire la classe majoritaire</td></tr>
+  <tr><td>Métriques</td><td>MAE (erreur moyenne en mm²/s), R²</td><td>exactitude, F1, matrice de confusion</td></tr>
+  <tr><td>Sortie API</td><td><code>burn_rate_k</code></td><td><code>extinction_probability</code> (<code>predict_proba</code>)</td></tr>
+</table>
+<p><strong>Variables d'entrée</strong> : fraction d'O₂, pression, diamètre initial, carburant (encodé en colonnes 0/1), fractions de CO₂ / diluant. Les mêmes que le formulaire du Simulator.</p>
+
+<h2>3. Le code de départ</h2>
+<pre>import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.dummy import DummyRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+
+df = pd.read_csv("data/flex/flex_table_ix.csv").dropna(subset=["burn_rate_k_mm2_s"])
+X = df[["fuel", "pressure_atm", "o2_mole_fraction", "co2_mole_fraction", "initial_diameter_mm"]]
+y = df["burn_rate_k_mm2_s"]
+
+prep = ColumnTransformer([("fuel", OneHotEncoder(handle_unknown="ignore"), ["fuel"])], remainder="passthrough")
+cv = KFold(n_splits=5, shuffle=True, random_state=42)
+for name, model in [("baseline", DummyRegressor()), ("forest", RandomForestRegressor(n_estimators=300, random_state=42))]:
+    pipe = Pipeline([("prep", prep), ("model", model)])
+    mae = -cross_val_score(pipe, X, y, cv=cv, scoring="neg_mean_absolute_error")
+    print(f"{name:9s} MAE = {mae.mean():.3f} ± {mae.std():.3f} mm²/s")</pre>
+<p>Pour la classification : <code>LogisticRegression</code> ou <code>RandomForestClassifier</code>, <code>StratifiedKFold</code>, scoring <code>"f1"</code>, baseline <code>DummyClassifier(strategy="most_frequent")</code>.</p>
+
+<h2>4. Les pièges classiques</h2>
+<div class="box warn"><b>À éviter</b><ul>
+  <li><strong>Évaluer sur les données d'entraînement</strong> : toujours de la validation croisée (5 plis).</li>
+  <li><strong>Fuite d'information</strong> : ne jamais utiliser une colonne mesurée <em>après</em> l'essai (durée de combustion, diamètre à l'extinction) pour prédire le résultat.</li>
+  <li><strong>Surapprentissage</strong> : 170 lignes, c'est peu ; préférer des modèles simples et limiter la profondeur des arbres.</li>
+  <li><strong>Classes déséquilibrées</strong> : regarder la matrice de confusion, pas seulement l'exactitude.</li>
+  <li><strong>Extrapolation</strong> : refuser (ou signaler) une prédiction hors des plages vues (ex. O₂ &gt; max des essais).</li>
+</ul></div>
+
+<h2>5. Brancher le modèle dans l'API</h2>
+<ol>
+  <li>Script <code>backend/pipeline/train_flex.py</code> : entraîne, affiche les scores CV, sauvegarde avec <code>joblib.dump(pipe, "models/flex_k.joblib")</code> (dossier ignoré par Git ou petit fichier documenté).</li>
+  <li><code>app/routers/predict.py</code> : charger le modèle une fois, remplacer la formule <code>mock</code> ; renseigner <code>model="flex-rf-v1"</code>.</li>
+  <li>Ajouter à la réponse un indicateur « hors plage » si les entrées sortent des valeurs d'entraînement.</li>
+  <li>Le Simulator affiche déjà <code>model</code> ; ajouter la MAE dans la légende.</li>
+</ol>
+
+<h2>6. Présenter le modèle honnêtement (fiche modèle)</h2>
+<table>
+  <tr><th>Rubrique</th><th>À écrire</th></tr>
+  <tr><td>Données</td><td>FLEX Table IX, n = …, NTRS 20150023456</td></tr>
+  <tr><td>Entrées / plage</td><td>O₂ de … à …, pression de … à … atm, d₀ de … à … mm</td></tr>
+  <tr><td>Performance</td><td>MAE = … mm²/s (baseline …) ; F1 extinction = … (baseline …)</td></tr>
+  <tr><td>Limites</td><td>microgravité ISS uniquement ; pas de gravité lunaire/martienne ; carburants testés seulement</td></tr>
+</table>
+
+<h2>7. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">sklearn</span>Getting Started — <a href="https://scikit-learn.org/stable/getting_started.html">scikit-learn.org/stable/getting_started.html</a></li>
+  <li><span class="tag">sklearn</span>Cross-validation — <a href="https://scikit-learn.org/stable/modules/cross_validation.html">scikit-learn.org/stable/modules/cross_validation.html</a></li>
+  <li><span class="tag">sklearn</span>Model evaluation (métriques) — <a href="https://scikit-learn.org/stable/modules/model_evaluation.html">scikit-learn.org/stable/modules/model_evaluation.html</a></li>
+  <li><span class="tag">sklearn</span>Pipelines et ColumnTransformer — <a href="https://scikit-learn.org/stable/modules/compose.html">scikit-learn.org/stable/modules/compose.html</a></li>
+  <li><span class="tag">pandas</span>10 minutes to pandas — <a href="https://pandas.pydata.org/docs/user_guide/10min.html">pandas.pydata.org/docs/user_guide/10min.html</a></li>
+  <li><span class="tag">Science</span>Guide 01, § 3 (loi en d², extinction) — pour interpréter les résultats.</li>
+</ul>
+</body></html>

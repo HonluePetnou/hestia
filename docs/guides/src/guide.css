@@ -1,0 +1,58 @@
+/* Shared print stylesheet for the Hestia learning guides (rendered with Edge headless). */
+@page {
+  size: A4;
+  margin: 16mm 15mm 18mm;
+  @bottom-left { content: "Hestia · NASA Space Apps 2026 · black-vortex"; font: 8pt "Segoe UI", sans-serif; color: #858b9b; }
+  @bottom-right { content: "Page " counter(page) " / " counter(pages); font: 8pt "Segoe UI", sans-serif; color: #858b9b; }
+}
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font: 10.4pt/1.55 "Segoe UI", "Inter", Arial, sans-serif; color: #1d2029; margin: 0; }
+
+.cover {
+  background: radial-gradient(ellipse at 85% 30%, rgba(255,122,48,.35), transparent 55%), radial-gradient(ellipse at 80% 40%, rgba(90,169,255,.25), transparent 60%), #07080c;
+  color: #e6e8ee; border-radius: 14px; padding: 22px 26px 24px; margin-bottom: 18px;
+}
+.cover .kicker { font-size: 8pt; letter-spacing: .14em; text-transform: uppercase; color: #ffb27a; }
+.cover h1 { font-size: 24pt; line-height: 1.12; margin: 6px 0 8px; font-weight: 300; letter-spacing: -.01em; }
+.cover h1 b { color: #ff7a30; font-weight: 400; }
+.cover p { margin: 0; color: #9aa0ae; max-width: 150mm; }
+.cover .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.cover .meta span { border: 1px solid #3a3f4d; border-radius: 999px; padding: 3px 10px; font-size: 8pt; color: #e6e8ee; }
+
+h2 { font-size: 14pt; color: #07080c; margin: 20px 0 8px; padding-left: 10px; border-left: 4px solid #ff7a30; break-after: avoid; }
+h3 { font-size: 11pt; color: #c2501a; margin: 14px 0 4px; break-after: avoid; }
+p { margin: 5px 0 8px; }
+ul, ol { margin: 4px 0 10px; padding-left: 18px; }
+li { margin: 2px 0; }
+a { color: #c2501a; text-decoration: none; overflow-wrap: anywhere; }
+strong { color: #07080c; }
+code { font: 9pt Consolas, "JetBrains Mono", monospace; background: #f1f2f5; padding: 1px 4px; border-radius: 4px; }
+pre { font: 8.6pt/1.45 Consolas, "JetBrains Mono", monospace; background: #0b0d13; color: #e6e8ee; padding: 10px 12px; border-radius: 8px; white-space: pre-wrap; break-inside: avoid; margin: 6px 0 10px; }
+pre .c { color: #858b9b; }
+
+table { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 9.3pt; break-inside: avoid; }
+th { text-align: left; background: #07080c; color: #e6e8ee; font-weight: 600; padding: 5px 7px; font-size: 8.6pt; letter-spacing: .03em; }
+td { border-bottom: 1px solid #e3e5ea; padding: 5px 7px; vertical-align: top; }
+tr:nth-child(even) td { background: #fafafb; }
+
+.box { border-radius: 10px; padding: 9px 12px; margin: 8px 0 12px; break-inside: avoid; border: 1px solid; }
+.box > b:first-child { display: block; font-size: 8.4pt; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 3px; }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.info { background: #eef5ff; border-color: #bcd8ff; } .info > b:first-child { color: #1f6fd1; }
+.tip { background: #fff4ec; border-color: #ffcfae; } .tip > b:first-child { color: #c2501a; }
+.warn { background: #fff1f1; border-color: #ffc4c4; } .warn > b:first-child { color: #c62828; }
+.ok { background: #eefbf3; border-color: #b6ecc9; } .ok > b:first-child { color: #1e8e4b; }
+.ex { background: #f6f6fb; border-color: #d9dae6; } .ex > b:first-child { color: #4a4f63; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card { border: 1px solid #e3e5ea; border-radius: 10px; padding: 9px 11px; break-inside: avoid; }
+.card h4 { margin: 0 0 4px; font-size: 10pt; color: #07080c; }
+.card p { margin: 0; font-size: 9.2pt; color: #4a4f63; }
+
+.res li { margin-bottom: 5px; }
+.res .tag { display: inline-block; font-size: 7.4pt; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 0 6px; border-radius: 999px; margin-right: 4px; background: #07080c; color: #ffb27a; }
+.check li { list-style: none; margin-left: -16px; }
+.check li::before { content: "☐  "; color: #c2501a; }
+.page-break { break-before: page; }
+.small { font-size: 8.8pt; color: #4a4f63; }

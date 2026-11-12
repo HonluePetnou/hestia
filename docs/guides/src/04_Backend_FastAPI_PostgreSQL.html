@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>04 — Backend : FastAPI + PostgreSQL</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 04 · P3 Data engineering · P4 · P6 Intégration</div>
+  <h1>Le <b>backend</b> : FastAPI + PostgreSQL</h1>
+  <p>Comprendre le dépôt, le lancer sous Windows, ajouter une route ou une colonne sans casser le front.</p>
+  <div class="meta"><span>Temps : ~2 h</span><span>Python 3.12 · uv · ruff · pytest</span></div>
+</div>
+
+<h2>1. L'architecture</h2>
+<pre>web/ (Next.js :3000) ──HTTP JSON──► backend/ (FastAPI :8000) ──SQL──► PostgreSQL 16 + pgvector (:5434, Docker)
+                                         │
+                                         └─► services/llm.py ─► mock | openai | gemini | anthropic</pre>
+<table>
+  <tr><th>Dossier / fichier</th><th>Rôle</th></tr>
+  <tr><td><code>backend/app/main.py</code></td><td>création de l'app, CORS, inclusion des routers</td></tr>
+  <tr><td><code>app/config.py</code></td><td>réglages lus dans <code>.env</code> (pydantic-settings)</td></tr>
+  <tr><td><code>app/models.py</code></td><td>tables SQLAlchemy (documents, chunks, experiments, test_runs, findings…)</td></tr>
+  <tr><td><code>app/schemas.py</code></td><td>formes des requêtes/réponses (Pydantic) → documentation <code>/docs</code></td></tr>
+  <tr><td><code>app/routers/*.py</code></td><td>une route par fichier : health, experiments, compare, ranking, ask, predict</td></tr>
+  <tr><td><code>app/services/</code></td><td>logique : catalog (lecture DB + repli mock), llm, retrieval</td></tr>
+  <tr><td><code>alembic/versions/</code></td><td>migrations de schéma (versionnées)</td></tr>
+  <tr><td><code>pipeline/</code></td><td>scripts de données (fetch, extract, chunk, embed, ingest)</td></tr>
+  <tr><td><code>tests/</code></td><td>tests pytest (API, LLM mock, pipeline)</td></tr>
+</table>
+
+<h2>2. Lancer le projet (Windows, Git Bash)</h2>
+<p>Pas de <code>make</code> installé ? Voici les commandes équivalentes. Le port Postgres est <strong>5434</strong> (5432/5433 déjà pris sur certaines machines).</p>
+<pre>cp .env.example .env
+docker compose up -d --wait db              <span class="c"># make up</span>
+cd backend
+uv sync                                     <span class="c"># installe les dépendances (première fois)</span>
+uv run alembic upgrade head                 <span class="c"># make migrate</span>
+uv run python -m pipeline.ingest --mock     <span class="c"># make seed (données [MOCK])</span>
+uv run uvicorn app.main:app --reload --port 8000   <span class="c"># make api → http://localhost:8000/docs</span>
+cd ../web &amp;&amp; pnpm install &amp;&amp; pnpm dev        <span class="c"># make web → http://localhost:3000</span></pre>
+<div class="box info"><b>Bon à savoir</b><p>Si la base est vide ou arrêtée, les routes d'expériences renvoient les données mock intégrées : le front fonctionne toujours. <code>GET /health</code> indique <code>db: true/false</code>.</p></div>
+
+<h2>3. Les briques à comprendre</h2>
+<h3>FastAPI + Pydantic</h3>
+<p>Une route = une fonction décorée. Les types Python deviennent validation automatique et documentation :</p>
+<pre>@router.get("/experiments/{code}", response_model=ExperimentDetail)
+def get_experiment(code: str, session: Session = Depends(get_session)) -> ExperimentDetail:
+    exp = catalog.get_experiment(session, code)
+    if exp is None:
+        raise HTTPException(status_code=404, detail=f"Experiment '{code}' not found")
+    return exp</pre>
+<h3>SQLAlchemy 2</h3>
+<p>Modèles déclarés avec <code>Mapped[...]</code> et <code>mapped_column</code> ; requêtes avec <code>select()</code> ; <code>selectinload</code> pour charger les relations sans requêtes en cascade.</p>
+<h3>Alembic</h3>
+<p>Toute modification de table passe par une migration, jamais à la main :</p>
+<pre>uv run alembic revision --autogenerate -m "add source_url to experiments"
+<span class="c"># relire le fichier généré dans alembic/versions/ !</span>
+uv run alembic upgrade head</pre>
+<h3>pgvector</h3>
+<p>Type <code>vector(N)</code> pour stocker les embeddings, opérateur <code>&lt;=&gt;</code> pour la distance cosinus, index HNSW pour aller vite (détails : guide 03).</p>
+
+<h2>4. Recette : ajouter une donnée de bout en bout</h2>
+<p>Exemple : afficher la « limite » d'un constat (demandée par le Guide d'équipe).</p>
+<ol>
+  <li><code>models.py</code> : <code>limits: Mapped[str | None] = mapped_column(Text)</code> sur <code>Finding</code>.</li>
+  <li>Migration Alembic (autogenerate, relire, upgrade).</li>
+  <li><code>schemas.py</code> : <code>limits: str | None = None</code> dans <code>FindingOut</code>.</li>
+  <li><code>services/catalog.py</code> : remplir le champ dans <code>_to_detail</code>.</li>
+  <li>Test pytest qui vérifie la présence du champ.</li>
+  <li>API lancée → <code>cd web &amp;&amp; pnpm gen:types</code> : le type TypeScript est régénéré.</li>
+  <li>Le front utilise <code>finding.limits</code> — TypeScript signale toute erreur.</li>
+</ol>
+
+<h2>5. Qualité avant chaque merge</h2>
+<pre>cd backend
+uv run ruff check . &amp;&amp; uv run ruff format --check .    <span class="c"># style et erreurs</span>
+uv run pytest -q                                       <span class="c"># 15 tests aujourd'hui</span>
+cd ../web &amp;&amp; pnpm lint &amp;&amp; pnpm typecheck &amp;&amp; pnpm build</pre>
+<ul>
+  <li>Branches : <code>main</code> protégée, une branche <code>feat/&lt;nom&gt;</code> par personne, merge à chaque jalon.</li>
+  <li>Commits conventionnels : <code>feat:</code>, <code>fix:</code>, <code>chore:</code>, <code>docs:</code>.</li>
+  <li>Jamais de clé API ni de PDF dans Git.</li>
+</ul>
+
+<h2>6. Pièges déjà rencontrés</h2>
+<ul>
+  <li><strong>Port déjà utilisé</strong> : changer <code>POSTGRES_PORT</code> et <code>DATABASE_URL</code> dans <code>.env</code>.</li>
+  <li><strong>Changer <code>EMBEDDING_DIM</code></strong> après la migration → recréer la base (<code>docker compose down -v</code>).</li>
+  <li><strong>uv introuvable</strong> : il est installé dans <code>%APPDATA%\Python\Python314\Scripts</code> ; l'ajouter au PATH.</li>
+  <li><strong>Réseau lent</strong> : les installations pnpm/uv peuvent prendre 15 min ; les lancer à l'avance.</li>
+</ul>
+
+<h2>7. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">FastAPI</span>Tutoriel officiel — <a href="https://fastapi.tiangolo.com/tutorial/">fastapi.tiangolo.com/tutorial</a></li>
+  <li><span class="tag">Pydantic</span>Documentation v2 — <a href="https://docs.pydantic.dev/">docs.pydantic.dev</a></li>
+  <li><span class="tag">SQLAlchemy</span>Tutoriel unifié 2.0 — <a href="https://docs.sqlalchemy.org/en/20/tutorial/">docs.sqlalchemy.org/en/20/tutorial</a></li>
+  <li><span class="tag">Alembic</span>Tutoriel — <a href="https://alembic.sqlalchemy.org/en/latest/tutorial.html">alembic.sqlalchemy.org/en/latest/tutorial.html</a></li>
+  <li><span class="tag">uv</span>Guide — <a href="https://docs.astral.sh/uv/">docs.astral.sh/uv</a></li>
+  <li><span class="tag">Projet</span><code>README.md</code> (démarrage rapide), <code>PROJECT_SPEC.md</code> (§4 schéma, §5 API)</li>
+</ul>
+</body></html>
