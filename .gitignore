@@ -1,0 +1,34 @@
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Data (keep READMEs and the hand-made FLEX table)
+data/ntrs/*
+!data/ntrs/README.md
+data/psi/*
+!data/psi/README.md
+*.pdf
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/

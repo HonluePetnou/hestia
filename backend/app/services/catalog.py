@@ -1,0 +1,76 @@
+"""Loads experiments from the database, falling back to mock data.
+
+The dataset is small (5 experiments, a few hundred runs), so filtering is done
+in Python on top of a single eager-loaded query.
+"""
+
+import logging
+
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session, selectinload
+
+from app import mock_data
+from app.models import Experiment, Finding, FindingSource
+from app.schemas import ExperimentDetail, FindingOut, SourceRef, TestRunOut
+
+log = logging.getLogger(__name__)
+
+
+def _to_detail(e: Experiment) -> ExperimentDetail:
+    findings = [
+        FindingOut(
+            id=f.id,
+            experiment_code=e.code,
+            statement=f.statement,
+            relevance_moon=f.relevance_moon,
+            relevance_mars=f.relevance_mars,
+            confidence=f.confidence,
+            sources=[
+                SourceRef(
+                    ntrs_id=s.document.ntrs_id,
+                    title=s.document.title,
+                    page=s.page,
+                    url=s.document.url or "",
+                )
+                for s in f.sources
+            ],
+        )
+        for f in e.findings
+    ]
+    return ExperimentDetail(
+        code=e.code,
+        name=e.name,
+        platform=e.platform,
+        description=e.description,
+        objectives=e.objectives,
+        psi_doi=e.psi_doi,
+        test_runs=[TestRunOut.model_validate(r) for r in e.test_runs],
+        test_run_count=len(e.test_runs),
+        findings=findings,
+    )
+
+
+def load_experiments(session: Session) -> list[ExperimentDetail]:
+    """All experiments with runs, findings and sources. Mock data if DB is empty/down."""
+    try:
+        rows = session.scalars(
+            select(Experiment)
+            .options(
+                selectinload(Experiment.test_runs),
+                selectinload(Experiment.findings)
+                .selectinload(Finding.sources)
+                .selectinload(FindingSource.document),
+            )
+            .order_by(Experiment.code)
+        ).all()
+        if rows:
+            return [_to_detail(e) for e in rows]
+    except SQLAlchemyError as exc:
+        log.warning("DB unavailable, serving mock data: %s", exc.__class__.__name__)
+    return mock_data.experiments()
+
+
+def get_experiment(session: Session, code: str) -> ExperimentDetail | None:
+    code = code.upper()
+    return next((e for e in load_experiments(session) if e.code.upper() == code), None)
