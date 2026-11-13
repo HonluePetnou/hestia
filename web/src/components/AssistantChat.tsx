@@ -14,16 +14,36 @@ type Msg =
   | { role: "error"; error: unknown };
 
 const CITE_SPLIT = /(\[[^\]]+?, p\.\s?\d+\])/;
-const IS_CITE = /^\[[^\]]+?, p\.\s?\d+\]$/;
+const CITE = /^\[([^\],]+?), p\.\s?(\d+)\]$/;
 
-function Answer({ text }: { text: string }) {
+function Answer({ text, citations }: { text: string; citations: Schemas["Citation"][] }) {
+  const urls = new Map(citations.map((c) => [`${c.ntrs_id}:${c.page}`, c.url]));
   return (
     <p className="t-body-m text-fg">
-      {text.split(CITE_SPLIT).map((part, i) =>
-        IS_CITE.test(part) ? <span key={i} className="font-mono text-[13px] font-medium text-ember">{part}</span> : <span key={i}>{part}</span>,
-      )}
+      {text.split(CITE_SPLIT).map((part, i) => {
+        const m = CITE.exec(part);
+        if (!m) return <span key={i}>{part}</span>;
+        const url = urls.get(`${m[1].trim()}:${m[2]}`);
+        const cls = "font-mono text-[13px] font-medium text-ember";
+        return url ? (
+          <a key={i} href={url} target="_blank" rel="noreferrer" className={cx(cls, "underline-offset-2 hover:underline")}>{part}</a>
+        ) : (
+          <span key={i} className={cls}>{part}</span>
+        );
+      })}
     </p>
   );
+}
+
+const PROVIDER_LABEL: Record<string, string> = { gemini: "Gemini", openai: "OpenAI", anthropic: "Claude", mock: "Mock (no LLM)" };
+
+/** Previous turns sent with each question so follow-ups ("and on Mars?") keep context. */
+function toHistory(messages: Msg[]): Schemas["ChatMessage"][] {
+  return messages
+    .flatMap((m): Schemas["ChatMessage"][] =>
+      m.role === "user" ? [{ role: "user", content: m.text }] : m.role === "ai" ? [{ role: "assistant", content: m.res.answer }] : [],
+    )
+    .slice(-6);
 }
 
 export function AssistantChat() {
@@ -31,6 +51,7 @@ export function AssistantChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
+  const [stats, setStats] = useState<Schemas["StatsResponse"]>();
   const asked = useRef(false);
   const end = useRef<HTMLDivElement>(null);
 
@@ -39,10 +60,11 @@ export function AssistantChat() {
     if (q.length < 3 || pending) return;
     setInput("");
     setPending(true);
+    const history = toHistory(messages);
     setMessages((m) => [...m, { role: "user", text: q }]);
     const t0 = performance.now();
     try {
-      const res = await api.ask(q);
+      const res = await api.ask(q, history);
       setMessages((m) => [...m, { role: "ai", res, ms: performance.now() - t0 }]);
     } catch (error) {
       setMessages((m) => [...m, { role: "error", error }]);
@@ -51,6 +73,9 @@ export function AssistantChat() {
     }
   }
 
+  useEffect(() => {
+    api.stats().then(setStats, () => undefined);
+  }, []);
   useEffect(() => {
     const q = params.get("q");
     if (q && !asked.current) { asked.current = true; void ask(q); }
@@ -70,10 +95,10 @@ export function AssistantChat() {
       <div className="flex min-h-[640px] flex-col gap-5">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-2.5">
-            <Badge tone="success" className="self-start">Grounded in 37 NASA reports</Badge>
+            <Badge tone="success" className="self-start">Grounded in {stats?.documents ?? "…"} NASA reports</Badge>
             <h1 className="t-display-l">Ask Hestia</h1>
           </div>
-          <Badge>Model · provider-agnostic</Badge>
+          <Badge tone={stats?.llm_provider === "mock" ? "warning" : undefined}>Model · {stats ? (PROVIDER_LABEL[stats.llm_provider] ?? stats.llm_provider) : "…"}</Badge>
         </div>
 
         <div className="flex flex-1 flex-col gap-[18px]" aria-live="polite">
@@ -104,7 +129,7 @@ export function AssistantChat() {
                         <span className="t-mono-s text-fg-3">{m.res.citations.length} sources · {(m.ms / 1000).toFixed(1)} s</span>
                       </div>
                       {m.res.insufficient_data && <Badge tone="warning" className="self-start">Insufficient data</Badge>}
-                      <Answer text={m.res.answer} />
+                      <Answer text={m.res.answer} citations={m.res.citations} />
                     </>
                   )}
                 </div>
@@ -150,7 +175,7 @@ export function AssistantChat() {
             </div>
             <p className="text-[15px] font-medium leading-snug">{s.title}</p>
             <a href={s.url} target="_blank" rel="noreferrer" className="t-caps-s flex items-center gap-1.5 text-ember hover:text-ember-soft">
-              Open on ntrs.nasa.gov <ArrowUpRight aria-hidden size={12} />
+              Open PDF at p.{s.page} <ArrowUpRight aria-hidden size={12} />
             </a>
           </article>
         ))}

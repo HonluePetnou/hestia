@@ -20,8 +20,8 @@ export function BurnRateChart({ points }: { points: Point[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 6, right: 10, bottom: 0, left: -18 }}>
           <CartesianGrid vertical={false} stroke={C.grid} />
-          <XAxis type="number" dataKey="o2" unit="%" domain={[15, 40]} tick={tick} tickLine={false} axisLine={false} />
-          <YAxis type="number" dataKey="k" domain={[0.4, 1]} tick={tick} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(2)} />
+          <XAxis type="number" dataKey="o2" unit="%" domain={[10, 40]} tick={tick} tickLine={false} axisLine={false} />
+          <YAxis type="number" dataKey="k" domain={[0, "auto"]} tick={tick} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(2)} />
           <ZAxis range={[80, 80]} />
           <Tooltip
             cursor={{ stroke: C.strong }}
@@ -29,7 +29,7 @@ export function BurnRateChart({ points }: { points: Point[] }) {
             itemStyle={{ color: "#E6E8EE" }}
             formatter={(v, name) => [String(v), name === "o2" ? "O₂ %" : "K (mm²/s)"]}
           />
-          <Scatter name="Complete burn" data={burn} fill={C.ember} />
+          <Scatter name="Burned / disrupted" data={burn} fill={C.ember} />
           <Scatter name="Extinction" data={ext} fill="none" stroke={C.data} strokeWidth={1.5} />
         </ScatterChart>
       </ResponsiveContainer>

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { BurnRateChart } from "@/components/BurnRateChart";
 import { Badge, Bar, Button, Card, CardHeader, Citation, ErrorBox, Loading, type Tone } from "@/components/ui";
-import { api, attempt, type Outcome } from "@/lib/api";
+import { api, attempt, type Outcome, type Schemas } from "@/lib/api";
 import { metaFor, shortPlatform } from "@/lib/content";
 
 const OUTCOME_TONE: Record<Outcome, Tone> = {
@@ -11,6 +11,21 @@ const OUTCOME_TONE: Record<Outcome, Tone> = {
 };
 const outcomeLabel = (o: Outcome) => o.replace("_", " ");
 const fmt = (v: number | null | undefined, digits = 2) => (v == null ? "—" : v.toFixed(digits));
+const VISIBLE_RUNS = 25;
+
+function RunRow({ r, highlight }: { r: Schemas["TestRunOut"]; highlight?: boolean }) {
+  return (
+    <tr className={highlight ? "bg-raised" : undefined}>
+      <td className="rounded-l-sm px-2.5 py-2 text-fg-2">{r.run_label ?? "—"}</td>
+      <td className="px-2.5 py-2">{r.fuel ?? "—"}</td>
+      <td className="px-2.5 py-2">{r.oxygen_percent != null ? `${r.oxygen_percent}%` : "—"}</td>
+      <td className="px-2.5 py-2">{fmt(r.pressure_kpa, 1)}</td>
+      <td className="px-2.5 py-2">{fmt(r.initial_diameter_mm)}</td>
+      <td className="px-2.5 py-2"><Badge tone={OUTCOME_TONE[r.outcome ?? "unknown"]}>{outcomeLabel(r.outcome ?? "unknown")}</Badge></td>
+      <td className="rounded-r-sm px-2.5 py-2">{fmt(r.burn_rate_k)}</td>
+    </tr>
+  );
+}
 
 async function Detail({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
@@ -18,7 +33,10 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
   if (!e) return <ErrorBox error={error} />;
   const meta = metaFor(e.code);
   const objectives = (e.objectives ?? "").split(/\n|(?<=\.)\s+/).map((s) => s.trim()).filter(Boolean);
-  const points = (e.test_runs ?? [])
+  const runs = e.test_runs ?? [];
+  const firstSource = runs.find((r) => typeof r.extra?.source === "string")?.extra?.source;
+  const sourceNote = typeof firstSource === "string" ? firstSource.replace(/, p\.\d+$/, "") : null;
+  const points = runs
     .filter((r) => r.oxygen_percent != null && r.burn_rate_k != null)
     .map((r) => ({ o2: r.oxygen_percent!, k: r.burn_rate_k!, outcome: r.outcome ?? "unknown", label: r.run_label ?? "" }));
 
@@ -37,6 +55,7 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
             {e.platform && <Badge>{shortPlatform(e.platform)}</Badge>}
             <Badge tone="accent">{meta.tagline}</Badge>
             <Badge tone="data">Microgravity</Badge>
+            {e.years && <Badge>{e.years}</Badge>}
             {e.psi_doi && <Badge>DOI {e.psi_doi}</Badge>}
           </div>
         </div>
@@ -49,7 +68,8 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
       <div className="grid gap-4 xl:grid-cols-[500px_1fr]">
         <div className="flex flex-col gap-4">
           <Card>
-            <CardHeader title="About" meta="PSI" />
+            <CardHeader title="About" meta={e.fuels ? "Fuels" : ""} />
+            {e.fuels && <p className="t-mono-s normal-case text-fg-2">{e.fuels}</p>}
             <p className="t-body-m text-fg-2">{e.description}</p>
             {objectives.length > 0 && (
               <ul className="flex flex-col gap-2">
@@ -83,7 +103,7 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
           <Card>
             <CardHeader title="Burning rate K vs oxygen" meta={`${points.length} runs`} />
             <div className="flex gap-4">
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-ember" /><span className="t-caps-s text-fg-2">Complete burn</span></span>
+              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-ember" /><span className="t-caps-s text-fg-2">Burned / disrupted</span></span>
               <span className="flex items-center gap-1.5"><span className="size-2 rounded-full border-[1.5px] border-data" /><span className="t-caps-s text-fg-2">Extinction</span></span>
             </div>
             <BurnRateChart points={points} />
@@ -98,20 +118,23 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
                   </tr>
                 </thead>
                 <tbody className="t-mono-m">
-                  {(e.test_runs ?? []).map((r, i) => (
-                    <tr key={`${r.run_label}-${i}`} className={i === 0 ? "bg-raised" : undefined}>
-                      <td className="rounded-l-sm px-2.5 py-2 text-fg-2">{r.run_label ?? "—"}</td>
-                      <td className="px-2.5 py-2">{r.fuel ?? "—"}</td>
-                      <td className="px-2.5 py-2">{r.oxygen_percent != null ? `${r.oxygen_percent}%` : "—"}</td>
-                      <td className="px-2.5 py-2">{fmt(r.pressure_kpa, 1)}</td>
-                      <td className="px-2.5 py-2">{fmt(r.initial_diameter_mm)}</td>
-                      <td className="px-2.5 py-2"><Badge tone={OUTCOME_TONE[r.outcome ?? "unknown"]}>{outcomeLabel(r.outcome ?? "unknown")}</Badge></td>
-                      <td className="rounded-r-sm px-2.5 py-2">{fmt(r.burn_rate_k)}</td>
-                    </tr>
-                  ))}
+                  {runs.slice(0, VISIBLE_RUNS).map((r, i) => <RunRow key={`${r.run_label}-${i}`} r={r} highlight={i === 0} />)}
                 </tbody>
               </table>
+              {runs.length > VISIBLE_RUNS && (
+                <details className="group">
+                  <summary className="t-caps-s cursor-pointer list-none px-2.5 py-2 text-ember hover:text-ember-soft group-open:hidden">
+                    Show all {runs.length} runs
+                  </summary>
+                  <table className="w-full min-w-[640px] border-separate border-spacing-y-1 text-left">
+                    <tbody className="t-mono-m">
+                      {runs.slice(VISIBLE_RUNS).map((r, i) => <RunRow key={`${r.run_label}-more-${i}`} r={r} />)}
+                    </tbody>
+                  </table>
+                </details>
+              )}
             </div>
+            {sourceNote && <p className="t-caps-s text-fg-3">Source · {sourceNote}</p>}
           </Card>
         </div>
       </div>

@@ -1,7 +1,6 @@
 /**
- * Static content shown in the UI that the API does not provide yet.
- * Items marked SAMPLE are placeholders from the Figma mockups — replace them
- * with real values (from the pipeline / API) during the hackathon.
+ * Static UI content: visual identity per experiment, planetary facts and prompt
+ * suggestions. Everything data-related (counts, findings, comparisons) comes from the API.
  */
 
 /** Visual identity per experiment (art strip colors) + short descriptors. */
@@ -15,16 +14,7 @@ export const EXPERIMENT_META: Record<string, { art: [string, string]; tagline: s
 export const metaFor = (code: string) =>
   EXPERIMENT_META[code.toUpperCase()] ?? { art: ["#FF7A30", "#3A3F4D"] as [string, string], tagline: "Combustion", fuels: "—", years: "—" };
 
-/** Knowledge-base numbers from the Phase 1 pipeline run (make fetch / make extract). */
-export const CORPUS = { reports: 37, indexed: 36, flagged: 1, flexTests: "170+" };
 
-/** SAMPLE: approximate first-flight years — verify against NTRS before the demo. */
-export const TIMELINE = [
-  { code: "FLEX", desc: "Droplet extinction", year: "2009", state: "done" },
-  { code: "BASS", desc: "Solids burning", year: "2011", state: "done" },
-  { code: "SAFFIRE", desc: "Spacecraft fire", year: "2016", state: "active" },
-  { code: "ACME", desc: "Gaseous flames", year: "2017", state: "next" },
-] as const;
 
 /** Facts for the Relevance target panel (well-established values). */
 export const TARGETS = {
@@ -48,12 +38,6 @@ export const TARGETS = {
   },
 } as const;
 
-/** SAMPLE: AI "key differences" for the Compare screen until /ask can generate them. */
-export const COMPARE_POINTS = [
-  { text: "Only SAFFIRE burned large samples, closest to a real cabin fire.", ntrsId: "20170000230", page: 3 },
-  { text: "FLEX isolates fuel chemistry: no flow, no wall, pure droplet physics.", ntrsId: "20150023456", page: 12 },
-  { text: "BASS adds forced flow, which strongly changes whether solids keep burning.", ntrsId: "20160000593", page: 5 },
-];
 
 export const ASSISTANT_SUGGESTIONS = [
   "How does flame spread change at lunar gravity?",
