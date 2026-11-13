@@ -13,7 +13,7 @@
   {
     "code": "SAFFIRE",
     "name": "Spacecraft Fire Safety Experiment (Saffire)",
-    "platform": "Uncrewed Cygnus cargo vehicle, after departing the ISS",
+    "platform": "Cygnus cargo vehicle, uncrewed, after leaving the ISS",
     "years": "2016–2023 (Saffire I–VI)",
     "fuels": "SIBAL cotton-fiberglass, Nomex, PMMA, silicone, flight materials",
     "description": "The first large-scale fire experiments in microgravity, run inside a Cygnus cargo vehicle after it left the ISS so that a real fire could be studied without risk to crew. Samples up to about a metre long were burned in forced flow.",

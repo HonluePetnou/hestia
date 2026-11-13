@@ -89,6 +89,7 @@ def ingest_documents(
         doc.authors = [a.strip() for a in row["authors"].split(";") if a.strip()]
         doc.year = int(row["year"]) if row.get("year") else None
         doc.url = row["url"]
+        doc.pdf_url = row.get("pdf_url") or None
         doc.pdf_path = f"data/ntrs/pdf/{ntrs_id}.pdf"
         doc.text_path = f"data/ntrs/text/{ntrs_id}.jsonl"
         session.flush()

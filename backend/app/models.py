@@ -47,10 +47,17 @@ class Document(Base):
     year: Mapped[int | None] = mapped_column(Integer)
     url: Mapped[str | None] = mapped_column(Text)
     pdf_path: Mapped[str | None] = mapped_column(Text)
+    pdf_url: Mapped[str | None] = mapped_column(Text)
     text_path: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     chunks: Mapped[list["Chunk"]] = relationship(back_populates="document")
+
+    def page_url(self, page: int) -> str:
+        """Link that opens the PDF at `page`, or the NTRS record page as a fallback."""
+        if self.pdf_url:
+            return f"{self.pdf_url}#page={page}"
+        return self.url or f"https://ntrs.nasa.gov/citations/{self.ntrs_id}"
 
 
 class Chunk(Base):

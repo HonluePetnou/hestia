@@ -40,6 +40,7 @@ def estimate_tokens(text: str) -> int:
 def clean_text(text: str) -> str:
     """Undo PDF line wrapping: re-join hyphenated words and collapse whitespace."""
     text = text.replace("�", "-")  # dashes PyMuPDF could not decode
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", " ", text)  # NUL etc. (Postgres rejects NUL)
     text = re.sub(r"(\w)-\n(\w)", r"\1\2", text)
     return re.sub(r"\s+", " ", text).strip()
 

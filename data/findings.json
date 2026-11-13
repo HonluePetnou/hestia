@@ -5,7 +5,12 @@
     "relevance_moon": 0.95,
     "relevance_mars": 0.95,
     "confidence": 0.9,
-    "sources": [{"ntrs_id": "20240002981", "page": 6}]
+    "sources": [
+      {
+        "ntrs_id": "20240002981",
+        "page": 6
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -13,7 +18,16 @@
     "relevance_moon": 0.9,
     "relevance_mars": 0.95,
     "confidence": 0.85,
-    "sources": [{"ntrs_id": "20240002981", "page": 6}, {"ntrs_id": "20260001992", "page": 9}]
+    "sources": [
+      {
+        "ntrs_id": "20240002981",
+        "page": 6
+      },
+      {
+        "ntrs_id": "20260001992",
+        "page": 9
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -21,7 +35,16 @@
     "relevance_moon": 0.6,
     "relevance_mars": 0.65,
     "confidence": 0.8,
-    "sources": [{"ntrs_id": "20260001992", "page": 9}, {"ntrs_id": "20210017780", "page": 13}]
+    "sources": [
+      {
+        "ntrs_id": "20260001992",
+        "page": 9
+      },
+      {
+        "ntrs_id": "20210017780",
+        "page": 13
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -29,7 +52,16 @@
     "relevance_moon": 0.85,
     "relevance_mars": 0.85,
     "confidence": 0.8,
-    "sources": [{"ntrs_id": "20210017780", "page": 7}, {"ntrs_id": "20210017780", "page": 8}]
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 7
+      },
+      {
+        "ntrs_id": "20210017780",
+        "page": 8
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -37,7 +69,12 @@
     "relevance_moon": 0.7,
     "relevance_mars": 0.7,
     "confidence": 0.6,
-    "sources": [{"ntrs_id": "20210017780", "page": 9}]
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 9
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -45,7 +82,12 @@
     "relevance_moon": 0.9,
     "relevance_mars": 0.85,
     "confidence": 0.9,
-    "sources": [{"ntrs_id": "20210017780", "page": 5}]
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 5
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -53,7 +95,12 @@
     "relevance_moon": 0.55,
     "relevance_mars": 0.55,
     "confidence": 0.7,
-    "sources": [{"ntrs_id": "20210017780", "page": 12}]
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 12
+      }
+    ]
   },
   {
     "experiment_code": null,
@@ -61,7 +108,12 @@
     "relevance_moon": 0.85,
     "relevance_mars": 0.8,
     "confidence": 0.75,
-    "sources": [{"ntrs_id": "20200000557", "page": 20}]
+    "sources": [
+      {
+        "ntrs_id": "20200000557",
+        "page": 20
+      }
+    ]
   },
   {
     "experiment_code": null,
@@ -69,7 +121,12 @@
     "relevance_moon": 1.0,
     "relevance_mars": 1.0,
     "confidence": 0.65,
-    "sources": [{"ntrs_id": "20210017787", "page": 9}]
+    "sources": [
+      {
+        "ntrs_id": "20210017787",
+        "page": 9
+      }
+    ]
   },
   {
     "experiment_code": "BASS",
@@ -77,7 +134,12 @@
     "relevance_moon": 0.85,
     "relevance_mars": 0.8,
     "confidence": 0.85,
-    "sources": [{"ntrs_id": "20210011385", "page": 58}]
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 58
+      }
+    ]
   },
   {
     "experiment_code": "BASS",
@@ -85,7 +147,16 @@
     "relevance_moon": 0.75,
     "relevance_mars": 0.75,
     "confidence": 0.85,
-    "sources": [{"ntrs_id": "20210011385", "page": 76}, {"ntrs_id": "20160012691", "page": 8}]
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 76
+      },
+      {
+        "ntrs_id": "20160012691",
+        "page": 8
+      }
+    ]
   },
   {
     "experiment_code": "BASS",
@@ -93,7 +164,16 @@
     "relevance_moon": 0.8,
     "relevance_mars": 0.8,
     "confidence": 0.75,
-    "sources": [{"ntrs_id": "20210011385", "page": 76}, {"ntrs_id": "20210011385", "page": 77}]
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 76
+      },
+      {
+        "ntrs_id": "20210011385",
+        "page": 77
+      }
+    ]
   },
   {
     "experiment_code": "BASS",
@@ -101,7 +181,12 @@
     "relevance_moon": 0.8,
     "relevance_mars": 0.8,
     "confidence": 0.75,
-    "sources": [{"ntrs_id": "20210011385", "page": 60}]
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 60
+      }
+    ]
   },
   {
     "experiment_code": "BASS",
@@ -109,7 +194,16 @@
     "relevance_moon": 0.65,
     "relevance_mars": 0.65,
     "confidence": 0.7,
-    "sources": [{"ntrs_id": "20160012691", "page": 8}, {"ntrs_id": "20150008961", "page": 7}]
+    "sources": [
+      {
+        "ntrs_id": "20160012691",
+        "page": 8
+      },
+      {
+        "ntrs_id": "20150008961",
+        "page": 7
+      }
+    ]
   },
   {
     "experiment_code": "BASS",
@@ -117,7 +211,12 @@
     "relevance_moon": 0.7,
     "relevance_mars": 0.7,
     "confidence": 0.75,
-    "sources": [{"ntrs_id": "20150019858", "page": 9}]
+    "sources": [
+      {
+        "ntrs_id": "20150019858",
+        "page": 9
+      }
+    ]
   },
   {
     "experiment_code": null,
@@ -125,7 +224,12 @@
     "relevance_moon": 0.6,
     "relevance_mars": 0.6,
     "confidence": 0.7,
-    "sources": [{"ntrs_id": "19930015566", "page": 7}]
+    "sources": [
+      {
+        "ntrs_id": "19930015566",
+        "page": 7
+      }
+    ]
   },
   {
     "experiment_code": "FLEX",
@@ -133,7 +237,16 @@
     "relevance_moon": 0.45,
     "relevance_mars": 0.5,
     "confidence": 0.8,
-    "sources": [{"ntrs_id": "20130014061", "page": 2}, {"ntrs_id": "20130014061", "page": 5}]
+    "sources": [
+      {
+        "ntrs_id": "20130014061",
+        "page": 2
+      },
+      {
+        "ntrs_id": "20130014061",
+        "page": 5
+      }
+    ]
   },
   {
     "experiment_code": "FLEX",
@@ -141,7 +254,16 @@
     "relevance_moon": 0.55,
     "relevance_mars": 0.55,
     "confidence": 0.7,
-    "sources": [{"ntrs_id": "20150023456", "page": 83}, {"ntrs_id": "20150023456", "page": 96}]
+    "sources": [
+      {
+        "ntrs_id": "20150023456",
+        "page": 83
+      },
+      {
+        "ntrs_id": "20150023456",
+        "page": 96
+      }
+    ]
   },
   {
     "experiment_code": "SAFFIRE",
@@ -149,6 +271,37 @@
     "relevance_moon": 0.5,
     "relevance_mars": 0.55,
     "confidence": 0.7,
-    "sources": [{"ntrs_id": "20150022421", "page": 10}]
+    "sources": [
+      {
+        "ntrs_id": "20150022421",
+        "page": 10
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAME",
+    "statement": "SAME found that all five spacecraft materials tested produced large numbers of sub-micron smoke particles, readily seen by an ionization detector, but aged silicone-rubber smoke grew to sizes better detected by light scattering. Zero-flow conditions gave particles 2 to 3 times larger than at 8 cm/s.",
+    "relevance_moon": 0.8,
+    "relevance_mars": 0.85,
+    "confidence": 0.85,
+    "sources": [
+      {
+        "ntrs_id": "20130000422",
+        "page": 12
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAME",
+    "statement": "In the SAME reflight, the ISS smoke detector gave a relatively weak signal for some Teflon runs because of the small particle size, and particle shape varied widely between materials, so relying on a single-angle scattering detector will be difficult.",
+    "relevance_moon": 0.8,
+    "relevance_mars": 0.85,
+    "confidence": 0.8,
+    "sources": [
+      {
+        "ntrs_id": "20150010172",
+        "page": 32
+      }
+    ]
   }
 ]

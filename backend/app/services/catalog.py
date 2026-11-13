@@ -31,7 +31,7 @@ def _to_detail(e: Experiment) -> ExperimentDetail:
                     ntrs_id=s.document.ntrs_id,
                     title=s.document.title,
                     page=s.page,
-                    url=s.document.url or "",
+                    url=s.document.page_url(s.page),
                 )
                 for s in f.sources
             ],
@@ -77,3 +77,39 @@ def load_experiments(session: Session) -> list[ExperimentDetail]:
 def get_experiment(session: Session, code: str) -> ExperimentDetail | None:
     code = code.upper()
     return next((e for e in load_experiments(session) if e.code.upper() == code), None)
+
+
+def load_findings(session: Session) -> list[FindingOut]:
+    """Every finding, including cross-cutting ones not tied to one experiment."""
+    try:
+        rows = session.scalars(
+            select(Finding).options(
+                selectinload(Finding.experiment),
+                selectinload(Finding.sources).selectinload(FindingSource.document),
+            )
+        ).all()
+        if rows:
+            return [
+                FindingOut(
+                    id=f.id,
+                    experiment_code=f.experiment.code if f.experiment else None,
+                    statement=f.statement,
+                    relevance_moon=f.relevance_moon,
+                    relevance_mars=f.relevance_mars,
+                    confidence=f.confidence,
+                    sources=[
+                        SourceRef(
+                            ntrs_id=s.document.ntrs_id,
+                            title=s.document.title,
+                            page=s.page,
+                            url=s.document.page_url(s.page),
+                        )
+                        for s in f.sources
+                    ],
+                )
+                for f in rows
+            ]
+    except SQLAlchemyError as exc:
+        log.warning("DB unavailable, serving mock findings: %s", exc.__class__.__name__)
+        session.rollback()
+    return [f for e in load_experiments(session) for f in e.findings]

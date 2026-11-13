@@ -13,9 +13,10 @@ don't contain the answer, Hestia says so.
 Built by **black-vortex** (Douala, Cameroon) for the NASA Space Apps Challenge 2026,
 challenge *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data*.
 
-> **Status: Phase 1 (foundation).** Infrastructure, scaffolding and data tooling only. The API
-> returns placeholder data marked `[MOCK]`. Product logic is built during the hackathon. The full
-> brief is in [PROJECT_SPEC.md](PROJECT_SPEC.md).
+> **Status: Phase 2 (product).** Real data end to end: 55 NTRS reports indexed for retrieval,
+> 276 FLEX droplet tests, 21 curated findings with verified page citations, and a model trained
+> on FLEX. Grounded answers need an LLM key (Gemini recommended); without one the assistant
+> quotes the top passages verbatim. The original brief is in [PROJECT_SPEC.md](PROJECT_SPEC.md).
 
 ## Architecture
 
@@ -49,14 +50,19 @@ Prerequisites: Docker, [uv](https://docs.astral.sh/uv/), Node 24+ with pnpm, and
 (on Windows: `winget install ezwinports.make`, then use Git Bash).
 
 ```bash
-cp .env.example .env
+cp .env.example .env    # then set LLM_PROVIDER=gemini and GEMINI_API_KEY
 make install           # uv sync + pnpm install
-make up migrate seed   # Postgres + pgvector, tables, mock rows
+make up migrate        # Postgres + pgvector, tables
+make fetch extract     # NTRS catalog + PDFs + per-page text (~10 min)
+make ingest            # chunk + embed documents, load experiments, FLEX runs, findings
 make api               # terminal 1 → http://localhost:8000/docs
 make web               # terminal 2 → http://localhost:3000
 ```
 
-Everything runs with `LLM_PROVIDER=mock`, with no API key needed.
+Everything also runs with `LLM_PROVIDER=mock` and no key: search falls back to keyword
+matching and the assistant returns extractive answers. After adding a key, re-embed with
+`make ingest ARGS=--force` (embeddings from different providers are not comparable).
+`make seed` still inserts placeholder rows if you only want to see the UI.
 
 ### Other commands
 
@@ -64,25 +70,43 @@ Everything runs with `LLM_PROVIDER=mock`, with no API key needed.
 |---|---|
 | `make fetch` | Download the NTRS catalog + PDFs into `data/ntrs/` |
 | `make extract` | Per-page text + `extraction_report.csv` |
+| `make flex` | Re-parse FLEX Table IX into `data/flex/flex_table_ix.csv` |
+| `make ingest` | Load documents (chunk + embed), experiments, findings (`ARGS=--force` re-embeds) |
 | `make lint` | ruff + eslint + tsc |
 | `make test` | Backend tests |
 | `make types` | Regenerate `web/src/lib/api-types.ts` (API must be running) |
 | `make down` | Stop Postgres |
 
-## API (Phase 1: mock data)
+## API
 
 | Method | Route | Purpose |
 |---|---|---|
 | GET | `/health` | `{status, db}` with a real DB check |
+| GET | `/stats` | Knowledge-base counts for the overview |
 | GET | `/experiments` | List; filters `fuel`, `gravity`, `outcome`, `o2_min`, `o2_max` |
 | GET | `/experiments/{code}` | Detail + test runs + findings + sources |
 | GET | `/compare?codes=A,B` | Side-by-side comparison |
-| GET | `/ranking?target=moon\|mars` | Findings ranked by relevance |
-| POST | `/ask` | `{question}` → `{answer, citations, insufficient_data}` |
-| POST | `/predict` | `{fuel, oxygen_percent, pressure_kpa, initial_diameter_mm}` → `{burn_rate_k, extinction_probability}` |
+| GET | `/compare/insights?codes=A,B` | Key differences with verified citations (LLM, cached) |
+| GET | `/ranking?target=moon\|mars` | Findings ranked by relevance × confidence |
+| POST | `/ask` | `{question, history?}` → `{answer, citations, insufficient_data}` |
+| POST | `/predict` | `{fuel, oxygen_percent, pressure_kpa, initial_diameter_mm, co2_percent?, he_percent?}` → `{burn_rate_k, extinction_probability, droplet_lifetime_s, in_training_range}` |
+| GET | `/predict/model` | Training size, cross-validated metrics, valid input ranges |
 
-Experiment routes read from the database and fall back to built-in mock data if it is empty or
-unreachable.
+### How answers stay grounded
+
+1. **Hybrid retrieval**: pgvector cosine similarity + Postgres full-text search, merged with
+   reciprocal rank fusion. Chunks never cross a page, so every passage has an exact page.
+2. **Generation**: the LLM sees only the retrieved passages and must cite `[NTRS-ID, p.X]`.
+3. **Verification**: every citation is checked against the retrieved (document, page) pairs;
+   anything else is removed. No relevant passage, or no surviving citation, means
+   `insufficient_data: true`.
+
+### The FLEX model
+
+Trained at startup on `data/flex/flex_table_ix.csv`: ridge regression for the burning-rate
+constant K (5-fold CV R² ≈ 0.70, MAE ≈ 0.05 mm²/s) and a degree-2 logistic regression for
+extinction vs. complete burn (CV AUC ≈ 0.89). Inputs outside the tested ranges are flagged as
+extrapolation. It describes ISS microgravity only.
 
 ## Repository layout
 

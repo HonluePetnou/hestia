@@ -60,24 +60,42 @@ PSI (<https://psi.nasa.gov>) has no documented public API. Download by hand:
 
 ---
 
-## 3. FLEX Table IX (manual transcription)
+## 3. FLEX Table IX (extracted automatically)
 
-Source: *NASA/TP-2015-216046*, Table IX: FLEX droplet combustion test results (~170 tests).
-Find it on NTRS by searching for the report number.
+Source: *NASA/TP-2015-216046*, Table IX, "Results by test number and FLEX identifier"
+(NTRS [20150023456](https://ntrs.nasa.gov/citations/20150023456), PDF pages 26–34). The report is
+part of the NTRS corpus, so the table is parsed from its extracted text:
 
-Transcribe it into `flex/flex_table_ix.csv` (the header is already there):
+```bash
+cd backend && uv run python -m pipeline.flex_table   # after make fetch && make extract
+```
+
+276 of the 280 tests parse cleanly (rows that don't are logged and skipped, never guessed). The
+result, `flex/flex_table_ix.csv`, is committed. Spot-check a few rows against the PDF if you change
+the parser.
 
 | Column | Unit / values |
 |---|---|
-| `test_id` | test identifier as printed |
-| `fuel` | e.g. `n-heptane`, `methanol`, `n-decane` |
-| `pressure_atm` | atm |
-| `o2_mole_fraction` | 0–1 |
-| `co2_mole_fraction` | 0–1 |
-| `n2_mole_fraction` | 0–1 |
+| `test_id` | `FLEX-001` … |
+| `fuel` | `n-heptane` or `methanol` |
+| `pressure_atm` | atm (converted from mmHg) |
+| `o2_mole_fraction`, `co2_mole_fraction`, `n2_mole_fraction`, `he_mole_fraction` | 0–1 |
 | `initial_diameter_mm` | mm |
-| `outcome` | `extinction`, `disruption`, `complete_burn` or `unknown` |
-| `burn_rate_k_mm2_s` | burning-rate constant K, mm²/s (leave empty if not reported) |
+| `extinction_diameter_mm` | mm, empty when the flame did not extinguish or it was not measured |
+| `outcome` | `extinction`, `disruption` or `complete_burn` |
+| `burn_rate_k_mm2_s` | burning-rate constant K, mm²/s (empty if not reported) |
+| `burn_time_s` | s |
+| `test_date` | as printed (M/D/YY) |
+| `source_page` | PDF page the row was read from |
 
-Tips: split the table between two people and cross-check 10 random rows. Keep units exactly as
-listed above; convert if the table uses other units.
+---
+
+## 4. Curated catalog and findings
+
+- `experiments.json`: the five investigations (name, platform, years, fuels, description,
+  objectives) plus documented test conditions (Saffire IV/V test matrix). FLEX runs come from the
+  CSV above.
+- `findings.json`: key findings, each with its NTRS sources (`ntrs_id` + PDF page). Every page
+  was checked against the extracted text. `relevance_moon`, `relevance_mars` and `confidence` are
+  team judgements (0–1) used by `/ranking`. Add findings here, then run
+  `uv run python -m pipeline.ingest --only findings`.

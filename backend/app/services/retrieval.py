@@ -55,7 +55,7 @@ def _rows_to_chunks(rows, score_of) -> list[RetrievedChunk]:
             title=doc.title,
             page=chunk.page,
             content=chunk.content,
-            url=doc.url or f"https://ntrs.nasa.gov/citations/{doc.ntrs_id}",
+            url=doc.page_url(chunk.page),
             score=score_of(metric),
         )
         for chunk, doc, metric in rows
