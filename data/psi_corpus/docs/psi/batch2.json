@@ -1,0 +1,751 @@
+[
+ {
+  "psi_id": "PSI-39",
+  "acronym": "CFI",
+  "title": "Cool Flames Investigation (CFI)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-39",
+  "doi": "10.60555/m6pj-a914",
+  "dataset_size": "669.52 GB",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Droplets",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS)",
+  "start_date": "2020-10-01",
+  "end_date": "2021-10-20",
+  "related": [
+   "PSI-69"
+  ],
+  "hardware": [
+   "Combustion Integrated Rack (CIR)",
+   "Multi-User Droplet Combustion Apparatus (MDCA)"
+  ],
+  "fuel_category": "liquid droplets",
+  "fuels": [
+   "n-dodecane",
+   "n-dodecane/iso-dodecane mixtures",
+   "farnesane"
+  ],
+  "key_conditions": {
+   "pressure_atm": "0.25-5 (objectives); sample rows at 1 atm",
+   "diluents": [
+    "nitrogen",
+    "helium"
+   ],
+   "oxygen_sample_rows": 0.21
+  },
+  "objectives": "1) Examine the combustion behavior of n-dodecane and mixtures of n-dodecane/iso-dodecane at pressures ranging from 0.25 atm to 5 atm. 2) Analyze the effects of helium dilution on cool flame behavior. 3) Examine the behavior of combustion characteristics. 4) Investigate the relationship between droplet size, pressure, and flame extinction, and (5) understand the consequence of soot formation during cool flame combustion.",
+  "approach": "The Combustion Integrated Rack (CIR) contains the Multi-User Droplet Combustion Apparatus (MDCA) which facilitates the controlled combustion of fuel droplets. A system of gas bottles and fuel syringes delivers the desired gas mixture to the combustion chamber. Droplets of fuel are dispensed and suspended between hypodermic needles or tethered using silicon-carbide fibers. A hot-wire igniter is positioned near the droplet for ignition. After ignition the wire is retracted. Fuels observed include n-dodecane, farnesane, and mixtures of n-dodecane/iso-dodecane. Fuels diluted with oxygen, nitrogen, and helium to study the influence on flame extinction and dynamics. Flames were observed with a black-and-white camera for droplet size measurements. A UV camera was used for capturing the OH* radical emissions and flame size. Other high resolution cameras were used for monitoring and documentation. Narrow-band and wide-band radiometers analyzed flame radiation.",
+  "hypothesis": "Flame combustion of liquid hydrocarbon fuels such as n-dodecane, n-dodecane/iso-dodecane mixtures, and farnesane in microgravity can provide insights into low-temperature chemical kinetics, revealing critical parameters like droplet extinction diameters and flame dynamics that are not observable on Earth.",
+  "impacts": "A basic understanding of cool flames is important for understanding ignition phenomena of practical fuels and fuel additives. Cool flames play a key role in the development and selection of new fuels and the design of advanced engines such as clean, high-efficiency Homogeneous Charge Compression Ignition (HCCI) engines. The research will also help combustion chemists develop new computational models, including an understanding of how cool flame reactivity determines octane and cetane number for fuels in spark ignition and diesel engines. CFI will provide critical validation for complex chemical kinetic mechanisms, advance the understanding of flame dynamics and instabilities in low-temperature combustion, and support the design of safer spacecraft systems by refining knowledge of combustion in microgravity environments.",
+  "contacts": [
+   "Forman Williams (PI, UC San Diego)",
+   "Frederick Dryer (Co-I, Princeton)",
+   "Tanvir Farouk (Co-I, University of South Carolina)",
+   "Vedha Nayagam (Co-I, Case Western)",
+   "Daniel Dietrich (Project Scientist, NASA GRC)"
+  ],
+  "experimental_table": {
+   "columns": [
+    "Flex Number",
+    "Test Date",
+    "Local Time",
+    "CIR",
+    "Pressure",
+    "Oxygen",
+    "Nitrogen",
+    "Helium",
+    "Fiber",
+    "Fuel"
+   ],
+   "sample_rows": [
+    "1206 | 9-Mar-17 | 1 atm | O2 0.21 | N2 0.79 | He 0 | Fiber No | C12H26",
+    "1207 | 9-Mar-17 | 1 atm | 0.21 | 0.79 | 0 | Fiber Yes | C12H26"
+   ]
+  }
+ },
+ {
+  "psi_id": "PSI-20",
+  "acronym": "ACME BRE",
+  "title": "Advanced Combustion via Microgravity Experiments - Burning Rate Emulator (ACME BRE)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-20",
+  "doi": "10.60555/vb93-3y72",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Flames of Gaseous Fuels",
+  "project_type": "Microgravity Investigation",
+  "proposal_title": "Experimental Investigation of Emulated Burning Rate at Various Gravity Levels",
+  "platform": "International Space Station (ISS)",
+  "start_date": "2010-01-01",
+  "related": [],
+  "hardware": [
+   "Combustion Integrated Rack (CIR)",
+   "ACME"
+  ],
+  "fuel_category": "gaseous (emulating condensed/solid fuels)",
+  "fuels": [
+   "CH4/N2",
+   "C2H4/N2 (100% and 50% C2H4 bottles)"
+  ],
+  "key_conditions": {
+   "burner_diameter_mm": [
+    25,
+    50
+   ],
+   "atmospheres": [
+    "14.7 psia / 21% O2",
+    "10.2 psia / 26.5% O2",
+    "8.2 psia / 34% O2",
+    "up to 40% O2 in table"
+   ],
+   "ambient_flow": "quiescent (no forced air flow)"
+  },
+  "objectives": "The BRE flight program seeks to establish the burning conditions in a quiescent microgravity ambient in terms of material properties. 1. Observe burning behavior in long-duration microgravity for CH4/N2 and C2H4/N2 mixtures on porous circular burners of 25 and 50 mm diameter. Consider O2/N2 ambients with various pressures and ambient O2 concentrations. NASA-considered atmospheres for human space missions will be examined: 14.7 psia, 21% oxygen; 10.2 psia, 26.5%; and 8.2 psia, 34% oxygen. Emphasize fuel conditions that can be related to a diverse range of condensed fuels. 2. Consider the conditions of Objective 1 for ambients of O2/CO2 (desired).",
+  "approach": "For each test, conditions are established for the chamber contents (diluent, oxygen concentration, pressure). Fuel flow commences followed by ignition. Flames are initially observed without varying the fuel flow rate; because burner surface temperature and heat flux vary, a broad range of conditions is observed in a single test. As the burner surface temperature increases and the flame remains steady, a continuous set of data is produced for the flammability map. Eventually either the flame extinguishes, the burner surface temperature equilibrates, or the heat flux sensor limit is reached, and fuel flow is terminated. The extinction limit can be found once burner temperature has steadied by reducing flow in small increments until extinction. Ignition limit tests are explored in normal gravity, not microgravity. Normal-gravity tests with gaseous, liquid and solid fuels validate the BRE for 1-g applications; drop facilities refine procedures; a CFD model of quiescent microgravity burning is pursued as a predictive methodology.",
+  "hypothesis": "There can exist a regime of quasi-steady burning in microgravity as a function of materials properties; steady burning may never be achieved, and only slowly changing unsteady flames may be possible. BRE can determine a range of burning conditions in microgravity as a function of heat of gasification, reradiation heat flux, applied radiant heat flux, heat of combustion and smoke point. This could enable the Cone Calorimeter (NASA Test 2) as a basis for establishing flammability maps for real materials. Key hypothesis: the heat of combustion, smoke point, and heat of gasification of the fuel mixture will represent a real solid fuel (or liquid fuel absorbed in an inert matrix), so achieved steady burning would represent the potential for real solid fuels to burn steadily in microgravity. Other than a candle flame, this has not been shown before.",
+  "impacts": "BRE yielded important data relevant to spacecraft fire safety. Quasi-steady burning corresponding to various condensed-phase materials (such as PMMA and Nylon) was observed in microgravity despite the absence of air flow, where the cessation of ventilation is an established step in putting out spacecraft fires. The ongoing combustion without air flow was notably seen in elevated-oxygen atmospheres which are being considered for use in future spacecraft, whereas such flames in a normal atmosphere of 21% oxygen self-extinguished in a short time. While BRE's results are still preliminary, they suggest that NASA may want to increase use of its alternative flammability Test 2, with the cone calorimeter, where that test can measure material properties corresponding to the microgravity flames observed with the BRE burner.",
+  "contacts": [
+   "James G. Quintiere (PI, University of Maryland)",
+   "John L. de Ris (Co-I)",
+   "Peter Sunderland (Project Scientist, University of Maryland)",
+   "Dennis Stocker (Project Scientist, NASA GRC)"
+  ],
+  "experimental_table": {
+   "rows": 19,
+   "columns": [
+    "Year",
+    "Month",
+    "Date",
+    "Burner Size (mm)",
+    "Fuel Bottle",
+    "Oxygen Conc (percent)",
+    "Flames Ignited",
+    "Notes"
+   ],
+   "sample_rows": [
+    "2019 Feb 8 | 25 mm | 100% C2H4 | O2 21; 26.5; 40 | 10 flames",
+    "2019 Feb 20 | 25 mm | 100% C2H4 | O2 26.5; 34 | 8",
+    "2019 Feb 25 | 25 mm | 50% C2H4 | O2 21; 26.5; 34; 40 | 8"
+   ]
+  },
+  "publications_partial": [
+   "A Burning Rate Emulator (BRE) for study of condensed fuel burning in microgravity doi:10.1016/j.combustflame.2018.01.044",
+   "Burning in microgravity: Experimental results and analysis doi:10.1016/j.combustflame.2021.01.035",
+   "Flammability maps for microgravity burning of a small flat material in a quiescent ambient doi:10.1016/j.combustflame.2023.112809",
+   "Demonstrating steady burning for small flat materials in microgravity in a quiescent ambient doi:10.1016/j.proci.2022.08.107",
+   "Theoretical analysis and predictions of burning in microgravity using a burning emulator doi:10.1016/j.combustflame.2021.111572",
+   "Transient dynamics of radiative extinction in low-momentum microgravity diffusion flames doi:10.1016/j.proci.2020.06.110",
+   "Analysis of extinction and sustained ignition doi:10.1016/j.firesaf.2019.02.003",
+   "Measuring heat flux to a porous burner in microgravity doi:10.1016/j.proci.2018.05.006"
+  ]
+ },
+ {
+  "psi_id": "PSI-21",
+  "acronym": "ACME CLD Flame",
+  "title": "Advanced Combustion via Microgravity Experiments / Coflow Laminar Diffusion Flame (ACME CLD Flame)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-21",
+  "doi": "10.60555/23e1-9950",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Flames of gaseous fuel",
+  "project_type": "Microgravity Investigation",
+  "proposal_title": "Fuel Dilution Studies of Coflow Laminar Diffusion Flames in a Microgravity Environment",
+  "platform": "International Space Station (ISS)",
+  "start_date": "2006-10-01",
+  "end_date": "2022-05-31",
+  "related": [],
+  "hardware": [
+   "Combustion Integrated Rack (CIR)",
+   "ACME"
+  ],
+  "fuel_category": "gaseous",
+  "fuels": [
+   "methane (diluted with N2, 25-40%)",
+   "ethylene"
+  ],
+  "objectives": "To provide the experimental data needed to allow rigorous testing of computational models at the extremes of the fuel dilution spectrum: A) Characterize the behavior of weak coflow diffusion flames of methane and ethylene, as a function of velocity and fuel dilution, through measurement of flame shape, lift-off heights, temperatures and extinction limits. B) Characterize the sooting tendencies of diffusion flames with long residence times, as a function of velocity and fuel dilution, through measurement of flame shape, gas temperatures in the soot-free portion of the flame, soot luminosity, soot temperatures, and soot volume fractions.",
+  "approach": "Goals include improved computational models with improved soot sub-models effective for both dilute flames and sooting flames from low to high soot loading. Methane and ethylene diffusion flames are studied over a wide range of conditions. For dilute flames, OH* and CH* chemiluminescence is measured to observe lift-off height and flame shape as extinction limits are approached. Sooting tendencies of fuel-rich flames are investigated using soot luminosity and laser extinction to determine soot temperatures and soot volume fractions. Flame temperatures in non-sooting regions are measured with thin-filament pyrometry. Kinetics and soot models are modified to match experiments; computations can then be 'mined' for species that cannot be measured directly.",
+  "hypothesis": "Focused on gathering benchmark data to validate the hypotheses of computational models (Smooke et al. 2004, Combust. Theory Model. 8(3):593-606; Luque et al. 2000, Combust. Flame 122:172-175; Walsh et al. 2000, Proc. Combust. Inst. 28:1973-1979).",
+  "impacts": "Diffusion flames are the flame type of most practical combustion devices. Predicting the coupled effects of complex transport with detailed chemical kinetics is critical for modeling turbulent reacting flows, soot formation and radiative transfer. Understanding factors that affect flame extinction in diffusion flames is critical in the suppression of fires and in improving engine efficiency.",
+  "contacts": [
+   "Marshall B. Long (PI, Yale University)"
+  ],
+  "experimental_table": {
+   "columns": [
+    "Test Type",
+    "Test Day",
+    "Fuel MFC",
+    "N2 MFC",
+    "Fuel Bottle",
+    "Fuel conc. Range",
+    "Flames ignited",
+    "Notes"
+   ],
+   "sample_rows": [
+    "Methane based test | 17319 | 40% CH4 | 30%-40% | 10 flames",
+    "Methane based test | 18003 | 40% CH4 | 25%-40% | 9 flames"
+   ]
+  },
+  "publications_partial": [
+   "Analysis of CH* concentration and flame heat release rate in laminar coflow diffusion flames under microgravity and normal gravity doi:10.1016/j.combustflame.2016.02.012",
+   "A computational and experimental study of coflow laminar methane/air diffusion flames: Effects of fuel dilution, inlet velocity, and gravity doi:10.1016/j.proci.2014.05.138",
+   "A Combined Experimental and Computational Study of Soot Formation in Normal and Microgravity Conditions doi:10.1080/00102202.2022.2041621",
+   "Effects of pressure and fuel dilution on coflow laminar methane–air diffusion flames doi:10.1080/13647830.2017.1403051"
+  ]
+ },
+ {
+  "psi_id": "PSI-22",
+  "acronym": "ACME E-FIELD Flames",
+  "title": "Advanced Combustion via Microgravity Experiments Electric-Field Effects on Laminar Diffusion Flames (ACME E-FIELD Flames)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-22",
+  "doi": "10.60555/se5a-8c73",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Laminar Flames",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS)",
+  "start_date": "2016-11-18",
+  "end_date": "2020-11-17",
+  "related": [
+   "PSI-23"
+  ],
+  "hardware": [
+   "Combustion Integrated Rack (CIR)",
+   "ACME (gas-jet burner and coflow burner shared with CLD Flame)"
+  ],
+  "fuel_category": "gaseous",
+  "fuels": [
+   "methane",
+   "ethylene (diluted with N2)"
+  ],
+  "key_conditions": {
+   "voltage_kV": "up to 10",
+   "electrode": "copper mesh above burner, controllable polarity"
+  },
+  "objectives": "Better understand the relationship between electric field voltage and chemi-ion current, analyze the dynamic response of flames to electric field changes, evaluate soot formation, and characterize stabilized near-limit lifted flames.",
+  "approach": "Investigates how electric fields influence laminar diffusion flames in microgravity, isolating electric field effects from buoyancy. Gas-fueled flames with and without a coflow of air (coflow tests use the same burner as the CLD Flame experiment). An electric field is generated by a high-voltage (up to 10 kV) differential between the burner and a flat circular copper mesh suspended downstream. Measurements, as a function of field strength and fuel, of the ion current through the flame and the flame's response time to electric forcing. The field interacts with ions from chemi-ionization, driving ion-driven convection. Methane and ethylene diluted with nitrogen, from highly stable to near-extinction flames. Voltage-current curves, high-resolution imaging of flame shape, luminosity and soot, spectral imaging of chemiluminescence and soot volume fraction, thermopile radiant emission. Fuel flow rate, coflow velocity, and field polarity varied.",
+  "hypothesis": "The application of electric fields in microgravity will significantly influence laminar diffusion flames by enabling precise manipulation of flame stability, soot behavior, and combustion dynamics through ion-driven convection and chemi-ionization processes.",
+  "impacts": "Not conducted to serve space applications, but findings could aid future space-based combustion devices (e.g., solid waste processing). Electric fields can reduce harmful pollutants and fuel consumption in terrestrial combustion. Note from the challenge statement: partial gravity was mimicked in E-FIELD Flames through the effect of the electric field on the ions that naturally occur in flames.",
+  "contacts": [
+   "Derek Dunn-Rankin (PI, UC Irvine)",
+   "Dennis Stocker (Project Scientist, NASA GRC)",
+   "Alice Chien (Technical POC, UC Irvine)"
+  ],
+  "experimental_table": {
+   "columns": [
+    "Test Type",
+    "Test Day",
+    "Year",
+    "Month",
+    "Date",
+    "Mesh Polarity",
+    "Fuel Bottle",
+    "Fuel Conc",
+    "Flames Ignited",
+    "Notes"
+   ],
+   "sample_rows": [
+    "Coflow burner | 18073 | 2018-03-14 | negative | 100% CH4 | 100% | 10",
+    "Coflow burner | 18087 | 2018-03-28 | negative | 100% C2H4 | 80% | 10"
+   ]
+  }
+ },
+ {
+  "psi_id": "PSI-23",
+  "acronym": "ACME s-Flame",
+  "title": "Advanced Combustion via Microgravity Experiments - Structure and Response of Spherical Diffusion Flames (ACME s-Flame)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-23",
+  "doi": "10.60555/k57n-p030",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Flames of gaseous fuels",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS)",
+  "start_date": "2015-02-05",
+  "end_date": "2019-11-24",
+  "related": [
+   "PSI-22"
+  ],
+  "hardware": [
+   "Combustion Integrated Rack (CIR)",
+   "ACME spherical porous burner"
+  ],
+  "fuel_category": "gaseous",
+  "fuels": [
+   "hydrogen",
+   "methane",
+   "ethylene",
+   "H2/CH4 mixtures"
+  ],
+  "diluents": [
+   "nitrogen",
+   "helium",
+   "carbon dioxide"
+  ],
+  "key_conditions": {
+   "oxygen_pct": "~21% and ~30% with N2",
+   "pressure": "~1 atm, rising with vitiation"
+  },
+  "objectives": "In both soot-free and sooty flames, compared with detailed simulation of transport and chemical kinetics: A. Measure the transient structure (temperature, species) of spherical diffusion flames for different H2/CH4/diluent ratios (soot-free) and C2H4/diluent ratios (sooty), at different flow rates. B. Determine quasi-steady convective/chemical-kinetic extinction limits (low Damköhler numbers) and radiative/chemical-kinetic extinction limits (high Damköhler numbers). C. Determine the existence, onset and nature (mode, frequency, amplitude) of pulsating instabilities predicted for transient spherical diffusion flames with fuel/diluent mixtures above a critical Lewis number.",
+  "approach": "Mixtures of gaseous fuels and diluents issued into an oxidizing environment through a spherical porous burner and ignited to obtain a nominally spherical, one-dimensional flame. Synchronized measurements: spectrally resolved images, flame and burner temperatures, radiative flux, and operating conditions (flow rates, ambient temperature, pressure, acceleration levels). Hydrogen (simplest fuel), methane (simplest hydrocarbon), ethylene (typical sooty fuel). Diluents: nitrogen and helium to adjust diffusivities, CO2 to influence flame radiation.",
+  "hypothesis": "The transient numerical simulation with detailed chemistry, transport and radiation is rigorously tested by measured flame structure, growth, steady states, extinctions, instabilities and soot suppression limits; due to time and g-jitter limitations, little of the test matrix can be explored in ground facilities.",
+  "impacts": "Diffusion flame burning is the basis of many engines and devices; understanding its dynamics and chemistry improves power, efficiency, pollutant emissions and reliability. Microgravity offers simple flow fields for high-fidelity diffusion flame data.",
+  "contacts": [
+   "Chung K. Law (PI, Princeton)",
+   "Stephen Tse (Co-I, Rutgers)",
+   "Dennis Stocker (Project Scientist, NASA GRC)"
+  ],
+  "experimental_table": {
+   "columns": [
+    "Test Type",
+    "Test Day",
+    "Year",
+    "Month",
+    "Date",
+    "Atmosphere",
+    "Fuel Bottle",
+    "Flames Ignited",
+    "Notes"
+   ],
+   "sample_rows": [
+    "19254 | 2019-09-11 | ~21% O2 with N2 | 50% C2H4 with N2 | 13",
+    "19308 | 2019-11-04 | ~30% O2 with N2 | 45% CH4 with N2 | 21",
+    "19352 | 2019-12-18 | ~21% O2 with N2 | 100% H2 | 10"
+   ]
+  },
+  "publications_partial": [
+   "Microgravity burner-generated spherical diffusion flames: experiment and computation doi:10.1016/S0010-2180(01)00247-4",
+   "Oscillatory extinction of spherical diffusion flames: Micro-buoyancy experiment and computation doi:10.1016/S1540-7489(02)80008-6",
+   "Extended flammability limits of n-heptane/air mixtures with cool flames doi:10.1016/j.combustflame.2017.06.015",
+   "Porous spherical burner for combustion experimentation doi:10.1063/1.2212399"
+  ]
+ },
+ {
+  "psi_id": "PSI-10",
+  "acronym": "ACME Flame Design",
+  "title": "Advanced Combustion via Microgravity Experiments / Flame Design (ACME/Flame Design)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-10",
+  "doi": "10.60555/w4zy-bt45",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Flames of Gaseous Fuels",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS) and drop towers",
+  "related": [],
+  "hardware": [
+   "Combustion Integrated Rack (CIR)",
+   "ACME spherical burner"
+  ],
+  "fuel_category": "gaseous",
+  "fuels": [
+   "ethylene (C2H4)",
+   "methane (CH4)"
+  ],
+  "diluents": [
+   "N2",
+   "CO2"
+  ],
+  "key_conditions": {
+   "pressure_atm": "~1.01-1.02 in sample rows",
+   "XO2": "~0.20-0.21",
+   "adiabatic_flame_T_K": "~2186-2352",
+   "flame_types": [
+    "normal",
+    "inverse"
+   ]
+  },
+  "objectives": "A. Obtain soot-inception limits of quasi-steady normal and inverse spherical diffusion flames as functions of flow rate, Zst, amount of inert (N2 or CO2), and pressure for C2H4 and CH4 flames; identify corresponding temperatures; obtain similar limits for inverse and normal coflow flames. B. Obtain detailed measurements in quasi-steady normal and inverse spherical diffusion flames for C2H4 and CH4: effects of flow rate, Zst, N2, and pressure on flame temperature, size, color, and soot volume fraction; evaluate the possible existence of steady flames. C. Obtain extinction limits as functions of Zst, amount of N2, and pressure for normal and inverse spherical C2H4 and CH4 flames; identify radiative or kinetic extinction; evaluate whether pseudo-flammability limits can be obtained.",
+  "approach": "Perform spherical diffusion flame tests in drop towers and aboard the International Space Station.",
+  "hypothesis": "1. Soot formation requires a region where local C/O ratio and T exceed their critical values, and where strain rate is sufficiently low. 2. Microgravity spherical diffusion flames extinguish when the peak temperature first decreases below 1130 K. 3. Steady-state spherical diffusion flames are possible.",
+  "contacts": [
+   "Richard L. Axelbaum (PI, Washington University in St. Louis)",
+   "Peter B. Sunderland (Co-I, University of Maryland)",
+   "David L. Urban (Co-I, NASA GRC)",
+   "Dennis P. Stocker (Project Scientist, NASA GRC)",
+   "Sergey M. Frolov (Investigator, Semenov Institute, RAS)"
+  ],
+  "experimental_table": {
+   "rows": 208,
+   "columns": [
+    "Flame Type",
+    "Day",
+    "Fuel",
+    "Test",
+    "Xfuel",
+    "mfuel (mg/s)",
+    "mN2 (mg/s)",
+    "mtot (mg/s)",
+    "XO2 (init)",
+    "XO2 (final)",
+    "pinit (atm)",
+    "pfinal (atm)",
+    "pmean (atm)",
+    "mean Zst",
+    "Tad (K)"
+   ],
+   "sample_rows": [
+    "Normal | C2H4 | 19115A1 | Xfuel 1 | 0.969 mg/s | XO2 0.207 | p 1.018 atm | Zst 0.0627 | Tad 2352 K",
+    "Normal | C2H4 | 19115F1 | Xfuel 0.292 | mN2 1.545 | Zst 0.185 | Tad 2186 K"
+   ]
+  }
+ },
+ {
+  "psi_id": "PSI-159",
+  "acronym": "ACME CFI-G",
+  "title": "Advanced Combustion via Microgravity Experiments / Cool Flames Investigation with Gases (ACME CFI-G)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-159",
+  "doi": "10.60555/cyt1-kh64",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Flames of Gaseous Fuels",
+  "project_type": "Microgravity Investigation",
+  "proposal_title": "ISS: Collaborative Research: Spherical Cool Diffusion Flames Burning Gaseous Fuels",
+  "platform": "International Space Station (ISS)",
+  "related": [],
+  "hardware": [
+   "ACME",
+   "Combustion Integrated Rack (CIR)"
+  ],
+  "fuel_category": "gaseous",
+  "fuels": [
+   "propane",
+   "n-butane",
+   "n-pentane",
+   "ethane"
+  ],
+  "key_conditions": {
+   "pressure_bar": "~1.1 in sample rows",
+   "XO2": "0.15-0.21 in sample rows",
+   "max_oxygen_note": "per challenge statement, oxygen-nitrogen mixtures of up to 85% O2 flowed from the spherical burner (inverse flames) — the highest O2 concentrations of any microgravity test in PSI",
+   "flame_types": [
+    "normal",
+    "inverse"
+   ]
+  },
+  "objectives": "1. Plan and support flight testing on the ISS. 2. Determine the conditions for which cool diffusion flames occur for propane, n-butane, and n-pentane; normal and inverse flames; and a broad range of Zst, Tad, and fluent flow rate. 3. Support the flight tests with advanced CFD simulations. 4. Identify or develop a chemical kinetics mechanism that yields good agreement between the CFD predictions and the ISS measurements. 5. Disseminate the results.",
+  "approach": "Perform spherical diffusion flame tests aboard the ISS. Consider multiple fuels, a range of reactant dilutions, flow rates, and pressures for normal and inverse convection directions. Observe the flames with cameras, radiometers, photomultiplier tubes, and thermocouples.",
+  "hypothesis": "Testing aboard the ISS can demonstrate for the first time: 1. Steady-state cool diffusion flames on spherical porous burners. 2. Cool diffusion flames burning propane, n-butane, and n-pentane. 3. Cool diffusion flames for a wide range of Zst, Tad, and pressures. 4. Inverse cool diffusion flames. 5. Cool diffusion flames for which a decrease in fluent flow rate will cause extinction, whereas an increase will cause a transition to a hot diffusion flame, with oscillation possible between hot and cool flames.",
+  "impacts": "Combustion provides 86% of the world's energy. Internal combustion engines generally have thermal efficiencies of 38% or lower; this may increase to 60% with ultra-lean combustion, impeded by limited understanding of cool flame chemistry. Cool diffusion flames (peak temperatures 500-1000 K) have been studied intensively since their discovery in 2012. Measurements help test and advance cool flame kinetics mechanisms.",
+  "contacts": [
+   "Richard L. Axelbaum (PI, Washington University in St. Louis)",
+   "Peter B. Sunderland (Co-I, University of Maryland)"
+  ],
+  "experimental_table": {
+   "columns": [
+    "Flame Type",
+    "Day",
+    "Fuel",
+    "Test",
+    "Xf before",
+    "Xf after",
+    "approx p (bar)",
+    "XO2",
+    "HC burnrate (mg/s)",
+    "O2 flow rate (mg/s)",
+    "TFP",
+    "Tad (K)",
+    "Zst",
+    "Hot ignition",
+    "burn time (s)",
+    "Self-ext or flow term",
+    "Peak burner Temp (K)",
+    "Color",
+    "Comments"
+   ],
+   "sample_rows": [
+    "Inverse | ethane | 21196 A1 | XO2 0.21 | Tad 2120 K | Failed to ignite",
+    "Inverse | ethane | 21196 A2 | XO2 0.21 | hot ignition yes | 35 s | flow terminated | yellow",
+    "Inverse | ethane | 21196 F1 | XO2 0.15 | Tad 1787 K | 36 s | blue | not spherical"
+   ]
+  },
+  "publications_partial": [
+   "Spherical gas-fueled cool diffusion flames (Kim et al.) doi:10.1016/j.proci.2022.07.015",
+   "Cool diffusion flames in a stably stratified stagnation flow (Waddell et al.) doi:10.1016/j.combustflame.2023.112852"
+  ]
+ },
+ {
+  "psi_id": "PSI-106",
+  "acronym": "SLICE",
+  "title": "Structure and Liftoff In Combustion Experiment (SLICE)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-106",
+  "doi": "10.60555/pm12-rg61",
+  "research_area": "Combustion Science",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS)",
+  "related": [],
+  "hardware": [
+   "Microgravity Science Glovebox (MSG)",
+   "SPICE fan-driven flow duct with exchangeable burner tubes"
+  ],
+  "fuel_category": "gaseous",
+  "fuels": [
+   "methane",
+   "ethylene",
+   "nitrogen-diluted mixtures"
+  ],
+  "objectives": "Better understand the structure and stability of laminar diffusion flames in microgravity. 1. Investigate the structure of laminar diffusion flames in microgravity to understand the stabilizing mechanisms at the flame's base. 2. Determine the liftoff velocity limits for different fuels and burner diameters. 3. Evaluate the impact of fuel dilution with nitrogen on soot formation and flame stability. 4. Quantify the effects of microgravity on flame length and radiative heat loss compared to normal gravity. 5. Validate numerical models for flame dynamics, soot production, and thermal radiation in non-premixed flames.",
+  "approach": "Fan-driven flow duct, exchangeable burner tubes, integrated sensors for flow rate and temperature. Fuels: methane, ethylene, nitrogen-diluted mixtures. Flames manually ignited under controlled coflow air. A high-resolution camera captured still images with sensor data overlaid. Calibration tests for airflow velocity, soot measurement, and fans. More than 4,000 high-resolution images across 13 test sessions; analyzed to correlate flame structure and stability with flow dynamics and fuel properties.",
+  "hypothesis": "The structure and stability of laminar diffusion flames in microgravity are significantly influenced by burner diameter, coflow velocity, and fuel composition and are fundamentally different than flames observed on Earth.",
+  "impacts": "1. Improved numerical models lead to more efficient combustion technologies. 2. Understanding soot formation aids design of low-emission combustion systems. 3. Insights into flame stability and behavior to enhance fire safety. 4. Cleaner, more efficient engines and industrial burners.",
+  "contacts": [
+   "Marshall Long (PI, Yale)",
+   "Mitchell D. Smooke (Co-I, Yale)",
+   "Fumiaki Takahashi (Co-I, Case Western)",
+   "Dennis Stocker (Project Scientist, NASA GRC)"
+  ],
+  "publications_partial": [
+   "A computational and experimental study of coflow laminar methane/air diffusion flames: Effects of fuel dilution, inlet velocity, and gravity doi:10.1016/j.proci.2014.05.138"
+  ]
+ },
+ {
+  "psi_id": "PSI-107",
+  "acronym": "SPICE",
+  "title": "Smoke Point In Co-flow Experiment (SPICE)",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-107",
+  "doi": "10.60555/9kbh-e962",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Fire Safety",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS)",
+  "related": [],
+  "hardware": [
+   "Microgravity Science Glovebox (MSG)",
+   "SPICE flow duct with nozzles (later reused by BASS, BASS-II, SLICE)"
+  ],
+  "fuel_category": "gaseous (jet diffusion flames)",
+  "fuels": [
+   "methane",
+   "ethylene",
+   "propane",
+   "propylene",
+   "propylene mixtures"
+  ],
+  "key_conditions": {
+   "burner_diameters_mm": [
+    0.41,
+    0.76,
+    1.6
+   ],
+   "coflow_cm_s": "5.4-65",
+   "flames_studied": 526
+  },
+  "objectives": "Better understand combustion by observing flames in microgravity aboard the ISS and analogous ground experiments. (1) Identify the laminar smoke-point properties of non-buoyant jet diffusion flames under various co-flow conditions. (2) Determine the effects of burner diameter and co-flow velocity on luminous flame lengths and smoke points. (3) Quantify the sooting propensity of different fuels (ethylene, propane, propylene mixtures). (4) Validate the correlation between luminous flame shape and residence time in microgravity. (5) Investigate the impact of air and fuel flow rate variations on smoke point phenomena.",
+  "approach": "Microgravity Science Glovebox apparatus with flow duct, integrated nozzles, cameras, fuel delivery. Fuels: methane, ethylene, propane, propylene, propylene mixtures. Burner diameters 0.41, 0.76, 1.6 mm; co-flow 5.4 to 65 cm/s. Fuel flow adjusted to find the smoke point (transition to emitting soot). Flame lengths recorded with still and video cameras; flame height, radiative heat losses, co-flow velocity distributions measured. 526 flames studied.",
+  "hypothesis": "By minimizing gravity-driven transport, scientists can study the laminar smoke-point properties of non-buoyant jet diffusion flames; flame properties are expected to differ significantly from normal gravity.",
+  "impacts": "(1) Improve understanding of soot formation mechanisms and help design safer spacecraft environments. (2) Refine computational models for non-buoyant flames. (3) Enhance knowledge of soot generation. (4) Insights to better fuel formulations and combustion processes.",
+  "contacts": [
+   "David Urban (PI, NASA GRC)",
+   "Peter Sunderland (Co-I, University of Maryland)"
+  ],
+  "experimental_table": {
+   "columns": [
+    "GMT date",
+    "GMT ignition",
+    "GMT Flame Off",
+    "Fuel",
+    "Nozzle (mm)",
+    "Fuel Rate (sccm)",
+    "Fuel Rate (mg/s)",
+    "HC Fuel Rate (mg/s)",
+    "Air Rate (cm/s)"
+   ],
+   "sample_rows": [
+    "45 | Ethylene | 1.6002 mm | 103.8 sccm | 1.971 mg/s | air 36.39 cm/s",
+    "45 | Ethylene | 1.6002 mm | 51 sccm | 0.968 mg/s | air 40.15 cm/s"
+   ]
+  },
+  "publications_partial": [
+   "Laminar smoke points of coflowing flames in microgravity (Dotson, Sunderland, Yuan, Urban) doi:10.1016/j.firesaf.2011.08.002",
+   "Laminar Smoke Points in Coflow Measured Aboard the ISS doi:10.2514/6.2010-1105",
+   "Shapes of nonbuoyant round hydrocarbon-fueled laminar-jet diffusion flames in still air doi:10.1016/j.combustflame.2004.12.009"
+  ]
+ },
+ {
+  "psi_id": "PSI-47",
+  "acronym": "DAFT / DAFT-2",
+  "title": "Dust and Aerosol Measurement Feasibility Test / DAFT-2",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-47",
+  "doi": "10.60555/ztgj-d202",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Spacecraft Fire Safety",
+  "project_type": "Microgravity Investigation",
+  "platform": "International Space Station (ISS)",
+  "start_date": "2003-03-01",
+  "end_date": "2009-06-01",
+  "related": [
+   "PSI-102"
+  ],
+  "hardware": [
+   "TSI P-Trak (modified)",
+   "DustTrak"
+  ],
+  "fuel_category": "aerosol / detection (no combustion)",
+  "fuels": [
+   "Arizona Road Dust (ARD Fine) aerosolized with GN2"
+  ],
+  "objectives": "Mitigate risk for SAME, which relied on a commercial condensate nuclei counter (TSI P-Trak) that uses gravity to recycle isopropyl alcohol. Demonstrate the functionality of the modified P-Trak in microgravity; compare P-Trak performance against the DustTrak control; create and analyze aerosol standards in microgravity; ensure reliability of future aerosol experiments.",
+  "approach": "P-Trak modified by redesigning the condenser tube to use capillary forces to recycle isopropyl alcohol and removing the mercury orientation switch. Arizona Road Dust aerosolized with GN2 in 15-liter Mylar bags. On-orbit counts compared with the DustTrak. Sessions D1 (GMT 54, 2005, modified P-Trak near Express rack 4) and D2 (GMT 63, 2005, DustTrak, Port rack 6 and Node 1).",
+  "hypothesis": "Two potential failure modes in microgravity: clogging/obscuration by isopropanol, and over-counting due to optics-chamber airflow. Hypotheses: the modified P-Trak functions normally in microgravity; the generated aerosol is within the measurement capabilities of the devices.",
+  "impacts": "Extended missions need fire detection with increased reliability and sensitivity; informs novel fire and smoke detection for ISS and future spacecraft, and instruments for submarines or underwater laboratories.",
+  "contacts": [
+   "David L Urban (PI, NASA GRC)",
+   "Claire Fortenberry (Project Scientist, NASA GRC)"
+  ],
+  "publications_partial": [
+   "A Research Plan for Fire Prevention, Detection and Suppression in Crewed Exploration Systems doi:10.2514/6.2005-341",
+   "Detection of Smoke from Microgravity Fires doi:10.4271/2005-01-2930"
+  ]
+ },
+ {
+  "psi_id": "PSI-117",
+  "acronym": "Cool-flame CFD (FLEX)",
+  "title": "Effect of External Thermo-Convective Perturbation on Cool Flame Dynamics: A Multidimensional Multi-Physics CFD Analysis",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-117",
+  "doi": "10.60555/gz0q-b577",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Droplet",
+  "project_type": "Ground Investigation (PSI grant)",
+  "start_date": "2017-02-15",
+  "end_date": "2022-02-14",
+  "related": [
+   "PSI-69",
+   "PSI-142"
+  ],
+  "fuel_category": "liquid droplets (modeling)",
+  "fuels": [
+   "n-alkanes"
+  ],
+  "objectives": "Use FLEX flight data from PSI to quantify how externally imposed thermal and convective perturbations regulate the dynamics and fate of established droplet cool flames, and explain run-to-run variability by isolating deliberate heating and unintentional drift-induced convection. Map stability windows for ignition, sustained oscillation, transitions to hot ignition and warm-flame behavior, and extinction for small and large droplets; produce reusable models and sensitivity analyses coupling low-temperature chemistry with transport and radiation.",
+  "approach": "OpenFOAM 3-D CFD of n-alkane droplet cool flames in microgravity (variable-density Navier–Stokes, low-temperature chemistry, heat and mass transfer, radiation), validated against ISS FLEX. Forcing modes: convection alone (drift), imposed heat flux, combined; droplets 1–4 mm and ~0.5 mm. Simplified then reduced mechanisms for sweeps over forcing amplitude/frequency, ambient composition (incl. ozone-assisted), and pressure. Extracted ignition delay, oscillation frequency and amplitude, stand-off and extinction diameters; built stability maps reconciled with FLEX and used to guide new test matrices.",
+  "hypothesis": "External thermo-convective perturbations govern cool-flame ignition, oscillation, transition to hot ignition, and extinction by shifting residence time and scalar dissipation; in microgravity this forcing dominates transport.",
+  "impacts": "Space: improve spacecraft fire-safety modeling by resolving cool-flame/extinction behavior in microgravity; define safer operating envelopes/materials. Earth: low-temperature combustion relevant to engine knock, efficiency and emissions; validated CFD tools.",
+  "contacts": [
+   "Tanvir Farouk (PI, University of South Carolina)",
+   "Mike Hicks (Project Scientist, NASA GRC)"
+  ],
+  "publications_partial": [
+   "Extinction characteristics of isolated n-alkane fuel droplets during low temperature cool flame burning in air (2023) doi:10.1016/j.proci.2022.07.094",
+   "Initial diameter effects on combustion of unsupported equi-volume n-heptane/iso-octane mixture droplets and the transition to cool flame behavior (2020) doi:10.1016/j.combustflame.2020.06.012"
+  ]
+ },
+ {
+  "psi_id": "PSI-142",
+  "acronym": "Cool-flame counterflow (FLEX)",
+  "title": "Quantitative Studies of Cool Flame Transitions at Radiation / Stretch Extinction Using Counterflow Flames",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-142",
+  "doi": "10.60555/80qf-vj95",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Spacecraft Fire Safety",
+  "project_type": "Ground Investigation",
+  "start_date": "2016-08-01",
+  "end_date": "2021-07-31",
+  "related": [
+   "PSI-69"
+  ],
+  "fuel_category": "gaseous / modeling",
+  "fuels": [
+   "n-heptane/air",
+   "dimethyl ether (DME)/air",
+   "large n-alkanes"
+  ],
+  "objectives": "Using FLEX data from PSI, conduct simulations and ground experiments with ozone-sensitized counterflow flames to: develop a new diagram of flammability limits of diffusional cool flames affected by radiation, diffusion, and convection; bridge the gap between flammability and extinction limits of hot and cool flames; verify phenomena observed in ISS FLEX; obtain quantitative extinction limit, flame temperature and species data to validate kinetic and radiation models; extend cool flame experiments to a general 1-D ground system.",
+  "approach": "Using FLEX flight conditions, oxygen-concentration effects on cool-flame extinction limits studied with three schemes: (a) spark-assisted flame propagation of n-heptane/air, (b) 1-D freely-propagating DME flames with arc-length continuation, (c) cool flame regimes and burning limits at elevated pressure (up to 20 atm) with DME/air.",
+  "hypothesis": "Oxygen concentration, dilution, pressure, diffusion, and convection affect the transition from hot to cool flames and how the cool-flame flammable region relates to hot-flame flammability and extinction limits.",
+  "impacts": "The warm flame has a double reaction zone structure and plays a critical role in the transition between cool and hot flames. At elevated pressures, the flammable region of warm and cool flames expands; since many engines run at 20-40 atm, cool and warm flames matter for high-pressure near-limit combustion. Relevant to microgravity due to long residence times.",
+  "contacts": [
+   "Yiguang Ju (PI, Princeton)",
+   "Christopher Reuter (Co-I, Princeton)",
+   "Daniel Dietrich (Technical POC, NASA GRC)"
+  ],
+  "publications_partial": [
+   "Dynamics of cool flames (Ju et al.) doi:10.1016/j.pecs.2019.100787",
+   "The radical index and the effect of oxygen concentration on non-premixed cool flame extinction of large n-alkanes doi:10.1016/j.combustflame.2021.111471",
+   "On the propagation limits and speeds of premixed cool flames at elevated pressures doi:10.1016/j.combustflame.2017.01.006"
+  ]
+ },
+ {
+  "psi_id": "PSI-62",
+  "acronym": "BASS FGM modeling",
+  "title": "Concurrent Flame Spread Modeling using Flamelet Generated Manifolds in Microgravity with Comparison to BASS Experiments using Two-Color Tomography",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-62",
+  "doi": "10.60555/e9xp-ex83",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Spacecraft Fire Safety",
+  "project_type": "Ground Investigation",
+  "start_date": "2019-05-01",
+  "end_date": "2021-04-30",
+  "related": [
+   "PSI-25",
+   "PSI-26"
+  ],
+  "fuel_category": "solid (modeling)",
+  "fuels": [
+   "PMMA sheets, spheres, rods",
+   "wax cylinders"
+  ],
+  "objectives": "Simulate solid fuel combustion with high fidelity using BASS and BASS-II as benchmarks; long-term goal: accurate prediction of flammability limits for spacecraft materials and a subgrid-scale model for large-eddy simulations of fires.",
+  "approach": "Fully coupled fluid–solid simulations for charring/ablating materials with an unsteady flamelet generated manifold (UFGM) method on BASS geometries (flat sheets, spheres, PMMA rods, wax cylinders). BASS/BASS-II imagery from PSI post-processed with new two-color tomography (DSLR) for 3-D soot and temperature fields. Metrics: flame geometry, temperature, soot volume fraction, flame spread rate, with emphasis on reproducing the 'Goldilocks' flammability zone reported by Olson and Ferkul. Compared with a parallel NSF terrestrial flame-spread project.",
+  "hypothesis": "UFGM can accurately reproduce concurrent flame spread in microgravity, including the 'Goldilocks' flammability zone, by coupling near-wall thermal, mass transport, and chemistry with far-field flow.",
+  "impacts": "Predictive tools for screening new materials' flammability limits; LES subgrid models for hazard assessment in long-duration missions and confined habitats; better combustion modeling and fire safety standards on Earth.",
+  "contacts": [
+   "Paul DesJardin (PI, University at Buffalo)",
+   "David Urban (Project Scientist, NASA GRC)"
+  ],
+  "publications_partial": [
+   "Radiative flamelet generated manifolds for solid fuel flame spread in microgravity (2023) doi:10.1016/j.combustflame.2023.112939",
+   "Theoretical estimates of flammability bounds for thin condensed fuel diffusion flames in microgravity using detailed models of chemistry and radiation (2023) doi:10.1016/j.combustflame.2023.112910",
+   "Two-color pyrometry based flame to fuel surface radiative heat flux diagnostic using flamelets doi:10.1016/j.combustflame.2021.111395"
+  ]
+ },
+ {
+  "psi_id": "PSI-60",
+  "acronym": "SPICE analysis",
+  "title": "Computational and Experimental Analysis of SPICE Data Sets",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-60",
+  "doi": "10.60555/mzjm-yv57",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Gaseous",
+  "project_type": "Ground Investigation (PSI grant)",
+  "start_date": "2019-06-05",
+  "end_date": "2022-08-29",
+  "related": [
+   "PSI-107"
+  ],
+  "fuel_category": "gaseous (analysis)",
+  "fuels": [
+   "SPICE fuels (ethylene etc.)"
+  ],
+  "objectives": "Increase understanding of the large discrepancy between soot formation in 1g and 0g flames: integrate computational and experimental methods to derive temperature and soot volume fraction from SPICE data in PSI; analyze over 1600 raw DSLR images; improve understanding of soot formation, oxidation, radiative re-absorption and aggregate growth; reconcile microgravity and normal-gravity behavior; framework for model parameter sensitivity.",
+  "approach": "Raw Nikon NEF images decoded into three color channels and analyzed with color-ratio pyrometry for soot temperature; SPICE absolute light calibration used for soot volume fraction. Coupled flow–species–soot model with radiation re-absorption and discrete-sectional aggregates; simulations of Yale and ACME burners in 1g and 0g; sensitivity analyses on radiation, scattering, boundary conditions, and burner heat transfer.",
+  "hypothesis": "Microgravity produces longer, more diffuse flames with lower temperatures and increased soot concentrations compared to normal gravity; integrating experimental temperature fields into simulations reduces discrepancies in predicted soot.",
+  "impacts": "Better predictive models for combustion in spacecraft and on Earth; supports safer fire detection, suppression and cleaner combustion for long missions; lower emissions on Earth.",
+  "contacts": [
+   "Mitchell D. Smooke (PI, Yale)",
+   "Marshall B. Long (Co-I, Yale)",
+   "Daniel L. Dietrich (Project Scientist, NASA GRC)"
+  ],
+  "publications_partial": [
+   "A Combined Experimental and Computational Study of Soot Formation in Normal and Microgravity Conditions (2022) doi:10.1080/00102202.2022.2041621"
+  ]
+ },
+ {
+  "psi_id": "PSI-115",
+  "acronym": "SAME smoke modeling",
+  "title": "Utilization of the Smoke Aerosol Measurement Experiment Data for Advanced Modeling and Simulation of Smoke Generation in Micro-Gravity",
+  "url": "https://psi.nasa.gov/physci/repo/data/investigations/PSI-115",
+  "doi": "10.60555/q0v5-1v28",
+  "research_area": "Combustion Science",
+  "sub_research_area": "Smoke Aerosol, Combustion Simulation",
+  "project_type": "Ground Investigation (PSI grant)",
+  "start_date": "2017-01-30",
+  "end_date": "2019-12-31",
+  "related": [
+   "PSI-102"
+  ],
+  "fuel_category": "smoke (modeling)",
+  "fuels": [
+   "dibutyl-phthalate (DBP) pyrolysis vapor"
+  ],
+  "objectives": "Use numerical simulation to explore the influence of gravity on pyrolysis smoke growth; quantify differences between microgravity and Earth-gravity smoke and identify the fluid dynamic mechanisms that cause them.",
+  "approach": "Simulated formation and growth of DBP particles in 1g and microgravity by direct numerical simulation (Navier-Stokes nodal approach). Smoke originates from pyrolysis vapor from a heated sample in a SAME-like geometry; two low cross-flow velocities where buoyancy matters in 1g. Assesses dependence of particle size distributions on thermophoresis, settling, and flow geometry; compares buoyant and non-buoyant wakes.",
+  "hypothesis": "Without buoyancy, mixing and heat transfer are reduced, the time-temperature history of vapors and particle trajectories change, altering smoke composition; the burning material's chemistry also affects smoke.",
+  "impacts": "Models characterizing smoke particles vs temperature, gravity and material properties lead to better smoke detection devices.",
+  "contacts": [
+   "Sean Garrick (PI, University of Illinois)",
+   "Michael Hicks (Technical POC, NASA GRC)"
+  ]
+ }
+]
