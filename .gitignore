@@ -24,6 +24,9 @@ data/ntrs/*
 !data/ntrs/README.md
 data/psi/*
 !data/psi/README.md
+!data/psi/FLEX/
+data/psi/FLEX/*
+!data/psi/FLEX/test_matrix.csv
 *.pdf
 
 # OS / editors
