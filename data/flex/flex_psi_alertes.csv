@@ -1,0 +1,12 @@
+test_number,test_id,colonne,probleme,action
+223,H01M104,burn_time_s,valeur non numérique « ~6 »,mise à vide
+224,H01H102,burn_time_s,valeur non numérique « ~9 »,mise à vide
+114,C11M201,pressure_mmhg,pression de 0 mmHg (impossible),mise à vide
+69,193R002,gaz,somme des fractions = 0.98 (attendu 1),à vérifier
+75,203R002,gaz,somme des fractions = 0.98 (attendu 1),à vérifier
+76,203F001,gaz,somme des fractions = 0.98 (attendu 1),à vérifier
+79,179F001,gaz,somme des fractions = 0.98 (attendu 1),à vérifier
+80,207F001,gaz,somme des fractions = 0.98 (attendu 1),à vérifier
+81,207F002,gaz,somme des fractions = 0.98 (attendu 1),à vérifier
+70,193F001,test_id,identifiant « 193F001 » en double,à vérifier
+73,193F001,test_id,identifiant « 193F001 » en double,à vérifier
