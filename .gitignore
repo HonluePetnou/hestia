@@ -32,3 +32,6 @@ Thumbs.db
 .idea/
 .vscode/
 .claude/
+
+# PSI corpus build output is committed (ready-to-index chunks)
+!data/psi_corpus/out/
