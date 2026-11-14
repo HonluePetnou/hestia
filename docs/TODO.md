@@ -16,6 +16,38 @@ Pour le détail technique, voir [HANDOFF.md](HANDOFF.md) et [data/psi_corpus/REA
 | CI GitHub | Ne démarre pas (`startup_failure`) |
 | Déploiement | Aucun |
 
+## Planning
+
+### Samedi 14/11 : faire marcher le vrai RAG
+Matin
+- [ ] Mettre la clé Gemini dans `.env`, puis relancer l'ingestion avec `--force`
+- [ ] Brancher `data/psi_corpus/out/chunks.jsonl` dans `ingest.py`, puis l'ingérer
+- [ ] Débloquer la CI (*Settings → Actions*)
+
+Après-midi
+- [ ] Tester `/ask` et `/compare/insights` avec le vrai LLM, puis ajuster `RETRIEVAL_MIN_SCORE`
+- [ ] Lancer `pnpm build` et corriger ce qui casse
+- [ ] Télécharger les CSV PSI de BASS-II et ajouter les essais BASS
+- [ ] Ajouter 2 ou 3 findings ACME
+
+Soir
+- [ ] Relire les findings et les annotations en équipe
+- [ ] Choisir l'hébergement (API, base pgvector, frontend)
+
+### Dimanche 15/11 : déployer et préparer le pitch
+Matin
+- [ ] Déployer l'API, la base et le frontend, puis vérifier l'URL publique
+- [ ] Faire un passage de démo complet sur l'URL publique et corriger ce qui bloque
+
+Après-midi
+- [ ] Écrire le script du pitch
+- [ ] Faire les slides
+- [ ] Tourner la vidéo de démo
+
+Soir
+- [ ] Soumettre (lien, vidéo, slides)
+- [ ] S'il reste du temps : CSV de CFI-G et SPICE, streaming, pagination de la page FLEX
+
 ## 1. Bloquant pour la démo
 
 - [ ] **Clé Gemini** : ajouter `LLM_PROVIDER=gemini` et `GEMINI_API_KEY=...` dans `.env`.
