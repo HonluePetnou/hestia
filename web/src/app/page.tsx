@@ -1,7 +1,8 @@
 import { ArrowUpRight, FileText, Flame, FlaskConical, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, type CSSProperties } from "react";
 
+import { CountUp } from "@/components/CountUp";
 import { ArtStrip, DropletFlame, Radar } from "@/components/visuals";
 import { Badge, Bar, Card, CardHeader, ErrorBox, IconButton, Loading, Stat, cx } from "@/components/ui";
 import { api, attempt, type Schemas } from "@/lib/api";
@@ -9,19 +10,20 @@ import { metaFor } from "@/lib/content";
 
 function Hero({ stats }: { stats?: Schemas["StatsResponse"] }) {
   const reports = stats?.documents ? String(stats.documents) : "—";
+  const d = (s: number) => ({ "--delay": `${s}s` }) as CSSProperties;
   return (
     <section className="grid items-center gap-8 lg:grid-cols-[640px_1fr_auto] lg:gap-0">
       <div className="flex flex-col gap-7">
-        <Badge tone="success" className="self-start">Knowledge base · {reports} NASA reports</Badge>
+        <div className="rise self-start" style={d(0)}><Badge tone="success">Knowledge base · {reports} NASA reports</Badge></div>
         <h1 className="t-display-xl">
-          <span className="text-fg">Guard the<br />flame<br /></span>
-          <span className="text-ember">beyond Earth.</span>
+          <span className="rise block text-fg" style={d(0.1)}>Guard the<br />flame</span>
+          <span className="rise block text-ember" style={d(0.25)}>beyond Earth.</span>
         </h1>
-        <p className="t-body-l max-w-[520px] text-fg-2">
+        <p className="rise t-body-l max-w-[520px] text-fg-2" style={d(0.4)}>
           Decades of NASA microgravity combustion experiments, summarized, ranked and explained for Moon and Mars
           fire safety. Every answer cites its NASA source.
         </p>
-        <div className="flex flex-wrap gap-4">
+        <div className="rise flex flex-wrap gap-4" style={d(0.55)}>
           <Link href="/assistant" className="t-caps inline-flex items-center gap-3 rounded-full bg-inverse px-6 py-3 text-fg-inverse transition hover:bg-white/90">
             Ask the assistant <ArrowUpRight aria-hidden size={16} strokeWidth={1.75} />
           </Link>
@@ -31,19 +33,19 @@ function Hero({ stats }: { stats?: Schemas["StatsResponse"] }) {
         </div>
       </div>
 
-      <div className="relative mx-auto h-[540px] w-full max-w-[600px]">
+      <div className="rise relative mx-auto h-[540px] w-full max-w-[600px]" style={d(0.2)}>
         <DropletFlame className="absolute inset-0 h-full w-full" />
-        <div className="glass absolute top-[70px] left-[60%] flex flex-col gap-1 rounded-lg px-4 py-3 whitespace-nowrap">
+        <div className="rise glass absolute top-[70px] left-[60%] flex flex-col gap-1 rounded-lg px-4 py-3 whitespace-nowrap" style={d(0.9)}>
           <span className="t-caps-s text-fg-3">● Featured test</span>
           <span className="font-display text-[16px] text-fg">FLEX · n-heptane</span>
           <span className="t-mono-s text-fg-2">O₂ 21% · 1 atm · d₀ 3.0 mm</span>
         </div>
       </div>
 
-      <div className="flex justify-center gap-7 border-line lg:flex-col lg:border-l lg:pl-6">
-        <Stat icon={FlaskConical} value={stats ? String(stats.experiments).padStart(2, "0") : "—"} label="Experiments indexed" />
-        <Stat icon={FileText} value={reports} label="NASA reports" />
-        <Stat icon={Flame} value={stats ? String(stats.flex_tests) : "—"} label="Droplet tests (FLEX)" />
+      <div className="rise flex justify-center gap-7 border-line lg:flex-col lg:border-l lg:pl-6" style={d(0.7)}>
+        <Stat icon={FlaskConical} value={stats ? <CountUp value={stats.experiments} pad={2} /> : "—"} label="Experiments indexed" />
+        <Stat icon={FileText} value={stats?.documents ? <CountUp value={stats.documents} /> : "—"} label="NASA reports" />
+        <Stat icon={Flame} value={stats ? <CountUp value={stats.flex_tests} /> : "—"} label="Droplet tests (FLEX)" />
       </div>
     </section>
   );

@@ -3,6 +3,8 @@
  * crisp and themeable: starfield, ember glow, droplet flame, radar, gauges, art strips.
  */
 
+import type { CSSProperties } from "react";
+
 /* Deterministic pseudo-random generator so server and client render the same stars. */
 function rng(seed: number) {
   let s = seed;
@@ -14,7 +16,12 @@ export function SpaceBackdrop() {
   const q = (n: number) => Math.round(n * 10) / 10;
   const stars = Array.from({ length: 110 }, () => ({
     x: q(r() * 1440), y: q(r() * 1024), d: r() < 0.85 ? 0.75 : 1.25, o: q(0.12 + r() * 0.45),
+    t: q(2.5 + r() * 5), delay: q(r() * 6),
   }));
+  const shooting = [
+    { top: "12%", left: "88%", t: "13s", delay: "3s" },
+    { top: "30%", left: "70%", t: "19s", delay: "11s" },
+  ];
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div
@@ -24,11 +31,20 @@ export function SpaceBackdrop() {
           background: "radial-gradient(closest-side, rgba(255,122,48,0.10), rgba(90,169,255,0.05) 45%, rgba(7,8,12,0) 100%)",
         }}
       />
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 1024" preserveAspectRatio="xMidYMid slice">
+      <svg className="star-field absolute -inset-12 h-[calc(100%+6rem)] w-[calc(100%+6rem)]" viewBox="0 0 1440 1024" preserveAspectRatio="xMidYMid slice">
         {stars.map((s, i) => (
-          <circle key={i} cx={s.x} cy={s.y} r={s.d} fill="#fff" opacity={s.o} />
+          <circle
+            key={i} cx={s.x} cy={s.y} r={s.d} fill="#fff" opacity={s.o} className="star"
+            style={{ "--o": s.o, "--t": `${s.t}s`, "--delay": `${s.delay}s` } as CSSProperties}
+          />
         ))}
       </svg>
+      {shooting.map((s, i) => (
+        <span
+          key={i} className="shooting-star"
+          style={{ top: s.top, left: s.left, "--t": s.t, "--delay": s.delay } as CSSProperties}
+        />
+      ))}
     </div>
   );
 }
@@ -50,18 +66,22 @@ export function DropletFlame({ className, showOrbits = true }: { className?: str
         <filter id="df-glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="14" /></filter>
       </defs>
       <circle cx={cx} cy={cy} r={260} fill="url(#df-halo)" />
-      <circle cx={cx} cy={cy} r={150} fill="url(#df-shell)" />
-      <circle cx={cx} cy={cy} r={85} fill="url(#df-soot)" />
-      <circle cx={cx} cy={cy} r={23} fill="#FF7A30" opacity="0.55" filter="url(#df-glow)" />
+      <circle cx={cx} cy={cy} r={150} fill="url(#df-shell)" className="flame-breathe" />
+      <circle cx={cx} cy={cy} r={85} fill="url(#df-soot)" className="flame-flicker" />
+      <circle cx={cx} cy={cy} r={23} fill="#FF7A30" opacity="0.55" filter="url(#df-glow)" className="flame-flicker" />
       <circle cx={cx} cy={cy} r={23} fill="url(#df-drop)" />
       {showOrbits && (
         <>
           <ellipse cx={cx} cy={cy} rx={280} ry={85} fill="none" stroke="rgba(230,232,238,0.14)" transform={`rotate(-14 ${cx} ${cy})`} />
-          <circle cx={cx} cy={cy} r={215} fill="none" stroke="rgba(230,232,238,0.14)" strokeDasharray="2 6" />
-          <circle cx={540} cy={214} r={4} fill="#FF7A30" />
-          <circle cx={52.5} cy={312.5} r={2.5} fill="#E6E8EE" />
-          <circle cx={422} cy={447} r={2} fill="#5AA9FF" />
-          <circle cx={181.5} cy={75.5} r={1.5} fill="#E6E8EE" />
+          <g className="orbit-spin-rev">
+            <circle cx={cx} cy={cy} r={215} fill="none" stroke="rgba(230,232,238,0.14)" strokeDasharray="2 6" />
+          </g>
+          <g className="orbit-spin">
+            <circle cx={540} cy={214} r={4} fill="#FF7A30" />
+            <circle cx={52.5} cy={312.5} r={2.5} fill="#E6E8EE" />
+            <circle cx={422} cy={447} r={2} fill="#5AA9FF" />
+            <circle cx={181.5} cy={75.5} r={1.5} fill="#E6E8EE" />
+          </g>
         </>
       )}
     </svg>

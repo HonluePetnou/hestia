@@ -131,3 +131,53 @@ body {
 .range-dual .range::-moz-range-thumb { pointer-events: auto; }
 
 .range:focus-visible { outline: 2px solid var(--color-accent-soft); outline-offset: 4px; border-radius: 999px; }
+
+/* ---------------- Motion ---------------- */
+/* Starfield: each star twinkles on its own period/delay (set inline); the field drifts slowly. */
+@keyframes twinkle {
+  0%, 100% { opacity: var(--o); }
+  50% { opacity: calc(var(--o) * 0.25); }
+}
+.star { animation: twinkle var(--t, 4s) ease-in-out var(--delay, 0s) infinite; }
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-40px, -24px, 0); }
+}
+.star-field { animation: drift 90s linear infinite alternate; }
+/* Shooting star: a short streak crossing the sky, then a long pause. */
+@keyframes shoot {
+  0% { transform: translate3d(0, 0, 0) rotate(-24deg); opacity: 0; }
+  2% { opacity: 1; }
+  8% { transform: translate3d(-520px, 230px, 0) rotate(-24deg); opacity: 0; }
+  100% { transform: translate3d(-520px, 230px, 0) rotate(-24deg); opacity: 0; }
+}
+.shooting-star {
+  position: absolute; width: 140px; height: 1px; opacity: 0;
+  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.85));
+  animation: shoot var(--t, 11s) ease-out var(--delay, 2s) infinite;
+}
+
+/* Hero droplet flame: the shell breathes, the orbit rings turn. */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.035); opacity: 0.85; }
+}
+.flame-breathe { transform-box: fill-box; transform-origin: center; animation: breathe 5s ease-in-out infinite; }
+.flame-flicker { transform-box: fill-box; transform-origin: center; animation: breathe 2.6s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.orbit-spin { transform-box: view-box; transform-origin: 300px 270px; animation: spin 80s linear infinite; }
+.orbit-spin-rev { transform-box: view-box; transform-origin: 300px 270px; animation: spin 140s linear infinite reverse; }
+
+/* Entrance: content rises in, staggered with --delay. */
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.rise { animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay, 0s) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star, .star-field, .shooting-star, .flame-breathe, .flame-flicker, .orbit-spin, .orbit-spin-rev, .rise {
+    animation: none !important;
+  }
+  .shooting-star { display: none; }
+}

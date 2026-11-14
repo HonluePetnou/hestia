@@ -93,7 +93,7 @@ export function CardHeader({ title, meta }: { title: string; meta?: string }) {
 }
 
 /* ---------------- Stat (stats rail) ---------------- */
-export function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: string; label: string }) {
+export function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: ReactNode; label: string }) {
   return (
     <div className="flex w-[120px] flex-col items-center gap-1.5 text-center">
       <Icon aria-hidden size={18} strokeWidth={1.75} className="text-ember" />
