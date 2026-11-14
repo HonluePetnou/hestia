@@ -47,10 +47,17 @@ class Document(Base):
     year: Mapped[int | None] = mapped_column(Integer)
     url: Mapped[str | None] = mapped_column(Text)
     pdf_path: Mapped[str | None] = mapped_column(Text)
+    pdf_url: Mapped[str | None] = mapped_column(Text)
     text_path: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     chunks: Mapped[list["Chunk"]] = relationship(back_populates="document")
+
+    def page_url(self, page: int) -> str:
+        """Link that opens the PDF at `page`, or the NTRS record page as a fallback."""
+        if self.pdf_url:
+            return f"{self.pdf_url}#page={page}"
+        return self.url or f"https://ntrs.nasa.gov/citations/{self.ntrs_id}"
 
 
 class Chunk(Base):
@@ -77,6 +84,8 @@ class Experiment(Base):
     description: Mapped[str | None] = mapped_column(Text)
     objectives: Mapped[str | None] = mapped_column(Text)
     psi_doi: Mapped[str | None] = mapped_column(Text)
+    years: Mapped[str | None] = mapped_column(Text)
+    fuels: Mapped[str | None] = mapped_column(Text)
 
     test_runs: Mapped[list["TestRun"]] = relationship(back_populates="experiment")
     findings: Mapped[list["Finding"]] = relationship(back_populates="experiment")
@@ -132,3 +141,13 @@ class FindingSource(Base):
 
     finding: Mapped[Finding] = relationship(back_populates="sources")
     document: Mapped[Document] = relationship()
+
+
+class AICache(Base):
+    """Cached LLM output (e.g. comparison summaries), keyed by request + provider."""
+
+    __tablename__ = "ai_cache"
+
+    key: Mapped[str] = mapped_column(Text, primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

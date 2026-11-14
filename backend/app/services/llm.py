@@ -10,9 +10,11 @@ import hashlib
 import math
 import struct
 from functools import lru_cache
-from typing import Protocol
+from typing import Literal, Protocol
 
 from app.config import Settings, get_settings
+
+EmbedTask = Literal["document", "query"]
 
 
 class LLMProvider(Protocol):
@@ -20,7 +22,7 @@ class LLMProvider(Protocol):
         self, system: str, messages: list[dict], json_schema: dict | None = None
     ) -> str: ...
 
-    def embed(self, texts: list[str]) -> list[list[float]]: ...
+    def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]: ...
 
 
 class LLMError(RuntimeError):
@@ -46,7 +48,7 @@ class MockProvider:
             return '{"mock": true}'
         return self.CANNED_ANSWER
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
         return [self._embed_one(t) for t in texts]
 
     def _embed_one(self, text: str) -> list[float]:
@@ -88,7 +90,7 @@ class OpenAIProvider:
         )
         return resp.choices[0].message.content or ""
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
         resp = self.client.embeddings.create(
             model=self.embedding_model, input=texts, dimensions=self.dim
         )
@@ -126,13 +128,16 @@ class GeminiProvider:
         )
         return resp.text or ""
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
         from google.genai import types
 
         resp = self.client.models.embed_content(
             model=self.embedding_model,
             contents=texts,
-            config=types.EmbedContentConfig(output_dimensionality=self.dim),
+            config=types.EmbedContentConfig(
+                output_dimensionality=self.dim,
+                task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
+            ),
         )
         return [list(e.values or []) for e in resp.embeddings or []]
 
@@ -167,7 +172,7 @@ class AnthropicProvider:
             raise LLMError("The model declined to answer this request.")
         return "".join(b.text for b in resp.content if b.type == "text")
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
         raise NotImplementedError(
             "Anthropic has no embeddings API. Use LLM_PROVIDER=openai/gemini for embeddings, "
             "or add a separate embedding provider."

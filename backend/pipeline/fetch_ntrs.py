@@ -10,6 +10,7 @@ API: https://ntrs.nasa.gov/api/openapi/
 import argparse
 import csv
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -125,6 +126,28 @@ def download_pdf(
     return False
 
 
+RELEVANT = re.compile(
+    r"flame|fire|combust|smoke|flammab|burn|droplet|soot|ignit|extinguish|spacecraft|"
+    r"microgravity|reduced.gravity|saffire|bass|flex|acme|same",
+    re.I,
+)
+
+
+OFF_TOPIC = re.compile(r"atmospher|troposph|stratosph|lidar|laser radar|modis|viirs", re.I)
+
+
+def is_relevant(title: str) -> bool:
+    """Drop off-topic hits (e.g. atmospheric aerosol or lidar papers for smoke queries)."""
+    return bool(RELEVANT.search(title)) and not OFF_TOPIC.search(title)
+
+
+def read_catalog(path: Path) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        return {}
+    with path.open(encoding="utf-8") as fh:
+        return {r["id"]: r for r in csv.DictReader(fh)}
+
+
 def write_catalog(rows: list[dict[str, Any]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as fh:
@@ -138,15 +161,20 @@ def main() -> None:
     parser.add_argument("--queries", type=Path, default=QUERIES_FILE)
     parser.add_argument("--out", type=Path, default=OUT_DIR)
     parser.add_argument("--max-per-query", type=int, default=15)
-    parser.add_argument("--max-total", type=int, default=40)
+    parser.add_argument("--max-total", type=int, default=40, help="new records per run")
     parser.add_argument("--delay", type=float, default=1.0, help="seconds between requests")
     parser.add_argument("--max-mb", type=float, default=60, help="skip larger PDFs")
     parser.add_argument("--no-pdf", action="store_true", help="only write the catalog")
+    parser.add_argument("--fresh", action="store_true", help="ignore the existing catalog.csv")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    records: dict[str, dict[str, Any]] = {}
+    # Merge with the existing catalog so re-running never drops documents already indexed.
+    records: dict[str, dict[str, Any]] = (
+        {} if args.fresh else read_catalog(args.out / "catalog.csv")
+    )
+    args.max_total += len(records)
     headers = {"User-Agent": "hestia-space-apps-2026/0.1 (research prototype)"}
     with httpx.Client(timeout=60, headers=headers) as client:
         for query in read_queries(args.queries):
@@ -156,6 +184,8 @@ def main() -> None:
             new = 0
             for r in results:
                 rec = parse_record(r)
+                if not is_relevant(rec["title"]):
+                    continue
                 if rec["id"] not in records and len(records) < args.max_total:
                     records[rec["id"]] = rec
                     new += 1

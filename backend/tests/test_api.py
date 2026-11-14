@@ -50,10 +50,40 @@ def test_ranking_sorted() -> None:
     assert client.get("/ranking", params={"target": "venus"}).status_code == 422
 
 
-def test_ask_mock() -> None:
-    body = client.post("/ask", json={"question": "How do flames spread in microgravity?"}).json()
-    assert body["answer"] and body["citations"]
-    assert body["insufficient_data"] is False
+def test_ask_shape() -> None:
+    r = client.post("/ask", json={"question": "How do flames spread in microgravity?"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["answer"]
+    assert isinstance(body["insufficient_data"], bool)
+    # every citation in the list must also appear in the answer text
+    for c in body["citations"]:
+        assert f"[{c['ntrs_id']}, p.{c['page']}]" in body["answer"]
+
+
+def test_ask_accepts_history() -> None:
+    history = [{"role": "user", "content": "What is FLEX?"}, {"role": "assistant", "content": "x"}]
+    r = client.post("/ask", json={"question": "And on Mars?", "history": history})
+    assert r.status_code == 200
+    bad = client.post("/ask", json={"question": "Hi there", "history": [{"role": "system"}]})
+    assert bad.status_code == 422
+
+
+def test_stats() -> None:
+    body = client.get("/stats").json()
+    assert body["experiments"] >= 5 and isinstance(body["live_data"], bool)
+
+
+def test_compare_insights() -> None:
+    body = client.get("/compare/insights", params={"codes": "BASS,FLEX"}).json()
+    assert body["codes"] == ["BASS", "FLEX"]
+    for p in body["points"]:
+        assert p["text"]
+
+
+def test_model_info() -> None:
+    body = client.get("/predict/model").json()
+    assert body["model"] and isinstance(body["trained"], bool)
 
 
 def test_predict() -> None:
@@ -66,6 +96,7 @@ def test_predict() -> None:
     body = client.post("/predict", json=payload).json()
     assert body["burn_rate_k"] > 0
     assert 0 <= body["extinction_probability"] <= 1
+    assert body["droplet_lifetime_s"] > 0 and body["in_training_range"] is True
 
 
 def test_openapi_lists_all_routes() -> None:
@@ -78,5 +109,8 @@ def test_openapi_lists_all_routes() -> None:
         "/ranking",
         "/ask",
         "/predict",
+        "/predict/model",
+        "/stats",
+        "/compare/insights",
     ):
         assert p in paths

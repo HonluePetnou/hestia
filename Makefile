@@ -1,4 +1,4 @@
-.PHONY: up down migrate api web seed fetch extract lint test types install
+.PHONY: up down migrate api web seed fetch extract flex ingest lint test types install
 
 BACKEND = cd backend &&
 WEB = cd web &&
@@ -30,6 +30,12 @@ fetch:            ## fetch NTRS catalog + PDFs
 
 extract:          ## extract per-page text from PDFs
 	$(BACKEND) uv run python -m pipeline.extract_text
+
+flex:             ## parse FLEX Table IX from the extracted NTRS text into data/flex
+	$(BACKEND) uv run python -m pipeline.flex_table
+
+ingest:           ## load documents (chunk + embed), experiments and findings; ARGS=--force to re-embed
+	$(BACKEND) uv run python -m pipeline.ingest $(ARGS)
 
 lint:             ## ruff + eslint + tsc
 	$(BACKEND) uv run ruff check . && uv run ruff format --check .

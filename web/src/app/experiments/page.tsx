@@ -23,7 +23,7 @@ async function Grid({ searchParams }: { searchParams: Promise<SP> }) {
   if (!data) return <ErrorBox error={error} />;
   const q = one(sp.q)?.toLowerCase();
   const items = q
-    ? data.items.filter((e) => `${e.code} ${e.name} ${metaFor(e.code).fuels}`.toLowerCase().includes(q))
+    ? data.items.filter((e) => `${e.code} ${e.name} ${e.fuels ?? metaFor(e.code).fuels}`.toLowerCase().includes(q))
     : data.items;
 
   return (
@@ -46,8 +46,8 @@ async function Grid({ searchParams }: { searchParams: Promise<SP> }) {
             </div>
             <dl className="mt-auto grid grid-cols-[84px_1fr_84px] border-t border-line pt-3">
               <div className="flex flex-col gap-1"><dt className="t-caps-s text-fg-3">Test runs</dt><dd className="font-display text-[18px]">{e.test_run_count}</dd></div>
-              <div className="flex flex-col gap-1"><dt className="t-caps-s text-fg-3">Fuels</dt><dd className="t-mono-m truncate">{meta.fuels}</dd></div>
-              <div className="flex flex-col gap-1"><dt className="t-caps-s text-fg-3">Since</dt><dd className="font-display text-[18px]">{meta.years}</dd></div>
+              <div className="flex flex-col gap-1"><dt className="t-caps-s text-fg-3">Fuels</dt><dd className="t-mono-m truncate" title={e.fuels ?? meta.fuels}>{e.fuels ?? meta.fuels}</dd></div>
+              <div className="flex flex-col gap-1"><dt className="t-caps-s text-fg-3">Since</dt><dd className="font-display text-[18px]">{e.years?.match(/\d{4}/)?.[0] ?? meta.years}</dd></div>
             </dl>
           </article>
         );

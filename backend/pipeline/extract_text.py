@@ -40,7 +40,9 @@ def process(pdf_path: Path, text_dir: Path, force: bool, min_cpp: int) -> dict:
     out = text_dir / f"{ntrs_id}.jsonl"
     try:
         if out.exists() and not force:
-            pages = [json.loads(line) for line in out.read_text(encoding="utf-8").splitlines()]
+            # split on newlines only: str.splitlines() also breaks on U+2028 inside JSON
+            lines = out.read_text(encoding="utf-8").split("\n")
+            pages = [json.loads(line) for line in lines if line.strip()]
         else:
             pages = extract_pages(pdf_path)
             with out.open("w", encoding="utf-8") as fh:

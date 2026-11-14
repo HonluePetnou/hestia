@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import ask, compare, experiments, health, predict, ranking
+from app.routers import ask, compare, experiments, health, predict, ranking, stats
 
 app = FastAPI(
     title="Hestia API",
@@ -19,5 +19,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for r in (health, experiments, compare, ranking, ask, predict):
+for r in (health, stats, experiments, compare, ranking, ask, predict):
     app.include_router(r.router)

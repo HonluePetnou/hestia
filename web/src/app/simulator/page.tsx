@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Gauge } from "@/components/visuals";
-import { Badge, Button, Card, CardHeader, ErrorBox, Fact, Loading, Segmented } from "@/components/ui";
+import { Badge, Button, Card, CardHeader, ErrorBox, Fact, Loading } from "@/components/ui";
 import { api, type Schemas } from "@/lib/api";
 
 // WebGL only exists in the browser, so the canvas is never server-rendered.
@@ -14,13 +14,8 @@ const DropletScene = dynamic(() => import("@/components/DropletScene"), {
   loading: () => <div className="flex h-full items-center justify-center"><Loading label="Loading 3D scene…" /></div>,
 });
 
-const FUELS = ["n-heptane", "methanol", "n-decane", "ethanol"];
-const GRAVITY = [
-  { value: "micro", label: "µg" },
-  { value: "moon", label: "Moon" },
-  { value: "mars", label: "Mars" },
-  { value: "earth", label: "Earth" },
-];
+// The model is trained on FLEX Table IX, which only contains these two fuels.
+const FUELS = ["n-heptane", "methanol"];
 const STANDOFF = 5.5; // flame / droplet diameter ratio, typical order of magnitude (approximation)
 
 function Slider({ label, value, unit, min, max, step, onChange }: { label: string; value: number; unit: string; min: number; max: number; step: number; onChange: (v: number) => void }) {
@@ -42,7 +37,8 @@ export default function Page() {
   const [o2, setO2] = useState(21);
   const [pressure, setPressure] = useState(101);
   const [d0, setD0] = useState(3.0);
-  const [gravity, setGravity] = useState("micro");
+  const [co2, setCo2] = useState(0);
+  const [info, setInfo] = useState<Schemas["ModelInfo"] | null>(null);
   const [pred, setPred] = useState<Schemas["PredictResponse"] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
@@ -53,18 +49,24 @@ export default function Page() {
   const run = useCallback(async () => {
     setPending(true); setError(null); setPlaying(false); setT(0);
     try {
-      setPred(await api.predict({ fuel, oxygen_percent: o2, pressure_kpa: pressure, initial_diameter_mm: d0 }));
+      setPred(await api.predict({ fuel, oxygen_percent: o2, pressure_kpa: pressure, initial_diameter_mm: d0, co2_percent: co2 }));
     } catch (e) { setError(e); } finally { setPending(false); }
-  }, [fuel, o2, pressure, d0]);
+  }, [fuel, o2, pressure, d0, co2]);
 
-  // First prediction with the default conditions (state is set from the promise callback).
+  useEffect(() => {
+    api.modelInfo().then(setInfo, () => undefined);
+  }, []);
+
+  // Predict automatically (debounced) whenever a condition changes.
   useEffect(() => {
     let alive = true;
-    api.predict({ fuel: "n-heptane", oxygen_percent: 21, pressure_kpa: 101, initial_diameter_mm: 3 })
-      .then((p) => { if (alive) setPred(p); })
-      .catch((e: unknown) => { if (alive) setError(e); });
-    return () => { alive = false; };
-  }, []);
+    const id = setTimeout(() => {
+      api.predict({ fuel, oxygen_percent: o2, pressure_kpa: pressure, initial_diameter_mm: d0, co2_percent: co2 })
+        .then((p) => { if (alive) { setPred(p); setError(null); setT(0); } })
+        .catch((e: unknown) => { if (alive) setError(e); });
+    }, 250);
+    return () => { alive = false; clearTimeout(id); };
+  }, [fuel, o2, pressure, d0, co2]);
 
   const K = pred?.burn_rate_k ?? 0.6;
   const burnTime = (d0 * d0) / Math.max(K, 0.01); // d² law: d² = d0² − K·t
@@ -105,17 +107,19 @@ export default function Page() {
           </span>
         </label>
         <Slider label="Oxygen" value={o2} unit="% O₂" min={10} max={40} step={1} onChange={setO2} />
-        <Slider label="Pressure" value={pressure} unit="kPa" min={50} max={120} step={1} onChange={setPressure} />
-        <Slider label="Initial diameter" value={d0} unit="mm" min={1.5} max={5} step={0.1} onChange={setD0} />
-        <div className="flex flex-col gap-2.5">
-          <span className="t-caps-s text-fg-3">Gravity</span>
-          <Segmented label="Gravity" options={GRAVITY} value={gravity} onChange={setGravity} className="w-full" />
-        </div>
+        <Slider label="Pressure" value={pressure} unit="kPa" min={50} max={320} step={1} onChange={setPressure} />
+        <Slider label="Initial diameter" value={d0} unit="mm" min={1} max={5} step={0.1} onChange={setD0} />
+        <Slider label="CO₂ suppressant" value={co2} unit="% CO₂" min={0} max={70} step={1} onChange={setCo2} />
         <div className="mt-auto flex flex-col gap-2 pt-2">
           <Button variant="accent" className="w-full" onClick={() => void run()} disabled={pending}>
-            {pending ? "Predicting…" : "Run prediction"}
+            {pending ? "Predicting…" : "Replay from t = 0"}
           </Button>
-          <p className="t-caps-s text-center text-fg-3">Model · {pred?.model ?? "—"} · gravity not used yet</p>
+          <p className="t-caps-s text-center text-fg-3">
+            {info?.trained
+              ? `Trained on ${info.k_samples} ISS tests · R² ${info.k_r2_cv?.toFixed(2)} · AUC ${info.extinction_auc_cv?.toFixed(2)}`
+              : `Model · ${pred?.model ?? "—"}`}
+          </p>
+          <p className="t-caps-s text-center text-fg-3">Microgravity only · FLEX, NASA/TP-2015-216046</p>
         </div>
       </Card>
 
@@ -151,12 +155,16 @@ export default function Page() {
       <Card className="gap-[18px] p-[22px]">
         <CardHeader title="Prediction" meta={pred?.model ?? ""} />
         {error !== null && <ErrorBox error={error} />}
+        {pred && !pred.in_training_range && (
+          <Badge tone="warning" className="self-start">Outside the tested range · extrapolation</Badge>
+        )}
         <Gauge value={K / 1.2} display={K.toFixed(2)} unit="mm²/s" label="Burn rate K" color="var(--color-accent-default)" />
         <Gauge value={pred?.extinction_probability ?? 0} display={`${Math.round((pred?.extinction_probability ?? 0) * 100)}%`} unit="chance" label="Extinction probability" color="var(--color-data-primary)" />
         <div>
           <Fact label="Droplet diameter" value={`${d.toFixed(2)} mm`} />
           <Fact label="Flame diameter ≈" value={`${(d * STANDOFF).toFixed(1)} mm`} />
           <Fact label="Burn time (d² law)" value={`${burnTime.toFixed(1)} s`} />
+          <Fact label="Atmosphere" value={`${o2}% O₂ · ${co2}% CO₂ · ${pressure} kPa`} />
         </div>
         <div className="mt-auto flex items-center justify-between rounded-md border border-line-strong bg-raised px-3.5 py-3">
           <span className="t-caps-s text-fg-3">Predicted outcome</span>

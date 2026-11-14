@@ -4,14 +4,15 @@ import { Suspense } from "react";
 
 import { ArtStrip, DropletFlame, Radar } from "@/components/visuals";
 import { Badge, Bar, Card, CardHeader, ErrorBox, IconButton, Loading, Stat, cx } from "@/components/ui";
-import { api, attempt } from "@/lib/api";
-import { CORPUS, TIMELINE, metaFor } from "@/lib/content";
+import { api, attempt, type Schemas } from "@/lib/api";
+import { metaFor } from "@/lib/content";
 
-function Hero({ experimentCount }: { experimentCount: number }) {
+function Hero({ stats }: { stats?: Schemas["StatsResponse"] }) {
+  const reports = stats?.documents ? String(stats.documents) : "—";
   return (
     <section className="grid items-center gap-8 lg:grid-cols-[640px_1fr_auto] lg:gap-0">
       <div className="flex flex-col gap-7">
-        <Badge tone="success" className="self-start">Knowledge base · {CORPUS.reports} NASA reports</Badge>
+        <Badge tone="success" className="self-start">Knowledge base · {reports} NASA reports</Badge>
         <h1 className="t-display-xl">
           <span className="text-fg">Guard the<br />flame<br /></span>
           <span className="text-ember">beyond Earth.</span>
@@ -40,9 +41,9 @@ function Hero({ experimentCount }: { experimentCount: number }) {
       </div>
 
       <div className="flex justify-center gap-7 border-line lg:flex-col lg:border-l lg:pl-6">
-        <Stat icon={FlaskConical} value={String(experimentCount).padStart(2, "0")} label="Experiments indexed" />
-        <Stat icon={FileText} value={String(CORPUS.reports)} label="NASA reports" />
-        <Stat icon={Flame} value={CORPUS.flexTests} label="Droplet tests (FLEX)" />
+        <Stat icon={FlaskConical} value={stats ? String(stats.experiments).padStart(2, "0") : "—"} label="Experiments indexed" />
+        <Stat icon={FileText} value={reports} label="NASA reports" />
+        <Stat icon={Flame} value={stats ? String(stats.flex_tests) : "—"} label="Droplet tests (FLEX)" />
       </div>
     </section>
   );
@@ -50,10 +51,14 @@ function Hero({ experimentCount }: { experimentCount: number }) {
 
 async function Overview() {
   const { data, error } = await attempt(
-    Promise.all([api.listExperiments(), api.ranking("moon"), api.ranking("mars"), api.getExperiment("SAFFIRE")]),
+    Promise.all([api.stats(), api.listExperiments(), api.ranking("moon"), api.ranking("mars"), api.getExperiment("SAFFIRE")]),
   );
-  if (!data) return <><Hero experimentCount={5} /><ErrorBox error={error} /></>;
-  const [experiments, moon, mars, featured] = data;
+  if (!data) return <><Hero /><ErrorBox error={error} /></>;
+  const [stats, experiments, moon, mars, featured] = data;
+  const timeline = [...experiments.items]
+    .map((e) => ({ code: e.code, desc: metaFor(e.code).tagline, year: (e.years ?? "").match(/\d{4}/)?.[0] ?? "—" }))
+    .sort((a, b) => a.year.localeCompare(b.year));
+  const latest = timeline.reduce((acc, t) => (t.year > acc ? t.year : acc), "");
 
   const dots = [
     ...moon.findings.map((f, i) => ({ target: "moon" as const, r: (1 - f.relevance_moon) * 46 + 8, a: i * 2.1 })),
@@ -62,19 +67,19 @@ async function Overview() {
 
   return (
     <>
-      <Hero experimentCount={experiments.total} />
+      <Hero stats={stats} />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card className="min-h-[291px]">
           <CardHeader title="Knowledge base" meta="NTRS" />
           <div className="flex-1" />
           <div className="flex items-baseline gap-2">
-            <span className="t-data-l">{CORPUS.indexed}</span>
-            <span className="t-body-s text-fg-3">/ {CORPUS.reports} PDFs indexed</span>
+            <span className="t-data-l">{stats.chunks.toLocaleString("en-US")}</span>
+            <span className="t-body-s text-fg-3">passages searchable</span>
           </div>
-          <Bar value={CORPUS.indexed / CORPUS.reports} />
+          <Bar value={stats.findings ? Math.min(stats.findings / 25, 1) : 0} />
           <div className="flex items-center justify-between">
-            <Badge tone="warning">{CORPUS.flagged} scan flagged</Badge>
-            <span className="t-mono-s text-fg-2">{Math.round((CORPUS.indexed / CORPUS.reports) * 100)}%</span>
+            <Badge tone={stats.live_data ? "success" : "warning"}>{stats.live_data ? `${stats.findings} sourced findings` : "Mock data"}</Badge>
+            <span className="t-mono-s text-fg-2">{stats.year_min && stats.year_max ? `${stats.year_min}–${stats.year_max}` : "—"}</span>
           </div>
         </Card>
 
@@ -115,21 +120,21 @@ async function Overview() {
         <Card className="min-h-[291px]">
           <CardHeader title="Timeline" meta="ISS era" />
           <ol className="flex flex-col gap-1">
-            {TIMELINE.map((t) => (
+            {timeline.map((t) => (
               <li key={t.code}>
                 <Link
                   href={`/experiments/${t.code}`}
                   className={cx(
                     "flex items-center gap-2.5 rounded-md border px-2.5 py-1.5 transition hover:bg-raised",
-                    t.state === "active" ? "border-line-strong bg-raised" : "border-transparent",
+                    t.year === latest ? "border-line-strong bg-raised" : "border-transparent",
                   )}
                 >
-                  <span className={cx("size-[7px] rounded-full", t.state === "done" && "bg-ok", t.state === "active" && "bg-ember", t.state === "next" && "border border-fg-3")} />
+                  <span className={cx("size-[7px] rounded-full", t.year === latest ? "bg-ember" : "bg-ok")} />
                   <span className="flex flex-1 flex-col">
-                    <span className={cx("text-[13px] font-semibold", t.state === "next" ? "text-fg-3" : "text-fg")}>{t.code}</span>
+                    <span className="text-[13px] font-semibold text-fg">{t.code}</span>
                     <span className="t-caps-s text-fg-3">{t.desc}</span>
                   </span>
-                  <span className={cx("t-mono-s", t.state === "active" ? "text-ember" : "text-fg-2")}>{t.year}</span>
+                  <span className={cx("t-mono-s", t.year === latest ? "text-ember" : "text-fg-2")}>{t.year}</span>
                 </Link>
               </li>
             ))}
@@ -156,7 +161,7 @@ async function Overview() {
 export default function Page() {
   return (
     <div className="flex flex-col gap-9">
-      <Suspense fallback={<><Hero experimentCount={5} /><Loading /></>}>
+      <Suspense fallback={<><Hero /><Loading /></>}>
         <Overview />
       </Suspense>
     </div>

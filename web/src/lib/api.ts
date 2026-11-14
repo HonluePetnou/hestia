@@ -47,6 +47,10 @@ export async function attempt<T>(
   }
 }
 
+/** Diluent fractions default to 0 on the server. */
+export type PredictInput = Omit<Schemas["PredictRequest"], "co2_percent" | "he_percent"> &
+  Partial<Pick<Schemas["PredictRequest"], "co2_percent" | "he_percent">>;
+
 export interface ExperimentFilters {
   fuel?: string;
   gravity?: Gravity;
@@ -75,13 +79,20 @@ export const api = {
   ranking: (target: "moon" | "mars") =>
     request<Schemas["RankingResponse"]>(`/ranking${query({ target })}`),
 
-  ask: (question: string) =>
+  stats: () => request<Schemas["StatsResponse"]>("/stats"),
+
+  compareInsights: (codes: string[]) =>
+    request<Schemas["CompareInsights"]>(`/compare/insights${query({ codes: codes.join(",") })}`),
+
+  ask: (question: string, history: Schemas["ChatMessage"][] = []) =>
     request<Schemas["AskResponse"]>("/ask", {
       method: "POST",
-      body: JSON.stringify({ question } satisfies Schemas["AskRequest"]),
+      body: JSON.stringify({ question, history } satisfies Schemas["AskRequest"]),
     }),
 
-  predict: (body: Schemas["PredictRequest"]) =>
+  modelInfo: () => request<Schemas["ModelInfo"]>("/predict/model"),
+
+  predict: (body: PredictInput) =>
     request<Schemas["PredictResponse"]>("/predict", {
       method: "POST",
       body: JSON.stringify(body),

@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     embedding_dim: int = 1536
 
+    # RAG: passages sent to the LLM, and minimum cosine similarity to count as relevant
+    retrieval_k: int = 8
+    retrieval_min_score: float = 0.55
+
     web_origin: str = "http://localhost:3000"
 
 

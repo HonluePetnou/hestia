@@ -1,0 +1,307 @@
+[
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "In Saffire VI, practical-scale fires of 1.5 to 3.2 kW in a 17–19 m³ spacecraft barely raised the cabin temperature except near the fire, but CO and CO2 rose sharply; the PMMA tests exceeded the 1-hour CO2 limit and the 24-hour CO limit. Smoke and toxic gases, not heat, are the main hazard to crew.",
+    "relevance_moon": 0.95,
+    "relevance_mars": 0.95,
+    "confidence": 0.9,
+    "sources": [
+      {
+        "ntrs_id": "20240002981",
+        "page": 6
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "During Saffire VI the smoke reached a typical detector alarm threshold only after 981 seconds, by which time most of the hazardous gas had already been released. Detection thresholds or detector placement need to be revisited for exploration vehicles.",
+    "relevance_moon": 0.9,
+    "relevance_mars": 0.95,
+    "confidence": 0.85,
+    "sources": [
+      {
+        "ntrs_id": "20240002981",
+        "page": 6
+      },
+      {
+        "ntrs_id": "20260001992",
+        "page": 9
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "Across Saffire IV–VI, fire growth on flat materials was linear, without the acceleration seen in normal gravity, and on 1-sided PMMA it reached a limiting size. This gives crews a more predictable response timeline in microgravity.",
+    "relevance_moon": 0.6,
+    "relevance_mars": 0.65,
+    "confidence": 0.8,
+    "sources": [
+      {
+        "ntrs_id": "20260001992",
+        "page": 9
+      },
+      {
+        "ntrs_id": "20210017780",
+        "page": 13
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "Turning off the air flow does not reliably put out a fire: in Saffire V a cotton flame at elevated oxygen and a bubbling polymer flame both survived periods of no flow, and one flame went out below the sample but reignited.",
+    "relevance_moon": 0.85,
+    "relevance_mars": 0.85,
+    "confidence": 0.8,
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 7
+      },
+      {
+        "ntrs_id": "20210017780",
+        "page": 8
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "Keeping a small air flow (about 5 cm/s) instead of stopping ventilation entirely may help disperse fuel vapour and cool the material enough to reach extinction.",
+    "relevance_moon": 0.7,
+    "relevance_mars": 0.7,
+    "confidence": 0.6,
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 9
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "Saffire IV and V burned samples in an exploration-like atmosphere of about 71–73 kPa and 25–26% O2, the reduced-pressure, oxygen-enriched air proposed for future habitats, alongside normal-air tests at 100 kPa and 22% O2.",
+    "relevance_moon": 0.9,
+    "relevance_mars": 0.85,
+    "confidence": 0.9,
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 5
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "On thick materials in opposed flow, surface ridges and similar structures significantly changed flame spread, so material geometry matters, not only material type.",
+    "relevance_moon": 0.55,
+    "relevance_mars": 0.55,
+    "confidence": 0.7,
+    "sources": [
+      {
+        "ntrs_id": "20210017780",
+        "page": 12
+      }
+    ]
+  },
+  {
+    "experiment_code": null,
+    "statement": "Lowering the ambient pressure reduces buoyant flow and makes flame spread over thick PMMA resemble microgravity behaviour: spread slows and flames become dimmer and bluer. Low-pressure tests on the ground can help emulate reduced gravity.",
+    "relevance_moon": 0.85,
+    "relevance_mars": 0.8,
+    "confidence": 0.75,
+    "sources": [
+      {
+        "ntrs_id": "20200000557",
+        "page": 20
+      }
+    ]
+  },
+  {
+    "experiment_code": null,
+    "statement": "Simulations of concurrent flame spread over thin cotton show that lunar gravity (0.17 g) gives about the same spread rate as 46 kPa at 1 g, and martian gravity (0.38 g) about the same as 54 kPa.",
+    "relevance_moon": 1.0,
+    "relevance_mars": 1.0,
+    "confidence": 0.65,
+    "sources": [
+      {
+        "ntrs_id": "20210017787",
+        "page": 9
+      }
+    ]
+  },
+  {
+    "experiment_code": "BASS",
+    "statement": "In BASS-II, flames spread over solid fuel in microgravity at oxygen levels as low as 17.5%, while in normal gravity spread was not observed below 19%. Some materials are more flammable in weightlessness than ground tests suggest.",
+    "relevance_moon": 0.85,
+    "relevance_mars": 0.8,
+    "confidence": 0.85,
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 58
+      }
+    ]
+  },
+  {
+    "experiment_code": "BASS",
+    "statement": "BASS-II PMMA rod flames, once established, survived down to 13.6% O2 even though ignition failed below about 14.5% O2. Extinction limits sit below ignition limits, which an ignition-based screening test can miss.",
+    "relevance_moon": 0.75,
+    "relevance_mars": 0.75,
+    "confidence": 0.85,
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 76
+      },
+      {
+        "ntrs_id": "20160012691",
+        "page": 8
+      }
+    ]
+  },
+  {
+    "experiment_code": "BASS",
+    "statement": "NASA's Test 1 upward flammability screening uses a fixed ignition time of about 25 s, but BASS-II saw ignition delays as long as 230 s in microgravity. The current test may act more as an ignition test than a flammability test for space.",
+    "relevance_moon": 0.8,
+    "relevance_mars": 0.8,
+    "confidence": 0.75,
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 76
+      },
+      {
+        "ntrs_id": "20210011385",
+        "page": 77
+      }
+    ]
+  },
+  {
+    "experiment_code": "BASS",
+    "statement": "After flame extinction in microgravity, the hot material keeps producing fuel vapour until it cools, and flame oscillations persist longer than in normal gravity. Suppression should continue until the material has cooled and stopped emitting vapours.",
+    "relevance_moon": 0.8,
+    "relevance_mars": 0.8,
+    "confidence": 0.75,
+    "sources": [
+      {
+        "ntrs_id": "20210011385",
+        "page": 60
+      }
+    ]
+  },
+  {
+    "experiment_code": "BASS",
+    "statement": "Extrapolating normal-gravity blowoff limits to zero stretch gives about 13.4% O2 for PMMA, close to the 13.6% observed in BASS-II, offering a conservative way to de-rate materials using ground tests.",
+    "relevance_moon": 0.65,
+    "relevance_mars": 0.65,
+    "confidence": 0.7,
+    "sources": [
+      {
+        "ntrs_id": "20160012691",
+        "page": 8
+      },
+      {
+        "ntrs_id": "20150008961",
+        "page": 7
+      }
+    ]
+  },
+  {
+    "experiment_code": "BASS",
+    "statement": "BASS-II flames released mostly well under 100 W yet burned fuel-rich, with CO/CO2 ratios an order of magnitude above efficient combustion, so even small fires produce significant carbon monoxide.",
+    "relevance_moon": 0.7,
+    "relevance_mars": 0.7,
+    "confidence": 0.75,
+    "sources": [
+      {
+        "ntrs_id": "20150019858",
+        "page": 9
+      }
+    ]
+  },
+  {
+    "experiment_code": null,
+    "statement": "Spacecraft material acceptance long assumed flame spread is always slower in microgravity than on Earth, but ventilation flows are known to enhance microgravity flammability, weakening the safety margin of normal-gravity tests.",
+    "relevance_moon": 0.6,
+    "relevance_mars": 0.6,
+    "confidence": 0.7,
+    "sources": [
+      {
+        "ntrs_id": "19930015566",
+        "page": 7
+      }
+    ]
+  },
+  {
+    "experiment_code": "FLEX",
+    "statement": "In FLEX, large methanol droplets (above roughly 4 mm) extinguish through excessive radiative heat loss, while helium dilution raises burning rates compared with CO2 because of helium's higher thermal conductivity.",
+    "relevance_moon": 0.45,
+    "relevance_mars": 0.5,
+    "confidence": 0.8,
+    "sources": [
+      {
+        "ntrs_id": "20130014061",
+        "page": 2
+      },
+      {
+        "ntrs_id": "20130014061",
+        "page": 5
+      }
+    ]
+  },
+  {
+    "experiment_code": "FLEX",
+    "statement": "Many FLEX heptane droplets kept vaporizing after the visible flame went out, with a vapour cloud forming later: evidence of invisible 'cool flame' burning. A fire that looks extinguished may still be reacting.",
+    "relevance_moon": 0.55,
+    "relevance_mars": 0.55,
+    "confidence": 0.7,
+    "sources": [
+      {
+        "ntrs_id": "20150023456",
+        "page": 83
+      },
+      {
+        "ntrs_id": "20150023456",
+        "page": 96
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAFFIRE",
+    "statement": "Silicone samples planned for Saffire were more flammable burning downward than upward at 1 g, because in upward burning a silica layer deposits on fresh fuel and acts as a thermal barrier. Orientation and residue layers change material flammability.",
+    "relevance_moon": 0.5,
+    "relevance_mars": 0.55,
+    "confidence": 0.7,
+    "sources": [
+      {
+        "ntrs_id": "20150022421",
+        "page": 10
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAME",
+    "statement": "SAME found that all five spacecraft materials tested produced large numbers of sub-micron smoke particles, readily seen by an ionization detector, but aged silicone-rubber smoke grew to sizes better detected by light scattering. Zero-flow conditions gave particles 2 to 3 times larger than at 8 cm/s.",
+    "relevance_moon": 0.8,
+    "relevance_mars": 0.85,
+    "confidence": 0.85,
+    "sources": [
+      {
+        "ntrs_id": "20130000422",
+        "page": 12
+      }
+    ]
+  },
+  {
+    "experiment_code": "SAME",
+    "statement": "In the SAME reflight, the ISS smoke detector gave a relatively weak signal for some Teflon runs because of the small particle size, and particle shape varied widely between materials, so relying on a single-angle scattering detector will be difficult.",
+    "relevance_moon": 0.8,
+    "relevance_mars": 0.85,
+    "confidence": 0.8,
+    "sources": [
+      {
+        "ntrs_id": "20150010172",
+        "page": 32
+      }
+    ]
+  }
+]
