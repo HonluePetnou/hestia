@@ -13,17 +13,18 @@ type Msg =
   | { role: "ai"; res: Schemas["AskResponse"]; ms: number }
   | { role: "error"; error: unknown };
 
-const CITE_SPLIT = /(\[[^\]]+?, p\.\s?\d+\])/;
-const CITE = /^\[([^\],]+?), p\.\s?(\d+)\]$/;
+// Citations are "[ID, p.N]" (NTRS, guide pages) or "[ID]" for sources without a page (PSI).
+const CITE_SPLIT = /(\[[A-Za-z0-9][\w.-]*(?:, p\.\s?\d+)?\])/;
+const CITE = /^\[([A-Za-z0-9][\w.-]*)(?:, p\.\s?(\d+))?\]$/;
 
 function Answer({ text, citations }: { text: string; citations: Schemas["Citation"][] }) {
-  const urls = new Map(citations.map((c) => [`${c.ntrs_id}:${c.page}`, c.url]));
+  const urls = new Map(citations.map((c) => [`${c.ntrs_id}:${c.page ?? ""}`, c.url]));
   return (
     <p className="t-body-m text-fg">
       {text.split(CITE_SPLIT).map((part, i) => {
         const m = CITE.exec(part);
         if (!m) return <span key={i}>{part}</span>;
-        const url = urls.get(`${m[1].trim()}:${m[2]}`);
+        const url = urls.get(`${m[1].trim()}:${m[2] ?? ""}`);
         const cls = "font-mono text-[13px] font-medium text-ember";
         return url ? (
           <a key={i} href={url} target="_blank" rel="noreferrer" className={cx(cls, "underline-offset-2 hover:underline")}>{part}</a>
@@ -167,16 +168,18 @@ export function AssistantChat() {
         <CardHeader title="Sources" meta={`${sources.length} cited`} />
         {sources.length === 0 && <p className="t-body-s text-fg-3">Sources cited in the latest answer appear here.</p>}
         {sources.map((s, i) => (
-          <article key={`${s.ntrs_id}-${s.page}`} className={cx("flex flex-col gap-2.5 rounded-md border bg-raised px-4 py-3.5", i === 0 ? "border-ember-line" : "border-line")}>
+          <article key={`${s.source_type}-${s.ntrs_id}-${s.page ?? ""}`} className={cx("flex flex-col gap-2.5 rounded-md border bg-raised px-4 py-3.5", i === 0 ? "border-ember-line" : "border-line")}>
             <div className="flex items-center gap-2">
               <span className="t-mono-s flex size-[22px] items-center justify-center rounded-full bg-ember-tint text-ember">{i + 1}</span>
-              <span className="t-mono-s flex-1 text-fg-2">NTRS {s.ntrs_id}</span>
-              <span className="t-mono-s normal-case text-fg-3">p.{s.page}</span>
+              <span className="t-mono-s flex-1 text-fg-2">{s.source_type === "ntrs" ? "NTRS" : s.source_type === "psi" ? "PSI" : "NASA"} {s.ntrs_id}</span>
+              {s.page != null && <span className="t-mono-s normal-case text-fg-3">p.{s.page}</span>}
             </div>
             <p className="text-[15px] font-medium leading-snug">{s.title}</p>
-            <a href={s.url} target="_blank" rel="noreferrer" className="t-caps-s flex items-center gap-1.5 text-ember hover:text-ember-soft">
-              Open PDF at p.{s.page} <ArrowUpRight aria-hidden size={12} />
-            </a>
+            {s.url && (
+              <a href={s.url} target="_blank" rel="noreferrer" className="t-caps-s flex items-center gap-1.5 text-ember hover:text-ember-soft">
+                {s.page != null ? `Open PDF at p.${s.page}` : "Open source"} <ArrowUpRight aria-hidden size={12} />
+              </a>
+            )}
           </article>
         ))}
         <div className="mt-auto flex gap-2.5 rounded-md border border-ember-line bg-ember-tint px-3.5 py-3">

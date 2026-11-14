@@ -104,8 +104,8 @@ export function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: st
 }
 
 /* ---------------- Citation chip ---------------- */
-export function Citation({ ntrsId, page, url }: { ntrsId: string; page: number; url?: string }) {
-  const body = <span className="t-mono-s text-ember-soft normal-case">[{ntrsId}, p.{page}]</span>;
+export function Citation({ ntrsId, page, url }: { ntrsId: string; page?: number | null; url?: string | null }) {
+  const body = <span className="t-mono-s text-ember-soft normal-case">[{ntrsId}{page != null ? `, p.${page}` : ""}]</span>;
   const cls = "inline-flex rounded-sm border border-ember-line bg-ember-tint px-2 py-0.5";
   return url ? (
     <a href={url} target="_blank" rel="noreferrer" className={cx(cls, "hover:border-ember")}>{body}</a>

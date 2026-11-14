@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://hestia:hestia@localhost:5434/hestia"
 
     llm_provider: Literal["mock", "openai", "gemini", "anthropic"] = "mock"
+    # Embeddings default to the LLM provider; set EMBEDDING_PROVIDER to mix, e.g. Gemini
+    # embeddings with an Anthropic or OpenAI chat model (Anthropic has no embeddings API).
+    embedding_provider: Literal["mock", "openai", "gemini"] | None = None
     llm_model: str | None = None
     embedding_model: str | None = None
     openai_api_key: str | None = None
@@ -29,6 +32,8 @@ class Settings(BaseSettings):
     # RAG: passages sent to the LLM, and minimum cosine similarity to count as relevant
     retrieval_k: int = 8
     retrieval_min_score: float = 0.55
+    # at most this many passages from one document, so a 89-chunk guide cannot crowd out the rest
+    retrieval_max_per_doc: int = 3
 
     web_origin: str = "http://localhost:3000"
 

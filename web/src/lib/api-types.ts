@@ -215,6 +215,11 @@ export interface components {
              * @description Previous turns, oldest first (last 6 are used)
              */
             history?: components["schemas"]["ChatMessage"][];
+            /**
+             * Sources
+             * @description Restrict retrieval to these source types (default: all)
+             */
+            sources?: ("ntrs" | "psi" | "nasa_resource")[] | null;
         };
         /** AskResponse */
         AskResponse: {
@@ -242,9 +247,17 @@ export interface components {
             /** Title */
             title: string;
             /** Page */
-            page: number;
+            page?: number | null;
             /** Url */
-            url: string;
+            url?: string | null;
+            /**
+             * Source Type
+             * @default ntrs
+             * @enum {string}
+             */
+            source_type: "ntrs" | "psi" | "nasa_resource";
+            /** Doi */
+            doi?: string | null;
         };
         /** CompareInsights */
         CompareInsights: {

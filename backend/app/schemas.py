@@ -103,13 +103,28 @@ class ChatMessage(_Base):
 
 class AskRequest(_Base):
     question: str = Field(min_length=3, max_length=2000)
+    sources: list[Literal["ntrs", "psi", "nasa_resource"]] | None = Field(
+        default=None, description="Restrict retrieval to these source types (default: all)"
+    )
     history: list[ChatMessage] = Field(
         default_factory=list, description="Previous turns, oldest first (last 6 are used)"
     )
 
 
-class Citation(SourceRef):
-    pass
+class Citation(_Base):
+    """A source cited in an answer, rebuilt by the backend from database metadata.
+
+    `ntrs_id` carries the external identifier of the source (an NTRS id, "PSI-159" or a NASA
+    resource slug): the name is kept so existing clients keep working. `page` and `url` are
+    null when the source has no page / no link (never invented).
+    """
+
+    ntrs_id: str
+    title: str
+    page: int | None = None
+    url: str | None = None
+    source_type: Literal["ntrs", "psi", "nasa_resource"] = "ntrs"
+    doi: str | None = None
 
 
 class AskResponse(_Base):

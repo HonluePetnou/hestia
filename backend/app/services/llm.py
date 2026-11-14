@@ -29,6 +29,45 @@ class LLMError(RuntimeError):
     pass
 
 
+class EmbeddingDimensionError(LLMError):
+    """The provider returned vectors whose size differs from EMBEDDING_DIM (the DB column)."""
+
+
+def l2_normalize(vec: list[float]) -> list[float]:
+    norm = math.sqrt(sum(v * v for v in vec))
+    return [v / norm for v in vec] if norm else vec
+
+
+def check_dimension(vectors: list[list[float]], dim: int) -> None:
+    """Raise if any vector is not exactly `dim` long (never write a mismatched vector)."""
+    for v in vectors:
+        if len(v) != dim:
+            raise EmbeddingDimensionError(
+                f"Embedding size {len(v)} != EMBEDDING_DIM={dim}. Fix EMBEDDING_DIM / the model, "
+                "or migrate the chunks.embedding column (see docs/RAG.md)."
+            )
+
+
+def embedding_id() -> str:
+    """Identifier of the embedding setup ("<provider>:<model>:<dim>") stored with each chunk.
+
+    Chunks embedded with a different id are never mixed in a search: ingestion re-embeds them.
+    """
+    s = get_settings()
+    name = embedding_provider_name()
+    if name == "mock":
+        return f"mock:hash:{s.embedding_dim}"
+    default = {"openai": "text-embedding-3-small", "gemini": "gemini-embedding-001"}.get(
+        name, "none"
+    )
+    return f"{name}:{s.embedding_model or default}:{s.embedding_dim}"
+
+
+def embedding_provider_name() -> str:
+    s = get_settings()
+    return s.embedding_provider or s.llm_provider
+
+
 # --- Mock -------------------------------------------------------------------
 
 
@@ -105,7 +144,7 @@ class GeminiProvider:
         from google import genai
 
         self.client = genai.Client(api_key=s.gemini_api_key)
-        self.model = s.llm_model or "gemini-2.5-flash"
+        self.model = s.llm_model or "gemini-3.8-flash"
         self.embedding_model = s.embedding_model or "gemini-embedding-001"
         self.dim = s.embedding_dim
 
@@ -139,7 +178,9 @@ class GeminiProvider:
                 task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
             ),
         )
-        return [list(e.values or []) for e in resp.embeddings or []]
+        vectors = [list(e.values or []) for e in resp.embeddings or []]
+        # Google only pre-normalizes the full 3072-dim vector; shorter (MRL) ones need it.
+        return [l2_normalize(v) for v in vectors] if self.dim < 3072 else vectors
 
 
 # --- Anthropic --------------------------------------------------------------
@@ -185,13 +226,23 @@ _KEYS = {"openai": "openai_api_key", "gemini": "gemini_api_key", "anthropic": "a
 _CLASSES = {"openai": OpenAIProvider, "gemini": GeminiProvider, "anthropic": AnthropicProvider}
 
 
+def _build(name: str) -> LLMProvider:
+    s = get_settings()
+    if name == "mock":
+        return MockProvider(s.embedding_dim)
+    if not getattr(s, _KEYS[name]):
+        raise LLMError(f"Provider '{name}' selected but {_KEYS[name].upper()} is not set.")
+    return _CLASSES[name](s)
+
+
 @lru_cache
 def get_provider() -> LLMProvider:
-    s = get_settings()
-    if s.llm_provider == "mock":
-        return MockProvider(s.embedding_dim)
-    if not getattr(s, _KEYS[s.llm_provider]):
-        raise LLMError(
-            f"LLM_PROVIDER={s.llm_provider} but {_KEYS[s.llm_provider].upper()} is not set."
-        )
-    return _CLASSES[s.llm_provider](s)
+    """Chat/generation provider (LLM_PROVIDER)."""
+    return _build(get_settings().llm_provider)
+
+
+@lru_cache
+def get_embedder() -> LLMProvider:
+    """Embedding provider: EMBEDDING_PROVIDER, else the same as the chat provider."""
+    name = embedding_provider_name()
+    return get_provider() if name == get_settings().llm_provider else _build(name)

@@ -20,7 +20,7 @@ INSTRUCTION = """Compare these NASA experiments: {names}.
 Write 3 or 4 short points on the key differences that matter for spacecraft and habitat
 fire safety (scale, fuel, flow, atmosphere, what each one can and cannot tell us).
 Return them in "answer" as separate lines, each starting with "- " and each ending with
-at least one citation [NTRS-ID, p.PAGE]."""
+at least one citation, written as passage tags such as [PASSAGE 2]."""
 
 
 def _from_findings(experiments: list[ExperimentDetail]) -> list[InsightPoint]:
@@ -87,10 +87,7 @@ def compare_insights(session: Session, experiments: list[ExperimentDetail]) -> C
             points.append(
                 InsightPoint(
                     text=text,
-                    citations=[
-                        Citation(ntrs_id=c.ntrs_id, title=c.title, page=c.page, url=c.url)
-                        for c in cited
-                    ],
+                    citations=rag.build_citations(cited),
                 )
             )
     if not points:

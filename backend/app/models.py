@@ -5,7 +5,18 @@ from datetime import datetime
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import ARRAY, DateTime, Enum, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    ARRAY,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -37,39 +48,69 @@ def _pg_enum(cls: type[enum.Enum], name: str) -> Enum:
     return Enum(cls, name=name, values_callable=lambda e: [m.value for m in e])
 
 
+SOURCE_NTRS = "ntrs"
+SOURCE_PSI = "psi"
+SOURCE_RESOURCE = "nasa_resource"
+SOURCE_TYPES = (SOURCE_NTRS, SOURCE_PSI, SOURCE_RESOURCE)
+
+
 class Document(Base):
+    """One citable source: an NTRS report, a PSI investigation or another NASA resource.
+
+    `(source_type, external_id)` is the real identity. `ntrs_id` is kept (nullable, unique)
+    for backward compatibility and is only filled for NTRS reports.
+    """
+
     __tablename__ = "documents"
+    __table_args__ = (
+        UniqueConstraint("source_type", "external_id", name="uq_documents_source_external"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    ntrs_id: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    source_type: Mapped[str] = mapped_column(String(16), default=SOURCE_NTRS, server_default="ntrs")
+    external_id: Mapped[str] = mapped_column(String(64))
+    ntrs_id: Mapped[str | None] = mapped_column(String(32), unique=True, index=True)
     title: Mapped[str] = mapped_column(Text)
     authors: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     year: Mapped[int | None] = mapped_column(Integer)
     url: Mapped[str | None] = mapped_column(Text)
+    doi: Mapped[str | None] = mapped_column(Text)
     pdf_path: Mapped[str | None] = mapped_column(Text)
     pdf_url: Mapped[str | None] = mapped_column(Text)
     text_path: Mapped[str | None] = mapped_column(Text)
+    meta: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, server_default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     chunks: Mapped[list["Chunk"]] = relationship(back_populates="document")
 
-    def page_url(self, page: int) -> str:
-        """Link that opens the PDF at `page`, or the NTRS record page as a fallback."""
-        if self.pdf_url:
-            return f"{self.pdf_url}#page={page}"
-        return self.url or f"https://ntrs.nasa.gov/citations/{self.ntrs_id}"
+    def page_url(self, page: int | None = None) -> str | None:
+        """Best link for a citation: the PDF at `page`, else the record page, else the DOI."""
+        if self.source_type == SOURCE_NTRS:
+            if self.pdf_url and page:
+                return f"{self.pdf_url}#page={page}"
+            return self.url or f"https://ntrs.nasa.gov/citations/{self.external_id}"
+        if self.url:
+            if page and self.url.lower().endswith(".pdf"):
+                return f"{self.url}#page={page}"
+            return self.url
+        return f"https://doi.org/{self.doi}" if self.doi else None
 
 
 class Chunk(Base):
     __tablename__ = "chunks"
+    __table_args__ = (UniqueConstraint("document_id", "chunk_key", name="uq_chunks_doc_key"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"))
-    page: Mapped[int] = mapped_column(Integer)
+    page: Mapped[int | None] = mapped_column(Integer)
     chunk_index: Mapped[int] = mapped_column(Integer)
+    chunk_key: Mapped[str] = mapped_column(String(128))
     content: Mapped[str] = mapped_column(Text)
+    content_hash: Mapped[str | None] = mapped_column(String(64))
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
+    embedding_model: Mapped[str | None] = mapped_column(String(96))
     token_count: Mapped[int | None] = mapped_column(Integer)
+    meta: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, server_default="{}")
 
     document: Mapped[Document] = relationship(back_populates="chunks")
 
