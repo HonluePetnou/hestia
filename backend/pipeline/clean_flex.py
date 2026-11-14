@@ -169,9 +169,7 @@ for i in df.index[(somme - 1).abs() > TOLERANCE_GAZ]:
     noter(i, "gaz", f"somme des fractions = {somme[i]:.2f} (attendu 1)", "à vérifier")
 
 for i in df.index[df["test_id"].duplicated(keep=False)]:
-    noter(
-        i, "test_id", f"identifiant « {df.loc[i, 'test_id']} » en double", "à vérifier"
-    )
+    noter(i, "test_id", f"identifiant « {df.loc[i, 'test_id']} » en double", "à vérifier")
 
 # ---------------------------------------------------------------------------
 # 8. Sauvegarde
@@ -182,9 +180,7 @@ assert df["outcome"].isin(valeurs_permises).all(), "résultat inattendu"
 SORTIE.parent.mkdir(parents=True, exist_ok=True)
 df[ORDRE_FINAL].to_csv(SORTIE, index=False, encoding="utf-8")
 colonnes_alertes = ["test_number", "test_id", "colonne", "probleme", "action"]
-pd.DataFrame(alertes, columns=colonnes_alertes).to_csv(
-    ALERTES, index=False, encoding="utf-8"
-)
+pd.DataFrame(alertes, columns=colonnes_alertes).to_csv(ALERTES, index=False, encoding="utf-8")
 
 # ---------------------------------------------------------------------------
 # 9. Petit compte rendu à l'écran
