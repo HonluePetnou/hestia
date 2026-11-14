@@ -5,3 +5,6 @@ FLEX flame extinguishment droplet combustion
 ACME advanced combustion microgravity
 SAME smoke aerosol measurement experiment
 NASA-STD-6001 flammability microgravity
+SoFIE solid fuel ignition
+FLEX-2 cool flame
+lunar gravity flammability
