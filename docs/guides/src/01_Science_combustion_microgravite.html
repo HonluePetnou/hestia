@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>01 — Science de la combustion en microgravité</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 01 · Pour toute l'équipe · P1 et P2 en priorité</div>
+  <h1>La combustion en <b>microgravité</b></h1>
+  <p>Juste assez de physique pour comprendre les rapports NASA, juger les réponses de l'IA et parler au jury sans dire d'erreur.</p>
+  <div class="meta"><span>Temps de lecture : ~1 h 30</span><span>Prérequis : aucun</span></div>
+</div>
+
+<h2>1. Ce que vous devez savoir expliquer à la fin</h2>
+<ul class="check">
+  <li>Pourquoi une flamme change de forme dans l'espace (flottabilité vs diffusion).</li>
+  <li>Ce qu'est la constante de combustion <strong>K</strong> d'une gouttelette et la loi en d².</li>
+  <li>Les deux façons dont une flamme de gouttelette s'éteint, et ce qu'est une « flamme froide ».</li>
+  <li>Pourquoi l'écoulement d'air (ventilation) change tout pour un matériau solide.</li>
+  <li>Pourquoi la Lune et Mars sont des cas intermédiaires, et pourquoi l'air des habitats compte.</li>
+  <li>Ce que chaque expérience (FLEX, BASS, SAFFIRE, ACME, SAME, SoFIE) étudie.</li>
+</ul>
+
+<h2>2. Sur Terre vs en microgravité</h2>
+<p>Sur Terre, les gaz chauds de la flamme sont plus légers que l'air : ils montent (<strong>flottabilité</strong> ou convection naturelle) et de l'air frais arrive par le bas. C'est ce qui allonge la flamme d'une bougie et l'alimente en oxygène.</p>
+<p>En microgravité, ce moteur disparaît presque. L'oxygène n'arrive plus que par <strong>diffusion</strong> (lent, d'une zone riche vers une zone pauvre) ou par un écoulement imposé (ventilateur, mouvement de l'objet). Conséquences :</p>
+<ul>
+  <li>la flamme d'une gouttelette devient <strong>sphérique</strong> et plus grande que la goutte ;</li>
+  <li>elle est souvent plus froide, plus bleue, avec moins de suie ;</li>
+  <li>sans ventilation, une flamme peut s'étouffer dans ses propres produits de combustion ; avec un léger courant d'air, elle peut au contraire se maintenir là où elle s'éteindrait sur Terre.</li>
+</ul>
+<div class="box warn"><b>Piège</b><p>« Le feu est plus dangereux dans l'espace » est trop simple. Il est <em>différent</em> : cela dépend du matériau, de l'oxygène, de la pression et de l'écoulement. Une conclusion doit toujours rappeler ses conditions.</p></div>
+
+<h2>3. Les gouttelettes et la loi en d²</h2>
+<p>FLEX brûle des gouttelettes isolées de combustible liquide (n-heptane, méthanol…). Pendant la combustion, le <strong>carré du diamètre</strong> diminue de façon à peu près linéaire dans le temps :</p>
+<pre>d(t)² = d₀² − K · t         <span class="c">d₀ = diamètre initial (mm), K = constante de combustion (mm²/s)</span>
+temps de combustion ≈ d₀² / K</pre>
+<div class="box ex"><b>Exercice 1 — à faire à la main</b><p>Une goutte de n-heptane de d₀ = 3,0 mm brûle avec K = 0,60 mm²/s. Quel est son temps de combustion ? Quel est son diamètre après 5 s ?<br><span class="small">Réponses : 9,0 / 0,60 = 15 s ; d = √(9 − 3) ≈ 2,45 mm. C'est exactement ce que calcule notre écran Simulator.</span></p></div>
+<p><strong>K augmente</strong> en général quand l'oxygène augmente : la flamme est plus chaude et la goutte s'évapore plus vite. La flamme se tient à quelques diamètres de la goutte (le rapport « flamme / goutte », souvent de l'ordre de 5 à 10, varie au cours du temps).</p>
+
+<h3>Comment une flamme de gouttelette s'éteint</h3>
+<table>
+  <tr><th>Mécanisme</th><th>Quand</th><th>Idée</th></tr>
+  <tr><td>Extinction par diffusion</td><td>petites gouttes, fin de combustion</td><td>la flamme est trop proche de la goutte : le temps de réaction devient trop court.</td></tr>
+  <tr><td>Extinction radiative</td><td>grosses gouttes, faible oxygène</td><td>la grande flamme perd trop de chaleur par rayonnement et se refroidit.</td></tr>
+</table>
+<div class="box info"><b>Découverte de FLEX : les flammes froides</b><p>Après l'extinction de la flamme visible de grosses gouttes de n-heptane, la goutte a continué de brûler par une chimie à basse température, presque invisible (« cool flame »). Leçon de sécurité : <strong>« plus de flamme visible » ne veut pas dire « plus de réaction »</strong>.</p></div>
+
+<h2>4. Les matériaux solides : propagation et écoulement</h2>
+<p>BASS et SAFFIRE brûlent des matériaux solides (PMMA, tissu coton-fibre de verre, Nomex…). Deux vocabulaires à connaître :</p>
+<ul>
+  <li><strong>Propagation co-courant</strong> (concurrent) : la flamme avance dans le même sens que l'air. Elle peut accélérer et grandir.</li>
+  <li><strong>Propagation à contre-courant</strong> (opposed) : la flamme avance contre l'air. Plus lente, plus stable.</li>
+  <li><strong>Vitesse d'écoulement</strong> : trop faible → étouffement ; trop forte → soufflage. Entre les deux, une plage où le matériau brûle, parfois <em>plus</em> facilement qu'en test terrestre.</li>
+  <li><strong>Limite en oxygène</strong> : concentration d'oxygène en dessous de laquelle un matériau ne propage plus la flamme. Elle dépend de la gravité et de l'écoulement.</li>
+</ul>
+<p>Les vaisseaux sélectionnent leurs matériaux avec le test terrestre <strong>NASA-STD-6001</strong> (flamme qui monte). Une question centrale des expériences en orbite : ce test est-il assez sévère pour la microgravité ?</p>
+
+<h2>5. La Lune et Mars : des cas intermédiaires</h2>
+<table>
+  <tr><th></th><th>Gravité</th><th>Ce qui change pour le feu</th></tr>
+  <tr><td>ISS</td><td>≈ 0 g (microgravité)</td><td>Pas de flottabilité ; seule la ventilation apporte l'oxygène.</td></tr>
+  <tr><td>Lune</td><td>0,166 g (1,62 m/s²)</td><td>Flottabilité faible : la vitesse des courants de convection est d'environ √0,166 ≈ 40 % de celle sur Terre.</td></tr>
+  <tr><td>Mars</td><td>0,38 g (3,71 m/s²)</td><td>Flottabilité plus forte que sur la Lune, mais missions longues, loin de tout secours.</td></tr>
+</table>
+<p>L'<strong>air des habitats</strong> compte autant que la gravité. La NASA a étudié pour l'exploration une atmosphère à pression réduite et plus riche en oxygène (de l'ordre de 56,5 kPa et 34 % O₂) : moins de pression facilite les sorties extravéhiculaires, mais plus d'oxygène rend les matériaux plus inflammables. C'est exactement le genre de lien que Hestia doit rendre visible, avec la source.</p>
+
+<h2>6. Les expériences à connaître</h2>
+<table>
+  <tr><th>Expérience</th><th>Plateforme</th><th>Ce qu'elle étudie</th><th>Intérêt pour Hestia</th></tr>
+  <tr><td><strong>FLEX</strong> / FLEX-2</td><td>ISS (CIR)</td><td>gouttelettes, extinction, diluants (CO₂, He)</td><td>Table IX (~170 essais) → ML et simulateur</td></tr>
+  <tr><td><strong>BASS</strong> / BASS-II</td><td>ISS (MSG)</td><td>combustion et extinction de solides, effet de l'écoulement</td><td>comparaison avec les tests terrestres</td></tr>
+  <tr><td><strong>SAFFIRE</strong> I–VI</td><td>cargo Cygnus</td><td>feux de grande taille, propagation, fumée</td><td>le plus proche d'un vrai feu de cabine</td></tr>
+  <tr><td><strong>ACME</strong></td><td>ISS (CIR)</td><td>flammes gazeuses, suie, limites</td><td>science de base ; lien sécurité plus indirect</td></tr>
+  <tr><td><strong>SAME</strong></td><td>ISS</td><td>particules de fumée des matériaux surchauffés</td><td>détection d'incendie</td></tr>
+  <tr><td><strong>SoFIE</strong></td><td>ISS</td><td>allumage et inflammabilité de solides (T, P, O₂)</td><td>cité dans le Guide d'équipe ; à ajouter si le temps le permet</td></tr>
+</table>
+
+<h2>7. Lire un rapport NTRS en 20 minutes</h2>
+<ol>
+  <li><strong>Résumé (abstract)</strong> : la question, les conditions, le résultat principal.</li>
+  <li><strong>Matrice d'essais</strong> (test matrix) : tableau des conditions → c'est la donnée structurée la plus précieuse.</li>
+  <li><strong>Figures de résultats</strong> : lire les axes et les unités avant la courbe.</li>
+  <li><strong>Conclusions</strong> : noter les phrases prudentes (« in these conditions… ») et les limites.</li>
+  <li>Pour chaque constat : noter l'<strong>ID NTRS et la page</strong>. C'est la citation que l'IA devra produire.</li>
+</ol>
+<div class="box ex"><b>Exercice 2 — fiche de lecture (P1, P2)</b><p>Lire le résumé et les conclusions de deux rapports de notre corpus (liste ci-dessous) et écrire pour chacun 2 constats au format : « Dans [conditions], [expérience] a observé [résultat] [NTRS-ID, p.X]. Limite : … ». Ces fiches serviront de <strong>questions-tests</strong> pour l'IA (guide 03).</p></div>
+
+<h2>8. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">Officiel</span>Brief du challenge — <a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/">spaceappschallenge.org/2026/challenges/flame-in-freefall</a></li>
+  <li><span class="tag">NASA</span>Studying Combustion and Fire Safety — <a href="https://www.nasa.gov/missions/station/iss-research/studying-combustion-and-fire-safety/">nasa.gov/…/studying-combustion-and-fire-safety</a></li>
+  <li><span class="tag">FLEX</span>Detailed Results from the Flame Extinguishment Experiment (FLEX), 2009–2011 — <a href="https://ntrs.nasa.gov/citations/20150023456">ntrs.nasa.gov/citations/20150023456</a></li>
+  <li><span class="tag">FLEX</span>Methanol Droplet Combustion in Oxygen-Inert Environments in Microgravity — <a href="https://ntrs.nasa.gov/citations/20130014061">ntrs.nasa.gov/citations/20130014061</a></li>
+  <li><span class="tag">SAFFIRE</span>Operation and Development Status of the Spacecraft Fire Experiments (Saffire) — <a href="https://ntrs.nasa.gov/citations/20170000230">ntrs.nasa.gov/citations/20170000230</a></li>
+  <li><span class="tag">SAFFIRE</span>Fire Safety Implications of Preliminary Results from Saffire IV and V — <a href="https://ntrs.nasa.gov/citations/20210017780">ntrs.nasa.gov/citations/20210017780</a></li>
+  <li><span class="tag">BASS</span>Combustion of Solids in Microgravity: Results from the BASS-II Experiment — <a href="https://ntrs.nasa.gov/citations/20160000593">ntrs.nasa.gov/citations/20160000593</a></li>
+  <li><span class="tag">Gravité</span>Determining the Cause of Reduced Concurrent Flame Spread over Thin Solid Fuels in Low Pressure and Low Gravity — <a href="https://ntrs.nasa.gov/citations/20210017787">ntrs.nasa.gov/citations/20210017787</a></li>
+  <li><span class="tag">ACME</span>Fiche NASA ACME — <a href="https://science.nasa.gov/biological-physical/investigations/acme/">science.nasa.gov/…/acme</a> · <span class="tag">SoFIE</span><a href="https://science.nasa.gov/biological-physical/investigations/sofie/">science.nasa.gov/…/sofie</a></li>
+  <li><span class="tag">Livre</span>S. Turns, <em>An Introduction to Combustion</em> — chapitre sur la combustion de gouttelettes (pour aller plus loin).</li>
+</ul>
+<p class="small">Tous ces PDF NTRS sont déjà dans <code>data/ntrs/pdf/</code> après <code>make fetch</code> (sauf le livre).</p>
+</body></html>

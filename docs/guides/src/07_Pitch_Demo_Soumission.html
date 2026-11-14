@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>07 — Pitch, démo et soumission</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Guide 07 · P6 Intégration, qualité, pitch · toute l'équipe pour la répétition</div>
+  <h1>Raconter Hestia en <b>30 secondes</b></h1>
+  <p>Le scénario de démo, le script vidéo, les 7 slides, les règles de marque Space Apps et la check-list de soumission.</p>
+  <div class="meta"><span>Temps : ~1 h 30 + répétitions</span><span>Livrable : vidéo 30 s ou 7 slides max</span></div>
+</div>
+
+<h2>1. Ce que le jury doit retenir</h2>
+<ol>
+  <li><strong>Le problème</strong> : les résultats NASA sur le feu en microgravité sont dispersés dans des centaines de rapports.</li>
+  <li><strong>La solution</strong> : Hestia les résume, les classe pour la Lune et Mars et les explique — <em>avec la source</em>.</li>
+  <li><strong>La confiance</strong> : chaque réponse cite <code>[NTRS-ID, p.X]</code> ; si les sources ne suffisent pas, Hestia le dit.</li>
+</ol>
+<p>Les critères de jugement officiels sont publiés sur <a href="https://www.spaceappschallenge.org/">spaceappschallenge.org</a> : les lire ensemble et cocher, pour chacun, quel moment de la démo y répond.</p>
+
+<h2>2. Le parcours de démonstration</h2>
+<p>Adapté du scénario du Guide d'équipe (trouver → comprendre → comparer → questionner → consulter les preuves) à nos écrans :</p>
+<table>
+  <tr><th>#</th><th>Écran</th><th>Action</th><th>Message</th></tr>
+  <tr><td>1</td><td>Overview</td><td>flamme sphérique, « 37 NASA reports »</td><td>« Le feu se comporte autrement dans l'espace. »</td></tr>
+  <tr><td>2</td><td>Experiments</td><td>filtre « Extinction » → FLEX, BASS</td><td>« Retrouver les bons essais en 2 clics. »</td></tr>
+  <tr><td>3</td><td>Compare</td><td>BASS vs FLEX vs SAFFIRE</td><td>« Comparer seulement ce qui est comparable. »</td></tr>
+  <tr><td>4</td><td>Assistant</td><td>question lunaire → réponse citée → clic sur la source NTRS</td><td>« Chaque phrase renvoie à la page NASA. »</td></tr>
+  <tr><td>5</td><td>Assistant</td><td>question hors corpus → « Insufficient data »</td><td>« Hestia n'invente pas. »</td></tr>
+  <tr><td>6</td><td>Relevance</td><td>bascule Lune → Mars</td><td>« Ce qui compte pour la prochaine mission. »</td></tr>
+  <tr><td>7</td><td>Simulator</td><td>O₂ ↑, lecture de la combustion</td><td>« Les données FLEX deviennent intuitives. »</td></tr>
+</table>
+
+<h2>3. Script de la vidéo de 30 secondes</h2>
+<table>
+  <tr><th>Temps</th><th>Image</th><th>Voix / texte à l'écran</th></tr>
+  <tr><td>0–5 s</td><td>Overview, flamme qui tourne</td><td>« Dans l'espace, le feu ne monte pas. Il s'arrondit — et il surprend. »</td></tr>
+  <tr><td>5–12 s</td><td>Experiments + Compare</td><td>« Hestia rassemble 15 ans d'expériences NASA : FLEX, BASS, SAFFIRE… »</td></tr>
+  <tr><td>12–22 s</td><td>Assistant : réponse + citation cliquée</td><td>« Posez une question : la réponse cite chaque rapport, page par page. »</td></tr>
+  <tr><td>22–27 s</td><td>Relevance Lune → Mars</td><td>« Et classe ce qui compte pour la Lune et pour Mars. »</td></tr>
+  <tr><td>27–30 s</td><td>Logo Hestia + tagline</td><td>« Hestia — Guarding the flame beyond Earth. »</td></tr>
+</table>
+<div class="box tip"><b>Tournage</b><p>Enregistrer l'écran en 1440 × 1024 ou 1920 × 1080, données réelles chargées (pas de <code>[MOCK]</code> visible). Prévoir un enregistrement de secours la veille. Sous-titres en anglais (règle du projet : tout en anglais).</p></div>
+
+<h2>4. Les 7 slides (si format slides)</h2>
+<ol>
+  <li><strong>Titre</strong> : Hestia — Guarding the flame beyond Earth · équipe black-vortex · Douala.</li>
+  <li><strong>Problème</strong> : feu en cabine, savoir NASA dispersé, missions Lune/Mars.</li>
+  <li><strong>Solution</strong> : capture de l'Overview + 3 verbes : résumer, classer, expliquer.</li>
+  <li><strong>Démo</strong> : réponse citée + source NTRS ouverte.</li>
+  <li><strong>Comment ça marche</strong> : NTRS/PSI/FLEX → pipeline → RAG (pgvector) → dashboard. Chiffres réels (rapports, passages, essais).</li>
+  <li><strong>Confiance et limites</strong> : citations vérifiées, « insufficient data », grille de score, limites du modèle FLEX.</li>
+  <li><strong>Impact et suite</strong> : utilisateurs (ingénieurs matériaux, planificateurs de mission), prochaines données (SoFIE, Saffire VI).</li>
+</ol>
+
+<h2>5. Règles de marque Space Apps (brand guide, juin 2026)</h2>
+<ul>
+  <li>Notre produit garde <strong>son identité</strong> (braise, Unbounded/Inter) ; le guide encadre l'usage de la marque Space Apps.</li>
+  <li><strong>Logo Space Apps</strong> : fichiers officiels de <a href="https://www.spaceappschallenge.org/brand">spaceappschallenge.org/brand</a>, sans le déformer, le tourner ni changer ses couleurs, et <strong>jamais sur un fond chargé</strong> (pas sur le champ d'étoiles) → zone sombre unie.</li>
+  <li><strong>Pas de branding officiel NASA</strong> (logo « meatball », insignes). Écrire « NASA data » en texte est correct.</li>
+  <li>Slides aux couleurs Space Apps (optionnel) : dégradé Electric Blue #0042A6 → Deep Blue #07173F à 45°, Neon Yellow #EAFE07 en accent uniquement, polices Fira Sans / Overpass.</li>
+  <li>Contraste ≥ 4,5:1 sur tout texte.</li>
+</ul>
+
+<h2>6. Check-list de soumission</h2>
+<ul class="check">
+  <li>Dépôt GitHub accessible au jury (passer en public au moment de soumettre) avec README à jour.</li>
+  <li>Aucun secret dans le dépôt (<code>.env</code> ignoré, clés révoquées si exposées).</li>
+  <li>Vidéo / slides respectant la limite (30 s ou 7 slides).</li>
+  <li>Liste des données NASA utilisées avec liens (README, section Data sources).</li>
+  <li>Mention : « Not endorsed by NASA ». Données NASA : domaine public / CC0.</li>
+  <li>Tous les liens testés depuis un navigateur privé.</li>
+  <li>Formulaire de soumission rempli avant l'échéance locale (vérifier l'heure exacte).</li>
+</ul>
+
+<h2>7. Plan B (le jour J)</h2>
+<ul>
+  <li>Internet ou clé API en panne → <code>LLM_PROVIDER=mock</code> + vidéo pré-enregistrée.</li>
+  <li>Base de données indisponible → l'API sert les données mock intégrées ; le site reste navigable.</li>
+  <li>Une personne absente → chacun connaît le parcours de démo complet (répéter 3 fois en équipe).</li>
+</ul>
+
+<h2>8. Ressources</h2>
+<ul class="res">
+  <li><span class="tag">Officiel</span>Brief du challenge — <a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/">spaceappschallenge.org/2026/challenges/flame-in-freefall</a></li>
+  <li><span class="tag">Marque</span>Brand guide et logos — <a href="https://www.spaceappschallenge.org/brand">spaceappschallenge.org/brand</a></li>
+  <li><span class="tag">Projet</span>Guide d'équipe Flame in Freefall, § 13 (démonstration) et § 14 (erreurs à éviter)</li>
+  <li><span class="tag">Inspiration</span>Projets lauréats des éditions précédentes sur <a href="https://www.spaceappschallenge.org/">spaceappschallenge.org</a></li>
+</ul>
+</body></html>

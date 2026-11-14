@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>00 — Sommaire des guides Hestia</title><link rel="stylesheet" href="guide.css"></head>
+<body>
+<div class="cover">
+  <div class="kicker">Hestia · Flame in Freefall · Guides d'apprentissage</div>
+  <h1>Ce qu'il faut savoir <b>avant samedi</b></h1>
+  <p>Un PDF par concept, à lire selon votre rôle. Ces guides complètent le « Guide d'équipe Flame in Freefall » (science, méthode, MVP) en l'appliquant à notre projet réel : le dépôt Hestia, déjà prêt en Phase 1.</p>
+  <div class="meta"><span>Hackathon : 14–15 novembre 2026</span><span>Douala</span><span>Équipe black-vortex</span></div>
+</div>
+
+<h2>Où on en est</h2>
+<table>
+  <tr><th>Brique</th><th>État</th><th>Guide</th></tr>
+  <tr><td>Base PostgreSQL + pgvector, tables, migration</td><td>✅ prête</td><td>04</td></tr>
+  <tr><td>API FastAPI (7 routes) avec données <code>[MOCK]</code></td><td>✅ prête</td><td>04</td></tr>
+  <tr><td>37 PDF NTRS téléchargés + texte extrait page par page</td><td>✅ prêt</td><td>02</td></tr>
+  <tr><td>Design Figma + 7 écrans codés (Next.js), branchés sur l'API</td><td>✅ prêt</td><td>06</td></tr>
+  <tr><td>Découpage en passages, embeddings, ingestion réelle</td><td>❌ à faire</td><td>03</td></tr>
+  <tr><td>Recherche des passages + réponses IA citées (<code>/ask</code>)</td><td>❌ à faire</td><td>03</td></tr>
+  <tr><td>Extraction des constats + classement Lune/Mars</td><td>❌ à faire</td><td>01, 03</td></tr>
+  <tr><td>Table FLEX (Table IX) transcrite + modèle ML</td><td>❌ à faire</td><td>02, 05</td></tr>
+  <tr><td>Données PSI (fiches d'expériences)</td><td>❌ à faire</td><td>02</td></tr>
+  <tr><td>Vidéo / slides, soumission</td><td>❌ à faire</td><td>07</td></tr>
+</table>
+
+<h2>Qui lit quoi</h2>
+<p>Les rôles reprennent ceux du Guide d'équipe. Tout le monde lit le guide 01 (science) : sans lui, on ne sait pas juger si une réponse de l'IA est correcte.</p>
+<table>
+  <tr><th>Rôle</th><th>À lire en priorité</th><th>Ensuite</th></tr>
+  <tr><td><strong>P1</strong> — Science &amp; validation</td><td>01 Science</td><td>02 Données, 03 RAG (partie évaluation)</td></tr>
+  <tr><td><strong>P2</strong> — Sources &amp; données</td><td>01 Science, 02 Données</td><td>05 ML (préparation des données)</td></tr>
+  <tr><td><strong>P3</strong> — Data engineering</td><td>02 Données, 04 Backend</td><td>05 ML</td></tr>
+  <tr><td><strong>P4</strong> — IA / RAG</td><td>03 RAG</td><td>04 Backend, 05 ML</td></tr>
+  <tr><td><strong>P5</strong> — Dashboard / UX</td><td>06 Frontend</td><td>04 Backend (API et types)</td></tr>
+  <tr><td><strong>P6</strong> — Intégration, qualité, pitch</td><td>07 Pitch, 04 Backend</td><td>06 Frontend</td></tr>
+</table>
+
+<h2>Les 7 guides</h2>
+<div class="grid2">
+  <div class="card"><h4>01 — Science de la combustion en microgravité</h4><p>Flottabilité, diffusion, loi en d², extinction, flammes froides, propagation sur solides, Lune et Mars, comment lire un rapport NTRS.</p></div>
+  <div class="card"><h4>02 — Données NASA : NTRS, PSI, FLEX</h4><p>Où sont les données, comment les récupérer, transcrire la Table IX, notre modèle de données, règles d'unités et de traçabilité.</p></div>
+  <div class="card"><h4>03 — IA : RAG et réponses citées</h4><p>Embeddings, découpage en passages, recherche pgvector, prompt « sources seulement », vérification des citations, évaluation.</p></div>
+  <div class="card"><h4>04 — Backend : FastAPI + PostgreSQL</h4><p>Architecture du dépôt, lancer le projet sous Windows, ajouter une route, migrations Alembic, tests, types partagés avec le front.</p></div>
+  <div class="card"><h4>05 — Machine Learning sur FLEX</h4><p>Quand le ML est justifié, régression de K, classification extinction, validation croisée, baseline, présentation honnête.</p></div>
+  <div class="card"><h4>06 — Frontend : Next.js, design, 3D</h4><p>Composants serveur/client, tokens du design Figma, données via l'API, Recharts, React Three Fiber, pièges déjà rencontrés.</p></div>
+  <div class="card"><h4>07 — Pitch, démo et soumission</h4><p>Scénario de démo, script vidéo 30 s, plan des 7 slides, règles du brand guide, check-list de soumission, plan B.</p></div>
+  <div class="card"><h4>Guide d'équipe (déjà existant)</h4><p>Le « pourquoi » et la méthode : mission, MVP, erreurs à éviter, glossaire, sources officielles. À lire en premier.</p></div>
+</div>
+
+<h2>Décisions à prendre dès maintenant</h2>
+<ol>
+  <li><strong>Fournisseur LLM et embeddings</strong> : OpenAI, Gemini ou Claude (Claude n'a pas d'API d'embeddings → combiner avec un autre). Voir guide 03.</li>
+  <li><strong>Taille des vecteurs (<code>EMBEDDING_DIM</code>)</strong> : à fixer avant l'ingestion ; la changer ensuite oblige à recréer la base.</li>
+  <li><strong>Répartition des rôles</strong> : compléter le tableau « Team » du README.</li>
+  <li><strong>CI GitHub</strong> : les exécutions échouent au démarrage ; vérifier les réglages Actions / facturation du compte.</li>
+  <li><strong>Périmètre</strong> : le Guide d'équipe conseille 2 à 3 familles d'expériences. Proposition : FLEX (gouttelettes), SAFFIRE et BASS (solides).</li>
+</ol>
+
+<div class="box tip"><b>Règle d'or de l'équipe</b><p>Aucun chiffre sans unité ni source ; aucune réponse IA sans citation vérifiable. Une donnée manquante s'affiche « non renseigné ». C'est ce qui rend Hestia crédible devant le jury.</p></div>
+</body></html>

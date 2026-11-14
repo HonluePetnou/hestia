@@ -1,3 +1,133 @@
 @import "tailwindcss";
 
-/* Intentionally neutral. Colors, fonts and visual style will come from the Figma design. */
+/*
+ * Hestia design tokens — mirrored from the Figma file "Hestia — UI Design"
+ * (variable collections Primitives / Color / Spacing). Names match each
+ * variable's WEB code syntax, e.g. color/bg/canvas -> --color-bg-canvas.
+ */
+:root {
+  --color-bg-canvas: #07080c;
+  --color-bg-surface: #11131a;
+  --color-bg-surface-raised: #181b24;
+  --color-bg-inverse: #ffffff;
+  --color-bg-glass: rgba(17, 19, 26, 0.6);
+  --color-border-subtle: #242833;
+  --color-border-strong: #3a3f4d;
+  --color-text-primary: #e6e8ee;
+  --color-text-secondary: #9aa0ae;
+  --color-text-muted: #858b9b;
+  --color-text-inverse: #07080c;
+  --color-accent-default: #ff7a30;
+  --color-accent-soft: #ffb27a;
+  --color-accent-strong: #c2501a;
+  --color-accent-tint: rgba(255, 122, 48, 0.12);
+  --color-accent-tint-border: rgba(255, 122, 48, 0.4);
+  --color-data-primary: #5aa9ff;
+  --color-status-success: #4ade80;
+  --color-status-warning: #ffc24d;
+  --color-status-danger: #ff4d4d;
+  --color-target-moon: #c9ced8;
+  --color-target-mars: #d86a4f;
+  --color-line-faint: rgba(230, 232, 238, 0.14);
+}
+
+@theme inline {
+  --color-canvas: var(--color-bg-canvas);
+  --color-surface: var(--color-bg-surface);
+  --color-raised: var(--color-bg-surface-raised);
+  --color-inverse: var(--color-bg-inverse);
+  --color-glass: var(--color-bg-glass);
+  --color-line: var(--color-border-subtle);
+  --color-line-strong: var(--color-border-strong);
+  --color-faint: var(--color-line-faint);
+  --color-fg: var(--color-text-primary);
+  --color-fg-2: var(--color-text-secondary);
+  --color-fg-3: var(--color-text-muted);
+  --color-fg-inverse: var(--color-text-inverse);
+  --color-ember: var(--color-accent-default);
+  --color-ember-soft: var(--color-accent-soft);
+  --color-ember-strong: var(--color-accent-strong);
+  --color-ember-tint: var(--color-accent-tint);
+  --color-ember-line: var(--color-accent-tint-border);
+  --color-data: var(--color-data-primary);
+  --color-ok: var(--color-status-success);
+  --color-warn: var(--color-status-warning);
+  --color-danger: var(--color-status-danger);
+  --color-moon: var(--color-target-moon);
+  --color-mars: var(--color-target-mars);
+
+  --font-display: var(--font-unbounded);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+body {
+  background: var(--color-bg-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Text styles (Figma: Display / Heading / Data / Label / Body / Mono) ---- */
+@layer components {
+  .t-display-xl { font-family: var(--font-unbounded); font-weight: 300; font-size: 72px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; }
+  .t-display-l { font-family: var(--font-unbounded); font-weight: 300; font-size: 48px; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; }
+  .t-h1 { font-family: var(--font-unbounded); font-weight: 400; font-size: 32px; line-height: 1.2; letter-spacing: -0.005em; }
+  .t-h2 { font-family: var(--font-unbounded); font-weight: 400; font-size: 22px; line-height: 1.25; }
+  .t-h3 { font-family: var(--font-inter); font-weight: 600; font-size: 17px; line-height: 1.3; }
+  .t-data-xl { font-family: var(--font-unbounded); font-weight: 400; font-size: 40px; line-height: 1.1; letter-spacing: -0.01em; }
+  .t-data-l { font-family: var(--font-unbounded); font-weight: 400; font-size: 26px; line-height: 1.15; letter-spacing: -0.005em; }
+  .t-caps { font-family: var(--font-inter); font-weight: 600; font-size: 11px; line-height: 1.3; letter-spacing: 0.08em; text-transform: uppercase; }
+  .t-caps-s { font-family: var(--font-inter); font-weight: 500; font-size: 10px; line-height: 1.3; letter-spacing: 0.06em; text-transform: uppercase; }
+  .t-body-l { font-family: var(--font-inter); font-size: 18px; line-height: 1.55; }
+  .t-body-m { font-family: var(--font-inter); font-size: 15px; line-height: 1.5; }
+  .t-body-s { font-family: var(--font-inter); font-size: 13px; line-height: 1.45; }
+  .t-mono-m { font-family: var(--font-jetbrains); font-size: 13px; line-height: 1.45; }
+  .t-mono-s { font-family: var(--font-jetbrains); font-weight: 500; font-size: 11px; line-height: 1.4; letter-spacing: 0.02em; text-transform: uppercase; }
+
+  /* Effects: Glass/Card (background blur 24 in Figma = 12px CSS), Glow/Ember */
+  .glass { background: var(--color-bg-glass); border: 1px solid var(--color-border-subtle); backdrop-filter: blur(12px); }
+  .glow-ember { box-shadow: 0 0 40px rgba(255, 122, 48, 0.35); }
+}
+
+/* Native range input styled like the Figma slider (track + ember fill + white knob). */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-accent-default) var(--fill, 50%), var(--color-bg-surface-raised) var(--fill, 50%));
+}
+.range::-moz-range-track { height: 4px; border-radius: 999px; background: var(--color-bg-surface-raised); }
+.range::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--color-accent-default); }
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  margin-top: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--color-accent-default);
+}
+.range::-moz-range-thumb { width: 12px; height: 12px; border-radius: 999px; background: #fff; border: 3px solid var(--color-accent-default); }
+/* Dual-thumb range: two overlaid inputs; only the thumbs receive pointer events. */
+.range-dual { position: relative; height: 16px; }
+.range-dual .range { position: absolute; inset: 0; pointer-events: none; }
+.range-dual .range::-webkit-slider-runnable-track { background: transparent; }
+.range-dual .range::-moz-range-track { background: transparent; }
+.range-dual .range::-moz-range-progress { background: transparent; }
+.range-dual .range::-webkit-slider-thumb { pointer-events: auto; }
+.range-dual .range::-moz-range-thumb { pointer-events: auto; }
+
+.range:focus-visible { outline: 2px solid var(--color-accent-soft); outline-offset: 4px; border-radius: 999px; }
