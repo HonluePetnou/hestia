@@ -38,11 +38,11 @@
     "mean": 0.5022
   },
   "excluded_columns": {
-    "burn_time_s": "mesurée pendant l'essai : vaut à peu près d0² / K (fuite d'information)",
-    "extinction_diameter_mm": "mesuré pendant l'essai (fuite d'information)",
-    "test_number": "numéro d'ordre, sans lien physique avec le résultat",
-    "test_date": "date de l'essai, sans lien physique avec le résultat",
-    "test_gmt": "heure de l'essai, sans lien physique avec le résultat"
+    "burn_time_s": "measured during the run: roughly d0² / K (information leak)",
+    "extinction_diameter_mm": "measured during the run (information leak)",
+    "test_number": "sequence number, no physical link to the outcome",
+    "test_date": "run date, no physical link to the outcome",
+    "test_gmt": "run time, no physical link to the outcome"
   },
-  "limits": "microgravité ISS uniquement ; pas de gravité lunaire ni martienne ; carburants testés seulement"
+  "limits": "ISS microgravity only; no lunar or Martian gravity; tested fuels only"
 }
