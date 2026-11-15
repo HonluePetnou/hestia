@@ -17,6 +17,11 @@ const DropletScene = dynamic(() => import("@/components/DropletScene"), {
 // The model is trained on FLEX Table IX, which only contains these two fuels.
 const FUELS = ["n-heptane", "methanol"];
 const STANDOFF = 5.5; // flame / droplet diameter ratio, typical order of magnitude (approximation)
+// Median extinction diameter / initial diameter over the 159 FLEX Table IX tests that ended in
+// extinction (methanol 0.57, IQR 0.47-0.82; n-heptane 0.84, IQR 0.76-0.96).
+const EXT_RATIO: Record<string, number> = { methanol: 0.57, "n-heptane": 0.84 };
+const IGNITE = 0.06; // share of the timeline spent igniting
+const FADE = 0.15; // extra time after extinction to show the flame going out
 
 function Slider({ label, value, unit, min, max, step, onChange }: { label: string; value: number; unit: string; min: number; max: number; step: number; onChange: (v: number) => void }) {
   const fill = ((value - min) / (max - min)) * 100;
@@ -62,16 +67,33 @@ export default function Page() {
     let alive = true;
     const id = setTimeout(() => {
       api.predict({ fuel, oxygen_percent: o2, pressure_kpa: pressure, initial_diameter_mm: d0, co2_percent: co2 })
-        .then((p) => { if (alive) { setPred(p); setError(null); setT(0); } })
+        .then((p) => {
+          if (!alive) return;
+          setPred(p); setError(null); setT(0);
+          // Replay the burn after each new prediction, unless the user prefers reduced motion.
+          setPlaying(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        })
         .catch((e: unknown) => { if (alive) setError(e); });
     }, 250);
     return () => { alive = false; clearTimeout(id); };
   }, [fuel, o2, pressure, d0, co2]);
 
-  const K = pred?.burn_rate_k ?? 0.6;
-  const burnTime = (d0 * d0) / Math.max(K, 0.01); // d² law: d² = d0² − K·t
-  const d = Math.sqrt(Math.max(d0 * d0 - K * t, 0));
+  const K = Math.max(pred?.burn_rate_k ?? 0.6, 0.01);
+  const extinguishes = (pred?.extinction_probability ?? 0) >= 0.5;
+  const dExt = (EXT_RATIO[fuel] ?? 0.7) * d0;
+  const burnOut = (d0 * d0) / K; // d² law: d² = d0² − K·t
+  const tExt = (d0 * d0 - dExt * dExt) / K;
+  const flameEnd = extinguishes ? tExt : burnOut;
+  const burnTime = extinguishes ? tExt * (1 + FADE) : burnOut; // length of the timeline
+  const d = Math.sqrt(Math.max(d0 * d0 - K * Math.min(t, flameEnd), 0));
 
+  // Flame state over the timeline: ignition ramp, steady burn, then out (extinction fade or burnout).
+  const ignition = Math.min(t / (IGNITE * burnTime), 1);
+  const fade = extinguishes ? Math.max(1 - (t - tExt) / (FADE * tExt), 0) : 1;
+  const out = t >= flameEnd - (1.5 * burnTime) / 200; // the time slider snaps to 1/200 steps
+  const intensity = out && !extinguishes ? 0 : ignition * (out && extinguishes ? fade : 1);
+  const heat = extinguishes && out ? fade : Math.max(intensity, t === 0 ? 0.35 : 0);
+  const phase = t === 0 ? "Ready" : t < IGNITE * burnTime ? "Igniting" : !out ? "Burning" : extinguishes ? "Extinguished" : "Burned out";
   useEffect(() => {
     if (!playing) return;
     let last = performance.now();
@@ -127,10 +149,18 @@ export default function Page() {
       <section className="glass relative min-h-[560px] overflow-hidden rounded-lg">
         <div aria-hidden className="absolute inset-0 bg-[linear-gradient(rgba(230,232,238,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(230,232,238,0.04)_1px,transparent_1px)] bg-size-[12.5%_12.5%]" />
         <div className="absolute inset-0">
-          <DropletScene droplet={Math.max(d * scale * 0.5, 0.004)} flame={Math.max(d * STANDOFF * scale * 0.5, 0.02)} />
+          <DropletScene
+            droplet={Math.max(d * scale * 0.5, 0.004)}
+            flame={Math.max(d * STANDOFF * scale * 0.5 * (0.35 + 0.65 * ignition), 0.02)}
+            intensity={intensity}
+            heat={heat}
+          />
         </div>
         <div className="pointer-events-none absolute top-5 right-5 left-5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5"><span className="t-caps">3D droplet flame</span><Badge tone="success">Live</Badge></div>
+          <div className="flex items-center gap-2.5">
+            <span className="t-caps">3D droplet flame</span>
+            <Badge tone={phase === "Extinguished" ? "data" : phase === "Burned out" || phase === "Ready" ? "neutral" : "accent"}>{phase}</Badge>
+          </div>
           <span className="t-caps-s text-fg-3">Drag to orbit · scroll to zoom</span>
         </div>
         <div className="glass absolute right-6 bottom-6 left-6 flex items-center gap-3.5 rounded-full py-2 pr-[18px] pl-2">
@@ -163,7 +193,9 @@ export default function Page() {
         <div>
           <Fact label="Droplet diameter" value={`${d.toFixed(2)} mm`} />
           <Fact label="Flame diameter ≈" value={`${(d * STANDOFF).toFixed(1)} mm`} />
-          <Fact label="Burn time (d² law)" value={`${burnTime.toFixed(1)} s`} />
+          {extinguishes
+            ? <Fact label="Flame out at (FLEX median)" value={`d ≈ ${dExt.toFixed(2)} mm · t ≈ ${tExt.toFixed(1)} s`} />
+            : <Fact label="Burn time (d² law)" value={`${burnOut.toFixed(1)} s`} />}
           <Fact label="Atmosphere" value={`${o2}% O₂ · ${co2}% CO₂ · ${pressure} kPa`} />
         </div>
         <div className="mt-auto flex items-center justify-between rounded-md border border-line-strong bg-raised px-3.5 py-3">
