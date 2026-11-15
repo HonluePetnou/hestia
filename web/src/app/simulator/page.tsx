@@ -2,7 +2,8 @@
 
 import { ArrowUpRight, ChevronDown, Pause, Play } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { Gauge } from "@/components/visuals";
 import type { Gravity } from "@/components/DropletScene";
@@ -69,12 +70,38 @@ function NearestTestCard({ test }: { test: Schemas["NearestTest"] }) {
   );
 }
 
+/** Conditions from the URL (the search palette opens a real test this way), clamped to the sliders. */
+function initial(params: URLSearchParams) {
+  const num = (k: string, lo: number, hi: number, dflt: number, step = 1) => {
+    const v = Number(params.get(k));
+    return params.get(k) && Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v / step) * step)) : dflt;
+  };
+  const fuel = params.get("fuel");
+  return {
+    fuel: fuel && FUELS.includes(fuel) ? fuel : "n-heptane",
+    o2: num("o2", 10, 40, 21),
+    pressure: num("p", 50, 320, 101),
+    d0: Number(num("d0", 1, 5, 3.0, 0.1).toFixed(1)),
+    co2: num("co2", 0, 70, 0),
+  };
+}
+
 export default function Page() {
-  const [fuel, setFuel] = useState("n-heptane");
-  const [o2, setO2] = useState(21);
-  const [pressure, setPressure] = useState(101);
-  const [d0, setD0] = useState(3.0);
-  const [co2, setCo2] = useState(0);
+  return (
+    <Suspense fallback={<Loading label="Loading simulator…" />}>
+      <Simulator />
+    </Suspense>
+  );
+}
+
+function Simulator() {
+  const params = useSearchParams();
+  const [start] = useState(() => initial(params));
+  const [fuel, setFuel] = useState(start.fuel);
+  const [o2, setO2] = useState(start.o2);
+  const [pressure, setPressure] = useState(start.pressure);
+  const [d0, setD0] = useState(start.d0);
+  const [co2, setCo2] = useState(start.co2);
   const [info, setInfo] = useState<Schemas["ModelInfo"] | null>(null);
   const [pred, setPred] = useState<Schemas["PredictResponse"] | null>(null);
   const [error, setError] = useState<unknown>(null);

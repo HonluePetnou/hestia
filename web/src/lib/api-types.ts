@@ -204,6 +204,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search
+         * @description Grouped matches for the search palette. Each group is empty rather than failing.
+         */
+        get: operations["search_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -592,6 +612,90 @@ export interface components {
             /** Findings */
             findings: components["schemas"]["RankedFinding"][];
         };
+        /** SearchDocument */
+        SearchDocument: {
+            /**
+             * Source Type
+             * @description ntrs, psi or nasa_resource
+             */
+            source_type: string;
+            /** External Id */
+            external_id: string;
+            /** Title */
+            title: string;
+            /** Page */
+            page?: number | null;
+            /**
+             * Snippet
+             * @description Matching passage; matched words wrapped in <mark></mark>
+             */
+            snippet: string;
+            /** Url */
+            url?: string | null;
+        };
+        /** SearchExperiment */
+        SearchExperiment: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Platform */
+            platform?: string | null;
+            /** Fuels */
+            fuels?: string | null;
+        };
+        /** SearchFinding */
+        SearchFinding: {
+            /** Experiment Code */
+            experiment_code?: string | null;
+            /** Statement */
+            statement: string;
+            /**
+             * Url
+             * @description Source page of the finding's first source
+             */
+            url?: string | null;
+            /**
+             * Source Label
+             * @description e.g. '20240002981, p.6'
+             */
+            source_label?: string | null;
+        };
+        /** SearchResponse */
+        SearchResponse: {
+            /** Query */
+            query: string;
+            /** Experiments */
+            experiments?: components["schemas"]["SearchExperiment"][];
+            /** Findings */
+            findings?: components["schemas"]["SearchFinding"][];
+            /** Documents */
+            documents?: components["schemas"]["SearchDocument"][];
+            /** Tests */
+            tests?: components["schemas"]["SearchTest"][];
+        };
+        /** SearchTest */
+        SearchTest: {
+            /** Run Label */
+            run_label: string;
+            /** Experiment Code */
+            experiment_code: string;
+            /** Fuel */
+            fuel?: string | null;
+            /** Oxygen Percent */
+            oxygen_percent?: number | null;
+            /** Pressure Kpa */
+            pressure_kpa?: number | null;
+            /** Initial Diameter Mm */
+            initial_diameter_mm?: number | null;
+            /**
+             * Co2 Percent
+             * @default 0
+             */
+            co2_percent: number;
+            /** Outcome */
+            outcome: string;
+        };
         /** SourceRef */
         SourceRef: {
             /** Ntrs Id */
@@ -970,6 +1074,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelInfo"];
+                };
+            };
+        };
+    };
+    search_search_get: {
+        parameters: {
+            query: {
+                /** @description What the user typed */
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

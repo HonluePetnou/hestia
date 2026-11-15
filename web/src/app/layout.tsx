@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Unbounded } from "next/font/google";
 import { Suspense } from "react";
 
+import { CommandPalette } from "@/components/CommandPalette";
 import { TopBar } from "@/components/TopBar";
 import { SpaceBackdrop } from "@/components/visuals";
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-6 pt-9 pb-10 lg:px-12">
           <main className="flex min-w-0 flex-1 flex-col">{children}</main>
         </div>
+        <CommandPalette />
       </body>
     </html>
   );
