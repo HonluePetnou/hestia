@@ -163,6 +163,65 @@ def _tests(session: Session, q: str) -> list[SearchTest]:
     ]
 
 
+def _acronym_matches(
+    session: Session, code: str
+) -> tuple[list[SearchFinding], list[SearchDocument]]:
+    """An experiment code (SAME, BASS…) may be an English stop word that full-text search
+    drops, so match it as an exact, case-sensitive word instead."""
+    exp = session.scalar(
+        select(Experiment)
+        .options(
+            selectinload(Experiment.findings)
+            .selectinload(Finding.sources)
+            .selectinload(FindingSource.document)
+        )
+        .where(func.upper(Experiment.code) == code)
+    )
+    findings: list[SearchFinding] = []
+    for f in (exp.findings if exp else [])[:4]:
+        src = min(f.sources, key=lambda x: (x.document.external_id, x.page), default=None)
+        findings.append(
+            SearchFinding(
+                experiment_code=exp.code,
+                statement=f.statement,
+                url=src.document.page_url(src.page) if src else None,
+                source_label=f"{src.document.external_id}, p.{src.page}" if src else None,
+            )
+        )
+    pattern = rf"\m{re.escape(code)}\M"  # word boundaries, case-sensitive
+    first = (
+        select(
+            Chunk.id,
+            func.row_number()
+            .over(partition_by=Chunk.document_id, order_by=Chunk.chunk_index)
+            .label("rn"),
+        )
+        .where(Chunk.content.op("~")(pattern))
+        .subquery()
+    )
+    rows = session.execute(
+        select(Chunk, Document)
+        .join(first, first.c.id == Chunk.id)
+        .join(Document, Document.id == Chunk.document_id)
+        .where(first.c.rn == 1)
+        .order_by(Document.title.op("~")(pattern).desc(), Document.year.desc().nulls_last())
+        .limit(6)
+    ).all()
+    docs = []
+    for c, d in rows:
+        m = re.search(rf"\b{re.escape(code)}\b", c.content)
+        start = max((m.start() if m else 0) - 90, 0)
+        text = " ".join(c.content[start : start + 240].split())
+        docs.append(
+            SearchDocument(
+                source_type=d.source_type, external_id=d.external_id, title=d.title, page=c.page,
+                snippet=re.sub(rf"\b({re.escape(code)})\b", r"<mark>\1</mark>", text),
+                url=d.page_url(c.page),
+            )
+        )  # fmt: skip
+    return findings, docs
+
+
 @router.get("/search", response_model=SearchResponse)
 def search(
     q: str = Query(..., min_length=1, max_length=200, description="What the user typed"),
@@ -180,6 +239,13 @@ def search(
         if tsq:
             out.findings = _findings(session, tsq)
             out.documents = _documents(session, tsq)
+        code = q.upper()
+        if re.fullmatch(r"[A-Za-z][A-Za-z0-9-]{1,15}", q) and any(
+            e.code.upper() == code for e in out.experiments
+        ):
+            acr_findings, acr_docs = _acronym_matches(session, code)
+            out.findings = out.findings or acr_findings
+            out.documents = out.documents or acr_docs
     except SQLAlchemyError:
         session.rollback()
     return out

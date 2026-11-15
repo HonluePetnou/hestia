@@ -36,7 +36,7 @@ export function SearchBox() {
         onChange={(e) => update({ q: e.target.value })}
         className="t-body-s min-w-0 flex-1 bg-transparent text-fg outline-none placeholder:text-fg-3"
       />
-      <button type="button" onClick={openSearch} title="Search everything (Ctrl/⌘ K)" className="t-mono-s rounded-sm border border-line-strong px-1.5 py-0.5 text-fg-3 hover:text-fg">⌘K</button>
+      <button type="button" onClick={() => openSearch()} title="Search everything (Ctrl/⌘ K)" className="t-mono-s rounded-sm border border-line-strong px-1.5 py-0.5 text-fg-3 hover:text-fg">⌘K</button>
     </label>
   );
 }

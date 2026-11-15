@@ -86,3 +86,23 @@ def test_test_lookup(client, q) -> None:
     assert (
         t["run_label"] == "FLEX-086" and t["co2_percent"] == 15.0 and t["outcome"] == "extinction"
     )
+
+
+def test_stop_word_acronym_still_finds_sources(client, db) -> None:
+    """'SAME' is an English stop word; as an experiment code it must still match."""
+    exp = Experiment(code="SAME", name="Smoke Aerosol Measurement Experiment")
+    doc = Document(source_type="psi", external_id="PSI-102", title="Smoke and Aerosol (SAME)")
+    db.add_all([exp, doc])
+    db.flush()
+    db.add(
+        Chunk(
+            document_id=doc.id,
+            chunk_index=0,
+            chunk_key="s0",
+            content="SAME measured smoke particle sizes from heated Teflon.",
+        )
+    )
+    db.commit()
+    body = client.get("/search", params={"q": "SAME"}).json()
+    (d,) = body["documents"]
+    assert d["external_id"] == "PSI-102" and "<mark>SAME</mark>" in d["snippet"]

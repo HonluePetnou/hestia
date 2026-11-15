@@ -9,7 +9,20 @@ import { api, type Schemas } from "@/lib/api";
 
 /** Opens the palette from anywhere (the top bar's search button dispatches this). */
 export const OPEN_SEARCH = "hestia:open-search";
-export const openSearch = () => window.dispatchEvent(new Event(OPEN_SEARCH));
+export const openSearch = (q?: string) =>
+  window.dispatchEvent(new CustomEvent(OPEN_SEARCH, { detail: typeof q === "string" ? q : undefined }));
+
+/** A button that opens the palette pre-filled with `q` (usable from server components). */
+export function SearchButton({ q, label }: { q: string; label: string }) {
+  return (
+    <button
+      type="button" onClick={() => openSearch(q)}
+      className="t-caps inline-flex items-center gap-2.5 rounded-full border border-line-strong px-5 py-2.5 text-fg transition hover:bg-raised"
+    >
+      <Search aria-hidden size={15} strokeWidth={1.75} /> {label}
+    </button>
+  );
+}
 
 type Item = {
   key: string;
@@ -58,7 +71,11 @@ export function CommandPalette() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setOpen((o) => !o); }
       else if (e.key === "Escape") close();
     };
-    const onOpen = () => setOpen(true);
+    const onOpen = (e: Event) => {
+      const q = (e as CustomEvent<string | undefined>).detail;
+      if (q) setQ(q);
+      setOpen(true);
+    };
     window.addEventListener("keydown", onKey);
     window.addEventListener(OPEN_SEARCH, onOpen);
     return () => { window.removeEventListener("keydown", onKey); window.removeEventListener(OPEN_SEARCH, onOpen); };

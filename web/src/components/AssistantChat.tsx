@@ -1,17 +1,62 @@
 "use client";
 
-import { ArrowUpRight, FileText, Flame, Send, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, FileText, Flame, RotateCw, Send, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
-import { Badge, Card, CardHeader, ErrorBox, cx } from "@/components/ui";
-import { api, type Schemas } from "@/lib/api";
+import { Badge, Card, CardHeader, cx } from "@/components/ui";
+import { ApiError, api, type Schemas } from "@/lib/api";
 import { ASSISTANT_SUGGESTIONS } from "@/lib/content";
 
 type Msg =
   | { role: "user"; text: string }
   | { role: "ai"; res: Schemas["AskResponse"]; ms: number }
-  | { role: "error"; error: unknown };
+  | { role: "error"; error: unknown; question: string };
+
+/** A readable explanation of a failed answer; the raw detail stays available, small. */
+function describeError(error: unknown): { title: string; body: string; detail?: string } {
+  const status = error instanceof ApiError ? error.status : undefined;
+  const raw = error instanceof Error ? error.message : String(error);
+  const detail = raw.replace(/^\d{3}\s*/, "").replace(/^\{"detail":"(.*)"\}$/, "$1");
+  if (status === 0) {
+    return { title: "Can’t reach Hestia’s server", body: "The API isn’t responding. Check that it is running, then try again." };
+  }
+  if (status === 503) {
+    return {
+      title: "The AI model is busy right now",
+      body: "Google’s Gemini servers didn’t answer, even after trying the backup models. This is usually temporary: try again in a few seconds.",
+      detail,
+    };
+  }
+  if (status === 422) {
+    return { title: "This question couldn’t be sent", body: "It may be too short or too long. Rephrase it and try again.", detail };
+  }
+  return { title: "Something went wrong", body: "The answer couldn’t be produced. Try again.", detail };
+}
+
+function ChatError({ error, onRetry, disabled }: { error: unknown; onRetry: () => void; disabled: boolean }) {
+  const e = describeError(error);
+  return (
+    <div role="alert" className="flex flex-col gap-3 rounded-md border border-warn/40 bg-warn/10 px-4 py-3.5">
+      <div className="flex items-start gap-2.5">
+        <AlertTriangle aria-hidden size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-warn" />
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] font-medium text-fg">{e.title}</p>
+          <p className="t-body-s text-fg-2">{e.body}</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 pl-7">
+        <button
+          type="button" onClick={onRetry} disabled={disabled}
+          className="t-caps-s inline-flex items-center gap-2 rounded-full border border-line-strong px-3.5 py-2 text-fg transition hover:border-ember-line disabled:opacity-50"
+        >
+          <RotateCw aria-hidden size={13} /> Try again
+        </button>
+        {e.detail && <span className="t-mono-s normal-case text-fg-3">{e.detail}</span>}
+      </div>
+    </div>
+  );
+}
 
 // Citations are "[ID, p.N]" (NTRS, guide pages) or "[ID]" for sources without a page (PSI).
 const CITE_SPLIT = /(\[[A-Za-z0-9][\w.-]*(?:, p\.\s?\d+)?\])/;
@@ -68,7 +113,7 @@ export function AssistantChat() {
       const res = await api.ask(q, history);
       setMessages((m) => [...m, { role: "ai", res, ms: performance.now() - t0 }]);
     } catch (error) {
-      setMessages((m) => [...m, { role: "error", error }]);
+      setMessages((m) => [...m, { role: "error", error, question: q }]);
     } finally {
       setPending(false);
     }
@@ -122,7 +167,14 @@ export function AssistantChat() {
                 </span>
                 <div className={cx("glass flex flex-1 flex-col gap-3 rounded-lg rounded-tl-md px-5 py-4", m.role === "ai" && m.res.insufficient_data && "border-line-strong!")}>
                   {m.role === "error" ? (
-                    <ErrorBox error={m.error} />
+                    <ChatError
+                      error={m.error}
+                      disabled={pending}
+                      onRetry={() => {
+                        setMessages((all) => all.filter((x, j) => !(j === i || (j === i - 1 && x.role === "user"))));
+                        void ask(m.question);
+                      }}
+                    />
                   ) : (
                     <>
                       <div className="flex items-center gap-2.5">
