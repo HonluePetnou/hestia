@@ -1,26 +1,63 @@
-# Hestia
+<p align="center">
+  <img src="web/src/app/icon.svg" width="88" alt="Hestia logo">
+</p>
 
-> *Guarding the flame beyond Earth.*
+<h1 align="center">Hestia</h1>
 
-Hestia is an AI-powered knowledge dashboard that **summarizes, ranks and explains** decades of
-NASA microgravity combustion experiments (BASS, Saffire, SAME, FLEX, ACME) to inform **fire safety
-for Moon and Mars missions**. It is named after the Greek goddess of the hearth, who kept the
-home fire under control.
+<p align="center"><b>Guarding the flame beyond Earth.</b><br>
+AI-powered fire-safety insights from NASA microgravity combustion data, for the Moon and Mars.</p>
 
-Every AI answer is grounded in NASA sources and cites them (`[NTRS-ID, p.X]`). When the sources
-don't contain the answer, Hestia says so.
+<p align="center">
+  <img alt="NASA Space Apps 2026" src="https://img.shields.io/badge/NASA%20Space%20Apps-2026-0b3d91">
+  <img alt="Challenge" src="https://img.shields.io/badge/challenge-Flame%20in%20Freefall-ff7a30">
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-black">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Python%203.12-009688">
+  <img alt="pgvector" src="https://img.shields.io/badge/PostgreSQL-pgvector-336791">
+</p>
+
+<p align="center">
+  <a href="docs/Hestia_slides.pdf"><b>Slides (PDF)</b></a> ·
+  <a href="#features">Features</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#nasa-data">NASA data</a> ·
+  <a href="#team">Team</a>
+</p>
+
+![Hestia overview](docs/screenshots/overview.png)
+
+NASA has spent decades burning things in microgravity: droplets on the ISS (FLEX), solids (BASS,
+BASS-II), full-size fabrics on cargo ships (Saffire) and smoke in gloveboxes (SAME). The answers
+exist, but they are scattered across hundreds of reports and data tables. **Hestia turns that
+research into answers**: every AI answer is grounded in NASA sources and cites the exact page
+(`[NTRS-ID, p.X]`), and when the sources don't cover a question, Hestia says so.
 
 Built by **black-vortex** (Douala, Cameroon) for the NASA Space Apps Challenge 2026,
 challenge *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data*.
+Hestia is named after the Greek goddess of the hearth, who kept the home fire under control.
 
-> **Status: Phase 2 (product).** Real data end to end: 55 NTRS reports indexed for retrieval,
-> 276 FLEX droplet tests, 21 curated findings with verified page citations, and a model trained
-> on FLEX. Grounded answers need an LLM key (Gemini recommended); without one the assistant
-> quotes the top passages verbatim. The original brief is in [PROJECT_SPEC.md](PROJECT_SPEC.md).
+## Features
 
-## Module IA / RAG
+| | |
+|---|---|
+| **Ask** | A RAG assistant answering in English or French from 55 NTRS reports, 24 PSI investigations and NASA resources. Every claim links to the PDF page it came from. |
+| **Explore** | Experiment pages for FLEX, BASS, BASS-II, SAME and Saffire with 544 test runs, curated findings with verified citations, side-by-side comparison. |
+| **Relevance** | Findings ranked by relevance × confidence for the Moon or for Mars. |
+| **Simulate** | A 3D combustion chamber driven by a model trained on 276 ISS droplet tests, with the closest real NASA test and an extrapolation warning. Earth (1 g) vs ISS view. |
+| **Search** | A Ctrl/⌘ K palette over experiments, findings, report passages and test runs, working even without the AI. |
 
-`/ask` retrieves passages from PostgreSQL/pgvector (NTRS reports, PSI investigations, NASA resources), has the LLM answer from numbered passages and returns citations rebuilt and verified by the backend. Documentation, ingestion commands, hackathon runbook and test status: **[docs/RAG.md](docs/RAG.md)**. First thing to run with real keys: `make check-llm`.
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/simulator.png" alt="Simulator"><br><sub><b>Simulator:</b> methanol at 12 % O₂ goes out at 2.52 mm predicted; the real ISS test FLEX-086 went out at 2.56 mm.</sub></td>
+    <td width="50%"><img src="docs/screenshots/relevance.png" alt="Moon and Mars relevance"><br><sub><b>Relevance:</b> findings ranked for the Moon or Mars, each with its NASA page citation.</sub></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/experiment.png" alt="FLEX experiment page"><br><sub><b>Explore:</b> the FLEX experiment page with cited findings and every test run from the PSI tables.</sub></td>
+  </tr>
+</table>
+
+### RAG module
+
+`/ask` retrieves passages from PostgreSQL/pgvector (NTRS reports, PSI investigations, NASA resources), has the LLM answer from numbered passages and returns citations rebuilt and verified by the backend. Documentation, ingestion commands and test status: **[docs/RAG.md](docs/RAG.md)**. First thing to run with real keys: `make check-llm`.
 
 ## Architecture
 
@@ -122,18 +159,29 @@ data/      Datasets. See data/README.md for how to obtain each one
 
 ## Team
 
-| Member | Role |
+**black-vortex** · Douala, Cameroon
+
+| Member | GitHub |
 |---|---|
-| _TBD_ | Team lead / pitch |
-| _TBD_ | Backend & data pipeline |
-| _TBD_ | AI / RAG |
-| _TBD_ | Frontend & 3D |
-| _TBD_ | Design (Figma) |
+| Frédéric Armel Petnou Honlue (team owner) | [@HonluePetnou](https://github.com/HonluePetnou) |
+| Merveilles Fohom | [@Mervy21](https://github.com/Mervy21) |
+| Jacques Eyoum | |
+| Gustave Cyriac Mekounde Elame | [@kikat234](https://github.com/kikat234) |
+| Ismaïla Mohammed El Bachir | |
+| Damien Anthony Nkamoloum Tene | |
+
+## Use of AI
+
+- **In the product:** Google Gemini writes the assistant's answers and the embeddings, always from
+  retrieved NASA passages; the backend verifies every citation.
+- **In development:** code, tests, documentation and pitch material were drafted with AI coding
+  assistance (Claude Code) and reviewed by the team. No NASA logos or mission identifiers were
+  generated or modified.
 
 Workflow: `main` is protected; work on `feat/<name>` branches and merge at each milestone.
 Conventional commits (`feat:`, `fix:`, `chore:`, `docs:`).
 
-## Data sources
+## NASA data
 
 - **NASA Technical Reports Server (NTRS)**: <https://ntrs.nasa.gov> · API docs: <https://ntrs.nasa.gov/api/openapi/>
 - **NASA Physical Sciences Informatics (PSI)**: <https://psi.nasa.gov>
