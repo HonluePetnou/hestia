@@ -2,7 +2,7 @@ import math
 
 from fastapi import APIRouter
 
-from app.schemas import ModelInfo, PredictRequest, PredictResponse
+from app.schemas import ModelInfo, NearestTest, PredictRequest, PredictResponse
 from app.services import flex_model
 
 router = APIRouter(tags=["predict"])
@@ -17,15 +17,16 @@ def predict(body: PredictRequest) -> PredictResponse:
     Falls back to a clearly labelled mock formula when the FLEX CSV is missing.
     """
     model = flex_model.get_model()
+    x = flex_model.features_row(
+        body.fuel, body.oxygen_percent, body.pressure_kpa, body.initial_diameter_mm,
+        body.co2_percent, body.he_percent,
+    )  # fmt: skip
+    nearest = flex_model.nearest_test(x)
     if model is None:
         k = max(0.5 + 0.01 * (body.oxygen_percent - 21) + 0.02 * body.initial_diameter_mm, 0.05)
         z = 0.15 * (16 - body.oxygen_percent) + 0.3 * (body.initial_diameter_mm - 3)
         p, in_range, name = 1 / (1 + math.exp(-z)), False, "mock"
     else:
-        x = flex_model.features_row(
-            body.fuel, body.oxygen_percent, body.pressure_kpa, body.initial_diameter_mm,
-            body.co2_percent, body.he_percent,
-        )  # fmt: skip
         k, p, in_range = flex_model.predict(model, x)
         name = flex_model.MODEL_NAME
     lifetime = body.initial_diameter_mm**2 / k if k > 0 else 0.0
@@ -35,6 +36,7 @@ def predict(body: PredictRequest) -> PredictResponse:
         droplet_lifetime_s=round(lifetime, 2),
         in_training_range=in_range,
         model=name,
+        nearest_test=NearestTest(**nearest) if nearest else None,
     )
 
 

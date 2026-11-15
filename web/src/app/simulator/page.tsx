@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Pause, Play } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Pause, Play } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -34,6 +34,37 @@ function Slider({ label, value, unit, min, max, step, onChange }: { label: strin
       <input type="range" className="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} style={{ ["--fill" as string]: `${fill}%` }} />
       <span className="t-mono-s flex justify-between text-fg-3"><span>{min}</span><span>{max}</span></span>
     </label>
+  );
+}
+
+const OUTCOME: Record<string, { label: string; tone: "data" | "accent" | "warning" }> = {
+  extinction: { label: "Flame went out", tone: "data" },
+  complete_burn: { label: "Burned completely", tone: "accent" },
+  disruption: { label: "Droplet disrupted", tone: "warning" },
+};
+
+/* The real ISS test closest to the chosen conditions, with what actually happened. */
+function NearestTestCard({ test }: { test: Schemas["NearestTest"] }) {
+  const o = OUTCOME[test.outcome] ?? { label: test.outcome, tone: "warning" as const };
+  const close = test.distance < 0.5;
+  return (
+    <div className="flex flex-col gap-2.5 rounded-md border border-ember-line bg-ember-tint px-3.5 py-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="t-caps-s text-fg-2">{close ? "Matching NASA test" : "Closest NASA test"}</span>
+        <Badge tone={o.tone}>{o.label}</Badge>
+      </div>
+      <p className="t-mono-s normal-case text-fg">
+        {test.test_id} · {test.fuel} · {test.oxygen_percent}% O₂{test.co2_percent ? ` · ${test.co2_percent}% CO₂` : ""}
+        {test.he_percent ? ` · ${test.he_percent}% He` : ""} · {test.pressure_kpa} kPa · d₀ {test.initial_diameter_mm} mm
+      </p>
+      <p className="t-body-s text-fg-2">
+        On the ISS: {test.burn_rate_k != null ? `K = ${test.burn_rate_k} mm²/s` : "K not reported"}
+        {test.extinction_diameter_mm != null ? `, flame out at d = ${test.extinction_diameter_mm} mm` : ""}.
+      </p>
+      <a href={test.url} target="_blank" rel="noreferrer" className="t-caps-s inline-flex items-center gap-1.5 text-ember hover:text-ember-soft">
+        FLEX report{test.source_page ? `, p.${test.source_page}` : ""} <ArrowUpRight aria-hidden size={12} />
+      </a>
+    </div>
   );
 }
 
@@ -198,6 +229,7 @@ export default function Page() {
             : <Fact label="Burn time (d² law)" value={`${burnOut.toFixed(1)} s`} />}
           <Fact label="Atmosphere" value={`${o2}% O₂ · ${co2}% CO₂ · ${pressure} kPa`} />
         </div>
+        {pred?.nearest_test && <NearestTestCard test={pred.nearest_test} />}
         <div className="mt-auto flex items-center justify-between rounded-md border border-line-strong bg-raised px-3.5 py-3">
           <span className="t-caps-s text-fg-3">Predicted outcome</span>
           {(pred?.extinction_probability ?? 0) >= 0.5

@@ -127,7 +127,7 @@ export interface paths {
         };
         /**
          * Ranking
-         * @description Findings ranked by relevance to the target x confidence (placeholder scoring).
+         * @description Findings ranked by relevance to the target (0-1) multiplied by confidence (0-1).
          */
         get: operations["ranking_ranking_get"];
         put?: never;
@@ -149,7 +149,9 @@ export interface paths {
         put?: never;
         /**
          * Ask
-         * @description Answer from the NASA corpus with verified [NTRS-ID, p.X] citations.
+         * @description Answer from the NASA corpus (NTRS, PSI, NASA resources) with verified citations.
+         *
+         *     Citations read `[ID, p.X]`, or `[ID]` when the source has no page (e.g. PSI).
          *
          *     `insufficient_data` is true when no indexed source supports an answer.
          */
@@ -211,15 +213,15 @@ export interface components {
             /** Question */
             question: string;
             /**
-             * History
-             * @description Previous turns, oldest first (last 6 are used)
-             */
-            history?: components["schemas"]["ChatMessage"][];
-            /**
              * Sources
              * @description Restrict retrieval to these source types (default: all)
              */
             sources?: ("ntrs" | "psi" | "nasa_resource")[] | null;
+            /**
+             * History
+             * @description Previous turns, oldest first (last 6 are used)
+             */
+            history?: components["schemas"]["ChatMessage"][];
         };
         /** AskResponse */
         AskResponse: {
@@ -240,7 +242,14 @@ export interface components {
             /** Content */
             content: string;
         };
-        /** Citation */
+        /**
+         * Citation
+         * @description A source cited in an answer, rebuilt by the backend from database metadata.
+         *
+         *     `ntrs_id` carries the external identifier of the source (an NTRS id, "PSI-159" or a NASA
+         *     resource slug): the name is kept so existing clients keep working. `page` and `url` are
+         *     null when the source has no page / no link (never invented).
+         */
         Citation: {
             /** Ntrs Id */
             ntrs_id: string;
@@ -430,6 +439,44 @@ export interface components {
                 ];
             };
         };
+        /** NearestTest */
+        NearestTest: {
+            /** Test Id */
+            test_id: string;
+            /** Fuel */
+            fuel: string;
+            /** Oxygen Percent */
+            oxygen_percent: number;
+            /** Pressure Kpa */
+            pressure_kpa: number;
+            /** Initial Diameter Mm */
+            initial_diameter_mm: number;
+            /** Co2 Percent */
+            co2_percent: number;
+            /** He Percent */
+            he_percent: number;
+            /**
+             * Outcome
+             * @description What happened on the ISS: extinction, disruption, complete_burn
+             */
+            outcome: string;
+            /** Burn Rate K */
+            burn_rate_k?: number | null;
+            /** Extinction Diameter Mm */
+            extinction_diameter_mm?: number | null;
+            /**
+             * Distance
+             * @description Distance to the inputs in standard deviations (0 = same)
+             */
+            distance: number;
+            /** Source Page */
+            source_page?: number | null;
+            /**
+             * Url
+             * @description FLEX report PDF at the Table IX page holding this test
+             */
+            url: string;
+        };
         /**
          * Outcome
          * @enum {string}
@@ -498,6 +545,8 @@ export interface components {
              * @description Which model produced the prediction ('mock' without data)
              */
             model: string;
+            /** @description The real FLEX test closest to these conditions, with its ISS outcome */
+            nearest_test?: components["schemas"]["NearestTest"] | null;
         };
         /** RankedFinding */
         RankedFinding: {

@@ -108,6 +108,51 @@ def features_row(
     )
 
 
+FLEX_PDF = "https://ntrs.nasa.gov/api/citations/20150023456/downloads/20150023456.pdf"
+
+
+@lru_cache
+def _tests() -> pd.DataFrame:
+    """Every Table IX test with its features and what actually happened on the ISS."""
+    raw = pd.read_csv(CSV_PATH)
+    feats = load_frame()
+    return feats.join(raw[["test_id", "extinction_diameter_mm", "source_page"]])
+
+
+def nearest_test(x: pd.DataFrame) -> dict | None:
+    """The real FLEX test closest to the inputs: same fuel, other features scaled by spread."""
+    if not CSV_PATH.exists():
+        return None
+    df = _tests()
+    row = x.iloc[0]
+    same = df[df["heptane"] == row["heptane"]]
+    if same.empty:
+        return None
+    cols = [f for f in FEATURES if f != "heptane"]
+    spread = df[cols].std().replace(0, 1)
+    dist = (((same[cols] - row[cols]) / spread) ** 2).sum(axis=1) ** 0.5
+    best = same.loc[dist.idxmin()]
+    ext = best["extinction_diameter_mm"]
+    page = int(best["source_page"]) if pd.notna(best["source_page"]) else None
+    return {
+        "test_id": str(best["test_id"]),
+        "fuel": "n-heptane" if best["heptane"] else "methanol",
+        "oxygen_percent": round(float(best["oxygen_percent"]), 1),
+        "pressure_kpa": round(float(best["pressure_kpa"]), 1),
+        "initial_diameter_mm": round(float(best["initial_diameter_mm"]), 2),
+        "co2_percent": round(float(best["co2_percent"]), 1),
+        "he_percent": round(float(best["he_percent"]), 1),
+        "outcome": str(best["outcome"]),
+        "burn_rate_k": None
+        if pd.isna(best["burn_rate_k"])
+        else round(float(best["burn_rate_k"]), 3),
+        "extinction_diameter_mm": None if pd.isna(ext) or ext <= 0 else round(float(ext), 2),
+        "distance": round(float(dist.min()), 2),
+        "source_page": page,
+        "url": f"{FLEX_PDF}#page={page}" if page else FLEX_PDF,
+    }
+
+
 def predict(model: FlexModel, x: pd.DataFrame) -> tuple[float, float, bool]:
     """Return (burn_rate_k, extinction_probability, inputs within training ranges)."""
     k = float(np.clip(model.k_model.predict(x)[0], 0.0, None))
