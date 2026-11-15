@@ -33,9 +33,9 @@ function Hero({ stats }: { stats?: Schemas["StatsResponse"] }) {
         </div>
       </div>
 
-      <div className="rise relative mx-auto h-[540px] w-full max-w-[600px]" style={d(0.2)}>
+      <div className="rise relative mx-auto h-[340px] w-full max-w-[600px] sm:h-[540px]" style={d(0.2)}>
         <DropletFlame className="absolute inset-0 h-full w-full" />
-        <div className="rise glass absolute top-[70px] left-[60%] flex flex-col gap-1 rounded-lg px-4 py-3 whitespace-nowrap" style={d(0.9)}>
+        <div className="rise glass absolute top-2 right-0 flex flex-col gap-1 rounded-lg px-4 py-3 whitespace-nowrap sm:top-[70px] sm:right-auto sm:left-[60%]" style={d(0.9)}>
           <span className="t-caps-s text-fg-3">● Featured test</span>
           <span className="font-display text-[16px] text-fg">FLEX · n-heptane</span>
           <span className="t-mono-s text-fg-2">O₂ 21% · 1 atm · d₀ 3.0 mm</span>

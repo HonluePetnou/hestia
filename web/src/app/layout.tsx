@@ -24,14 +24,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <SpaceBackdrop />
         <div className="sticky top-0 z-40 w-full border-b border-line bg-[var(--color-bg-glass)] backdrop-blur-md">
-          <div className="mx-auto w-full max-w-[1440px] px-6 pt-7 pb-4 lg:px-12">
+          <div className="mx-auto w-full max-w-[1440px] px-4 pt-3 pb-3 sm:px-6 lg:px-12 lg:pt-7 lg:pb-4">
             <Suspense>
               <TopBar />
             </Suspense>
           </div>
         </div>
         <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-6 pt-9 pb-10 lg:px-12">
-          <main className="flex flex-1 flex-col">{children}</main>
+          <main className="flex min-w-0 flex-1 flex-col">{children}</main>
         </div>
       </body>
     </html>
