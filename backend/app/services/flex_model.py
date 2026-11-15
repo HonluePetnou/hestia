@@ -14,6 +14,7 @@ from functools import lru_cache
 
 import numpy as np
 import pandas as pd
+from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score
 from sklearn.pipeline import Pipeline, make_pipeline
@@ -37,6 +38,9 @@ class FlexModel:
     k_mae: float
     ext_auc: float
     ext_balanced_accuracy: float
+    # Same cross-validation for naive baselines (mean K, majority class), to show the gain.
+    k_mae_baseline: float = 0.0
+    ext_bacc_baseline: float = 0.5
     ranges: dict[str, tuple[float, float]] = field(default_factory=dict)
 
 
@@ -65,6 +69,9 @@ def train(df: pd.DataFrame) -> FlexModel:
     k_r2 = cross_val_score(k_model, xk, yk, cv=kcv, scoring="r2").mean()
     k_mae = -cross_val_score(k_model, xk, yk, cv=kcv, scoring="neg_mean_absolute_error").mean()
     k_model.fit(xk, yk)
+    k_mae_base = -cross_val_score(
+        DummyRegressor(strategy="mean"), xk, yk, cv=kcv, scoring="neg_mean_absolute_error"
+    ).mean()
 
     e_df = df[df["outcome"].isin(["extinction", "complete_burn"])]
     xe, ye = e_df[FEATURES], (e_df["outcome"] == "extinction").astype(int)
@@ -77,12 +84,16 @@ def train(df: pd.DataFrame) -> FlexModel:
     auc = cross_val_score(ext_model, xe, ye, cv=ecv, scoring="roc_auc").mean()
     bacc = cross_val_score(ext_model, xe, ye, cv=ecv, scoring="balanced_accuracy").mean()
     ext_model.fit(xe, ye)
+    bacc_base = cross_val_score(
+        DummyClassifier(strategy="most_frequent"), xe, ye, cv=ecv, scoring="balanced_accuracy"
+    ).mean()
 
     ranges = {f: (float(df[f].min()), float(df[f].max())) for f in FEATURES if f != "heptane"}
     return FlexModel(
         k_model, ext_model, len(k_df), len(e_df),
         round(float(k_r2), 3), round(float(k_mae), 3),
-        round(float(auc), 3), round(float(bacc), 3), ranges,
+        round(float(auc), 3), round(float(bacc), 3),
+        round(float(k_mae_base), 3), round(float(bacc_base), 3), ranges,
     )  # fmt: skip
 
 
@@ -151,6 +162,30 @@ def nearest_test(x: pd.DataFrame) -> dict | None:
         "source_page": page,
         "url": f"{FLEX_PDF}#page={page}" if page else FLEX_PDF,
     }
+
+
+LABELS = {
+    "oxygen_percent": ("Oxygen", "% O₂"),
+    "pressure_kpa": ("Pressure", "kPa"),
+    "initial_diameter_mm": ("Initial diameter", "mm"),
+    "co2_percent": ("CO₂", "% CO₂"),
+    "he_percent": ("Helium", "% He"),
+}
+
+
+def range_warnings(model: FlexModel, x: pd.DataFrame, fuel: str) -> list[str]:
+    """One plain-English warning per input outside what the FLEX tests covered."""
+    out = []
+    if fuel.strip().lower() not in {"n-heptane", "heptane", "methanol"}:
+        out.append(f"Fuel '{fuel}' was not tested in FLEX (only n-heptane and methanol).")
+    row = x.iloc[0]
+    for f, (lo, hi) in model.ranges.items():
+        if not lo <= row[f] <= hi:
+            name, unit = LABELS.get(f, (f, ""))
+            out.append(
+                f"{name} {row[f]:g} {unit} is outside the FLEX tests ({lo:.3g} to {hi:.3g} {unit})."
+            )
+    return out
 
 
 def predict(model: FlexModel, x: pd.DataFrame) -> tuple[float, float, bool]:
