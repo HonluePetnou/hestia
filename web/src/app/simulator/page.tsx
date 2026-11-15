@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Gauge } from "@/components/visuals";
-import { Badge, Button, Card, CardHeader, ErrorBox, Fact, Loading } from "@/components/ui";
+import type { Gravity } from "@/components/DropletScene";
+import { Badge, Button, Card, CardHeader, ErrorBox, Fact, Loading, cx } from "@/components/ui";
 import { api, type Schemas } from "@/lib/api";
 
 // WebGL only exists in the browser, so the canvas is never server-rendered.
@@ -80,6 +81,8 @@ export default function Page() {
   const [pending, setPending] = useState(false);
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [gravity, setGravity] = useState<Gravity>("micro");
+  const [labels, setLabels] = useState(true);
   const raf = useRef<number | null>(null);
 
   const run = useCallback(async () => {
@@ -185,15 +188,45 @@ export default function Page() {
             flame={Math.max(d * STANDOFF * scale * 0.5 * (0.35 + 0.65 * ignition), 0.02)}
             intensity={intensity}
             heat={heat}
+            ignition={ignition}
+            gravity={gravity}
+            labels={labels}
           />
         </div>
-        <div className="pointer-events-none absolute top-5 right-5 left-5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="t-caps">3D droplet flame</span>
-            <Badge tone={phase === "Extinguished" ? "data" : phase === "Burned out" || phase === "Ready" ? "neutral" : "accent"}>{phase}</Badge>
+        <div className="pointer-events-none absolute top-5 right-5 left-5 flex flex-wrap items-start justify-between gap-3">
+          {/* Conditions readout (HUD) */}
+          <div className="glass flex flex-col gap-1.5 rounded-md px-3.5 py-2.5">
+            <div className="flex items-center gap-2.5">
+              <span className="t-caps">ISS droplet chamber</span>
+              <Badge tone={phase === "Extinguished" ? "data" : phase === "Burned out" || phase === "Ready" ? "neutral" : "accent"}>{phase}</Badge>
+            </div>
+            <span className="t-mono-s normal-case text-fg-2">
+              {gravity === "micro" ? "~0 g" : "1 g"} · {fuel} · {o2}% O₂ · {pressure} kPa{co2 ? ` · ${co2}% CO₂` : ""}
+            </span>
+            <span className="t-mono-s normal-case text-fg-2">d = {d.toFixed(2)} mm · K = {K.toFixed(2)} mm²/s</span>
           </div>
-          <span className="t-caps-s text-fg-3">Drag to orbit · scroll to zoom</span>
+          <div className="pointer-events-auto flex flex-col items-end gap-2">
+            <div role="radiogroup" aria-label="Gravity" className="glass flex rounded-full p-1">
+              {(["micro", "earth"] as const).map((g) => (
+                <button
+                  key={g} type="button" role="radio" aria-checked={gravity === g} onClick={() => setGravity(g)}
+                  className={cx("t-caps-s rounded-full px-3 py-1.5 transition", gravity === g ? "bg-inverse text-fg-inverse" : "text-fg-2 hover:text-fg")}
+                >
+                  {g === "micro" ? "ISS · microgravity" : "Earth · 1 g"}
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={() => setLabels((v) => !v)} aria-pressed={labels} className="glass t-caps-s rounded-full px-3 py-1.5 text-fg-2 hover:text-fg">
+              {labels ? "Hide labels" : "Show labels"}
+            </button>
+          </div>
         </div>
+        {gravity === "earth" && (
+          <p className="glass t-body-s pointer-events-none absolute top-[118px] left-5 max-w-[300px] rounded-md px-3.5 py-2.5 text-fg-2">
+            Illustration only: on Earth, buoyancy pulls hot gas upward into a tall, sooty flame. The
+            model and its numbers cover microgravity (FLEX) only.
+          </p>
+        )}
         <div className="glass absolute right-6 bottom-6 left-6 flex items-center gap-3.5 rounded-full py-2 pr-[18px] pl-2">
           <button
             type="button"
