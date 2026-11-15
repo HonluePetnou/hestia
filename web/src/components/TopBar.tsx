@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Flame, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
+import { HestiaMark } from "./HestiaMark";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -23,9 +24,7 @@ export function TopBar() {
   return (
     <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
       <Link href="/" className="order-1 flex items-center gap-3" aria-label="Hestia home">
-        <span className="flex size-9 items-center justify-center rounded-full border border-line-strong">
-          <Flame aria-hidden size={18} strokeWidth={1.75} className="text-ember" />
-        </span>
+        <HestiaMark size={34} />
         <span className="font-display text-[18px] tracking-[0.4em] text-fg">HESTIA</span>
       </Link>
 
