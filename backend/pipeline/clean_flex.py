@@ -1,11 +1,11 @@
-"""Nettoyage du tableau d'essais FLEX téléchargé sur PSI (investigation PSI-69).
+"""Clean the FLEX test table downloaded from PSI (investigation PSI-69).
 
-Lancer depuis le dossier backend :
+Run from the backend folder:
     uv run python -m pipeline.clean_flex
 
-Entrée  : data/psi/FLEX/test_matrix.csv   (fichier brut, jamais modifié)
-Sorties : data/flex/flex_psi_clean.csv    (tableau propre)
-          data/flex/flex_psi_alertes.csv  (points à vérifier à la main)
+Input  : data/psi/FLEX/test_matrix.csv   (raw file, never modified)
+Outputs: data/flex/flex_psi_clean.csv    (clean table)
+         data/flex/flex_psi_alerts.csv   (points to check by hand)
 """
 
 from pathlib import Path
@@ -13,23 +13,23 @@ from pathlib import Path
 import pandas as pd
 
 # ---------------------------------------------------------------------------
-# 1. Les chemins des fichiers
+# 1. File paths
 # ---------------------------------------------------------------------------
-RACINE = Path(__file__).resolve().parents[2]  # le dossier "hestia"
-ENTREE = RACINE / "data" / "psi" / "FLEX" / "test_matrix.csv"
-SORTIE = RACINE / "data" / "flex" / "flex_psi_clean.csv"
-ALERTES = RACINE / "data" / "flex" / "flex_psi_alertes.csv"
+ROOT = Path(__file__).resolve().parents[2]  # the "hestia" folder
+INPUT = ROOT / "data" / "psi" / "FLEX" / "test_matrix.csv"
+OUTPUT = ROOT / "data" / "flex" / "flex_psi_clean.csv"
+ALERTS = ROOT / "data" / "flex" / "flex_psi_alerts.csv"
 
 # ---------------------------------------------------------------------------
-# 2. Les réglages (tout ce qui est écrit en dur est ici, au même endroit)
+# 2. Settings (every hard-coded value lives here)
 # ---------------------------------------------------------------------------
 PSI_ID = "PSI-69"
 DOI = "10.60555/mbq8-0451"
-MMHG_PAR_ATM = 760.0  # 1 atm = 760 mmHg
-TIRETS = {"–", "—", "-"}  # signes utilisés par PSI pour dire "non renseigné"
-TOLERANCE_GAZ = 0.015  # écart toléré entre la somme des gaz et 1 (arrondis)
+MMHG_PER_ATM = 760.0  # 1 atm = 760 mmHg
+DASHES = {"–", "—", "-"}  # signs PSI uses for "not reported"
+GAS_TOLERANCE = 0.015  # allowed gap between the sum of gas fractions and 1 (rounding)
 
-NOUVEAUX_NOMS = {
+NEW_NAMES = {
     "FLEX Test #": "test_number",
     "FLEX Identifier": "test_id",
     "Test Date": "test_date",
@@ -46,7 +46,7 @@ NOUVEAUX_NOMS = {
     "Burn time; s": "burn_time_s",
     "Test end": "outcome",
 }
-COLONNES_NOMBRES = [
+NUMBER_COLUMNS = [
     "test_number",
     "pressure_mmhg",
     "o2_mole_fraction",
@@ -58,13 +58,13 @@ COLONNES_NOMBRES = [
     "burn_rate_k_mm2_s",
     "burn_time_s",
 ]
-CARBURANTS = {"Heptane": "n-heptane", "Methanol": "methanol"}  # à vérifier
-RESULTATS = {
+FUELS = {"Heptane": "n-heptane", "Methanol": "methanol"}  # to check
+OUTCOMES = {
     "Extinction": "extinction",
     "Disruption": "disruption",
     "Completion": "complete_burn",
 }
-ORDRE_FINAL = [
+FINAL_ORDER = [
     "test_number",
     "test_id",
     "test_date",
@@ -85,109 +85,109 @@ ORDRE_FINAL = [
     "source_doi",
 ]
 
-alertes = []  # la liste des points à vérifier
+alerts = []  # points to check
 
 
-def noter(ligne, colonne, probleme, action):
-    """Ajoute une ligne dans la liste des alertes."""
-    alertes.append(
+def flag(row, column, problem, action):
+    """Add one line to the alerts list."""
+    alerts.append(
         {
-            "test_number": df.loc[ligne, "test_number"],
-            "test_id": df.loc[ligne, "test_id"],
-            "colonne": colonne,
-            "probleme": probleme,
+            "test_number": df.loc[row, "test_number"],
+            "test_id": df.loc[row, "test_id"],
+            "column": column,
+            "problem": problem,
             "action": action,
         }
     )
 
 
 # ---------------------------------------------------------------------------
-# 3. Lecture du fichier brut
+# 3. Read the raw file
 # ---------------------------------------------------------------------------
-# encoding="cp1252" : le fichier est en Windows-1252, pas en UTF-8.
-# dtype=str : on lit tout comme du texte pour voir les "–" et les "~6".
-df = pd.read_csv(ENTREE, encoding="cp1252", dtype=str)
+# encoding="cp1252": the file is Windows-1252, not UTF-8.
+# dtype=str: everything is read as text to see the "–" and the "~6".
+df = pd.read_csv(INPUT, encoding="cp1252", dtype=str)
 df.columns = df.columns.str.strip()
-df = df.rename(columns=NOUVEAUX_NOMS)
-lignes_brutes = len(df)
+df = df.rename(columns=NEW_NAMES)
+raw_rows = len(df)
 
 # ---------------------------------------------------------------------------
-# 4. Texte -> nombres
+# 4. Text -> numbers
 # ---------------------------------------------------------------------------
-n_tirets = 0
-for colonne in COLONNES_NOMBRES:
-    texte = df[colonne].str.strip()
-    nombre = pd.to_numeric(texte, errors="coerce")
-    illisible = nombre.isna() & texte.notna()
-    for i in df.index[illisible]:
-        if texte[i] in TIRETS:
-            n_tirets += 1
+n_dashes = 0
+for column in NUMBER_COLUMNS:
+    text = df[column].str.strip()
+    number = pd.to_numeric(text, errors="coerce")
+    unreadable = number.isna() & text.notna()
+    for i in df.index[unreadable]:
+        if text[i] in DASHES:
+            n_dashes += 1
         else:
-            noter(i, colonne, f"valeur non numérique « {texte[i]} »", "mise à vide")
-    df[colonne] = nombre
+            flag(i, column, f"non-numeric value '{text[i]}'", "set to empty")
+    df[column] = number
 df["test_number"] = df["test_number"].astype("Int64")
 
 # ---------------------------------------------------------------------------
-# 5. Pression : mmHg -> atm
+# 5. Pressure: mmHg -> atm
 # ---------------------------------------------------------------------------
 impossible = df["pressure_mmhg"] <= 0
 for i in df.index[impossible]:
-    noter(i, "pressure_mmhg", "pression de 0 mmHg (impossible)", "mise à vide")
+    flag(i, "pressure_mmhg", "pressure of 0 mmHg (impossible)", "set to empty")
 df.loc[impossible, "pressure_mmhg"] = pd.NA
-df["pressure_atm"] = (df["pressure_mmhg"] / MMHG_PAR_ATM).round(4)
+df["pressure_atm"] = (df["pressure_mmhg"] / MMHG_PER_ATM).round(4)
 
 # ---------------------------------------------------------------------------
-# 6. Carburant, résultat, date, gravité, source
+# 6. Fuel, outcome, date, gravity, source
 # ---------------------------------------------------------------------------
-carburant_brut = df["fuel"].str.strip()
-df["fuel"] = carburant_brut.map(CARBURANTS)
-for i in df.index[df["fuel"].isna() & carburant_brut.notna()]:
-    noter(i, "fuel", f"carburant inconnu « {carburant_brut[i]} »", "mise à vide")
+raw_fuel = df["fuel"].str.strip()
+df["fuel"] = raw_fuel.map(FUELS)
+for i in df.index[df["fuel"].isna() & raw_fuel.notna()]:
+    flag(i, "fuel", f"unknown fuel '{raw_fuel[i]}'", "set to empty")
 
-resultat_brut = df["outcome"].str.strip()
-df["outcome"] = resultat_brut.map(RESULTATS).fillna("unknown")
+raw_outcome = df["outcome"].str.strip()
+df["outcome"] = raw_outcome.map(OUTCOMES).fillna("unknown")
 
-# Les dates sont écrites mois/jour/année : 3/5/2009 = 5 mars 2009.
-# Certaines ont l'année sur 2 chiffres (10/24/09) : on essaie les deux formes.
-date_brute = df["test_date"].str.strip()
-dates = pd.to_datetime(date_brute, format="%m/%d/%Y", errors="coerce")
-dates = dates.fillna(pd.to_datetime(date_brute, format="%m/%d/%y", errors="coerce"))
-for i in df.index[dates.isna() & date_brute.notna()]:
-    noter(i, "test_date", f"date illisible « {date_brute[i]} »", "mise à vide")
+# Dates are month/day/year: 3/5/2009 = 5 March 2009.
+# Some have a 2-digit year (10/24/09): both forms are tried.
+raw_date = df["test_date"].str.strip()
+dates = pd.to_datetime(raw_date, format="%m/%d/%Y", errors="coerce")
+dates = dates.fillna(pd.to_datetime(raw_date, format="%m/%d/%y", errors="coerce"))
+for i in df.index[dates.isna() & raw_date.notna()]:
+    flag(i, "test_date", f"unreadable date '{raw_date[i]}'", "set to empty")
 df["test_date"] = dates.dt.strftime("%Y-%m-%d")
 
-df["gravity"] = "microgravity"  # FLEX a été réalisé sur l'ISS
+df["gravity"] = "microgravity"  # FLEX ran on the ISS
 df["source_psi"] = PSI_ID
 df["source_doi"] = DOI
 
 # ---------------------------------------------------------------------------
-# 7. Contrôles qui ne modifient rien : on signale seulement
+# 7. Checks that change nothing: report only
 # ---------------------------------------------------------------------------
-gaz = ["o2_mole_fraction", "n2_mole_fraction", "co2_mole_fraction", "he_mole_fraction"]
-somme = df[gaz].sum(axis=1)
-for i in df.index[(somme - 1).abs() > TOLERANCE_GAZ]:
-    noter(i, "gaz", f"somme des fractions = {somme[i]:.2f} (attendu 1)", "à vérifier")
+gases = ["o2_mole_fraction", "n2_mole_fraction", "co2_mole_fraction", "he_mole_fraction"]
+total = df[gases].sum(axis=1)
+for i in df.index[(total - 1).abs() > GAS_TOLERANCE]:
+    flag(i, "gases", f"sum of fractions = {total[i]:.2f} (expected 1)", "to check")
 
 for i in df.index[df["test_id"].duplicated(keep=False)]:
-    noter(i, "test_id", f"identifiant « {df.loc[i, 'test_id']} » en double", "à vérifier")
+    flag(i, "test_id", f"duplicate id '{df.loc[i, 'test_id']}'", "to check")
 
 # ---------------------------------------------------------------------------
-# 8. Sauvegarde
+# 8. Save
 # ---------------------------------------------------------------------------
-valeurs_permises = {"extinction", "disruption", "complete_burn", "unknown"}
-assert df["outcome"].isin(valeurs_permises).all(), "résultat inattendu"
+allowed = {"extinction", "disruption", "complete_burn", "unknown"}
+assert df["outcome"].isin(allowed).all(), "unexpected outcome"
 
-SORTIE.parent.mkdir(parents=True, exist_ok=True)
-df[ORDRE_FINAL].to_csv(SORTIE, index=False, encoding="utf-8")
-colonnes_alertes = ["test_number", "test_id", "colonne", "probleme", "action"]
-pd.DataFrame(alertes, columns=colonnes_alertes).to_csv(ALERTES, index=False, encoding="utf-8")
+OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+df[FINAL_ORDER].to_csv(OUTPUT, index=False, encoding="utf-8")
+alert_columns = ["test_number", "test_id", "column", "problem", "action"]
+pd.DataFrame(alerts, columns=alert_columns).to_csv(ALERTS, index=False, encoding="utf-8")
 
 # ---------------------------------------------------------------------------
-# 9. Petit compte rendu à l'écran
+# 9. Short summary
 # ---------------------------------------------------------------------------
-print(f"Lignes lues         : {lignes_brutes}")
-print(f"Tirets mis à vide   : {n_tirets}")
-print(f"Alertes             : {len(alertes)} (voir {ALERTES.name})")
-print(f"K renseigné         : {df['burn_rate_k_mm2_s'].notna().sum()} lignes")
-print("Résultats           :", df["outcome"].value_counts().to_dict())
-print(f"Fichier propre      : {SORTIE}")
+print(f"Rows read           : {raw_rows}")
+print(f"Dashes set to empty : {n_dashes}")
+print(f"Alerts              : {len(alerts)} (see {ALERTS.name})")
+print(f"K reported          : {df['burn_rate_k_mm2_s'].notna().sum()} rows")
+print("Outcomes            :", df["outcome"].value_counts().to_dict())
+print(f"Clean file          : {OUTPUT}")

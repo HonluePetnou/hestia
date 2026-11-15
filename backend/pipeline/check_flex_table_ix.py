@@ -1,15 +1,15 @@
-"""Contrôle la transcription de la Table IX de FLEX et la compare aux données PSI.
+"""Check the FLEX Table IX transcription and compare it with the PSI data.
 
-Lancer depuis le dossier backend :
+Run from the backend folder:
     uv run python -m pipeline.check_flex_table_ix
 
-Entrées : data/flex/flex_table_ix.csv    (transcription manuelle de la Table IX)
-          data/flex/flex_psi_clean.csv   (tableau PSI nettoyé par clean_flex.py)
+Inputs: data/flex/flex_table_ix.csv    (hand transcription of Table IX)
+        data/flex/flex_psi_clean.csv   (PSI table cleaned by clean_flex.py)
 
-Le script fait deux choses :
-  1. il vérifie la transcription (valeurs permises, unités plausibles, somme des gaz) ;
-  2. il cherche chaque essai de la Table IX dans les données PSI (même carburant, même
-     pression, même oxygène, même diamètre) et compare K et le résultat.
+The script does two things:
+  1. it checks the transcription (allowed values, plausible units, sum of gases);
+  2. it looks for each Table IX run in the PSI data (same fuel, pressure, oxygen and
+     diameter) and compares K and the outcome.
 """
 
 from pathlib import Path
@@ -17,15 +17,15 @@ from pathlib import Path
 import pandas as pd
 
 # ---------------------------------------------------------------------------
-# 1. Les chemins et les réglages
+# 1. Paths and settings
 # ---------------------------------------------------------------------------
-RACINE = Path(__file__).resolve().parents[2]  # le dossier "hestia"
-TABLE_IX = RACINE / "data" / "flex" / "flex_table_ix.csv"
-PSI = RACINE / "data" / "flex" / "flex_psi_clean.csv"
+ROOT = Path(__file__).resolve().parents[2]  # the "hestia" folder
+TABLE_IX = ROOT / "data" / "flex" / "flex_table_ix.csv"
+PSI = ROOT / "data" / "flex" / "flex_psi_clean.csv"
 
-RESULTATS_PERMIS = {"extinction", "disruption", "complete_burn", "unknown"}
-# Plages plausibles : une valeur en dehors est probablement une faute de frappe.
-PLAGES = {
+ALLOWED_OUTCOMES = {"extinction", "disruption", "complete_burn", "unknown"}
+# Plausible ranges: a value outside is probably a typo.
+RANGES = {
     "pressure_atm": (0.3, 3.5),
     "o2_mole_fraction": (0.0, 1.0),
     "co2_mole_fraction": (0.0, 1.0),
@@ -33,85 +33,83 @@ PLAGES = {
     "initial_diameter_mm": (0.5, 6.0),
     "burn_rate_k_mm2_s": (0.0, 2.0),
 }
-# Écart toléré pour considérer que deux essais ont les mêmes conditions.
+# Allowed gap for two runs to count as having the same conditions.
 TOLERANCES = {
     "pressure_atm": 0.02,
     "o2_mole_fraction": 0.005,
     "initial_diameter_mm": 0.05,
 }
-TOLERANCE_K = 0.02  # écart toléré sur K (mm²/s)
+K_TOLERANCE = 0.02  # allowed gap on K (mm²/s)
 
-problemes = []  # la liste des points à vérifier
+problems = []  # points to check
 
 # ---------------------------------------------------------------------------
-# 2. Lecture
+# 2. Read
 # ---------------------------------------------------------------------------
 if not TABLE_IX.exists():
-    raise SystemExit(f"Fichier introuvable : {TABLE_IX}")
+    raise SystemExit(f"File not found: {TABLE_IX}")
 table = pd.read_csv(TABLE_IX)
-print(f"Table IX transcrite : {len(table)} lignes")
+print(f"Table IX transcribed: {len(table)} rows")
 if table.empty:
-    raise SystemExit("La Table IX est vide : transcris quelques lignes puis relance.")
+    raise SystemExit("Table IX is empty: transcribe a few rows, then run again.")
 
 # ---------------------------------------------------------------------------
-# 3. Contrôle de la transcription
+# 3. Check the transcription
 # ---------------------------------------------------------------------------
-mauvais = table[~table["outcome"].isin(RESULTATS_PERMIS)]
-for _, ligne in mauvais.iterrows():
-    problemes.append(f"{ligne['test_id']} : outcome « {ligne['outcome']} » non permis")
+bad = table[~table["outcome"].isin(ALLOWED_OUTCOMES)]
+for _, row in bad.iterrows():
+    problems.append(f"{row['test_id']}: outcome '{row['outcome']}' not allowed")
 
-for colonne, (mini, maxi) in PLAGES.items():
-    hors = table[(table[colonne] < mini) | (table[colonne] > maxi)]
-    for _, ligne in hors.iterrows():
-        problemes.append(
-            f"{ligne['test_id']} : {colonne} = {ligne[colonne]} hors de [{mini}, {maxi}]"
-        )
+for column, (low, high) in RANGES.items():
+    outside = table[(table[column] < low) | (table[column] > high)]
+    for _, row in outside.iterrows():
+        problems.append(f"{row['test_id']}: {column} = {row[column]} outside [{low}, {high}]")
 
-# Le guide 02 ne compte pas l'hélium : un essai avec hélium aura une somme inférieure à 1.
-gaz = ["o2_mole_fraction", "co2_mole_fraction", "n2_mole_fraction"]
-somme = table[gaz].fillna(0).sum(axis=1)
-for i in table.index[(somme < 0.9) | (somme > 1.01)]:
-    problemes.append(f"{table.loc[i, 'test_id']} : somme des gaz = {somme[i]:.2f} (hélium ?)")
+# Guide 02 does not count helium: a run with helium has a sum below 1.
+gases = ["o2_mole_fraction", "co2_mole_fraction", "n2_mole_fraction"]
+total = table[gases].fillna(0).sum(axis=1)
+for i in table.index[(total < 0.9) | (total > 1.01)]:
+    problems.append(f"{table.loc[i, 'test_id']}: sum of gases = {total[i]:.2f} (helium?)")
 
 for i in table.index[table["test_id"].duplicated(keep=False)]:
-    problemes.append(f"{table.loc[i, 'test_id']} : identifiant en double")
+    problems.append(f"{table.loc[i, 'test_id']}: duplicate id")
 
 # ---------------------------------------------------------------------------
-# 4. Comparaison avec les données PSI
+# 4. Compare with the PSI data
 # ---------------------------------------------------------------------------
 if not PSI.exists():
-    print(f"\nComparaison impossible : {PSI.name} est absent (lance clean_flex d'abord).")
+    print(f"\nCannot compare: {PSI.name} is missing (run clean_flex first).")
     psi = None
 else:
     psi = pd.read_csv(PSI)
 
-trouves = 0
-k_identiques = 0
-resultats_identiques = 0
-absents = []
+found = 0
+k_matches = 0
+outcome_matches = 0
+missing = []
 if psi is not None:
-    for _, essai in table.iterrows():
-        candidats = psi[psi["fuel"] == essai["fuel"]]
-        for colonne, tolerance in TOLERANCES.items():
-            candidats = candidats[(candidats[colonne] - essai[colonne]).abs() <= tolerance]
-        if candidats.empty:
-            absents.append(essai["test_id"])
+    for _, run in table.iterrows():
+        candidates = psi[psi["fuel"] == run["fuel"]]
+        for column, tolerance in TOLERANCES.items():
+            candidates = candidates[(candidates[column] - run[column]).abs() <= tolerance]
+        if candidates.empty:
+            missing.append(run["test_id"])
             continue
-        trouves += 1
-        k_ok = candidats["burn_rate_k_mm2_s"].sub(essai["burn_rate_k_mm2_s"]).abs().le(TOLERANCE_K)
-        k_identiques += int(k_ok.any() or pd.isna(essai["burn_rate_k_mm2_s"]))
-        resultats_identiques += int((candidats["outcome"] == essai["outcome"]).any())
+        found += 1
+        k_ok = candidates["burn_rate_k_mm2_s"].sub(run["burn_rate_k_mm2_s"]).abs().le(K_TOLERANCE)
+        k_matches += int(k_ok.any() or pd.isna(run["burn_rate_k_mm2_s"]))
+        outcome_matches += int((candidates["outcome"] == run["outcome"]).any())
 
 # ---------------------------------------------------------------------------
-# 5. Compte rendu
+# 5. Report
 # ---------------------------------------------------------------------------
-print(f"\nPoints à vérifier dans la transcription : {len(problemes)}")
-for p in problemes:
+print(f"\nPoints to check in the transcription: {len(problems)}")
+for p in problems:
     print("  -", p)
 if psi is not None:
-    print("\nComparaison avec PSI (mêmes conditions d'essai) :")
-    print(f"  essais retrouvés dans PSI : {trouves} sur {len(table)}")
-    print(f"  K identique (à {TOLERANCE_K} près) : {k_identiques} sur {trouves}")
-    print(f"  résultat identique        : {resultats_identiques} sur {trouves}")
-    if absents:
-        print("  non retrouvés :", ", ".join(map(str, absents[:20])))
+    print("\nComparison with PSI (same test conditions):")
+    print(f"  runs found in PSI      : {found} of {len(table)}")
+    print(f"  same K (within {K_TOLERANCE}) : {k_matches} of {found}")
+    print(f"  same outcome           : {outcome_matches} of {found}")
+    if missing:
+        print("  not found:", ", ".join(map(str, missing[:20])))

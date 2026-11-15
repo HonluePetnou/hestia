@@ -1,0 +1,12 @@
+test_number,test_id,column,problem,action
+223,H01M104,burn_time_s,non-numeric value '~6',set to empty
+224,H01H102,burn_time_s,non-numeric value '~9',set to empty
+114,C11M201,pressure_mmhg,pressure of 0 mmHg (impossible),set to empty
+69,193R002,gases,sum of fractions = 0.98 (expected 1),to check
+75,203R002,gases,sum of fractions = 0.98 (expected 1),to check
+76,203F001,gases,sum of fractions = 0.98 (expected 1),to check
+79,179F001,gases,sum of fractions = 0.98 (expected 1),to check
+80,207F001,gases,sum of fractions = 0.98 (expected 1),to check
+81,207F002,gases,sum of fractions = 0.98 (expected 1),to check
+70,193F001,test_id,duplicate id '193F001',to check
+73,193F001,test_id,duplicate id '193F001',to check

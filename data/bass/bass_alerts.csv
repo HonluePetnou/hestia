@@ -1,4 +1,4 @@
-as_run_number,test_id,colonne,probleme,action
+as_run_number,test_id,column,problem,action
 42,35,test_date,date « 6/29/`12 » lue comme 2012-06-29,corrigée
 104,50,test_date,année impossible dans « 5/15/2103 »,mise à vide
 93,38,gmt_day_of_year,jour GMT 113 ≠ date,à vérifier

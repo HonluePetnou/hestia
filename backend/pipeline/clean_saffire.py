@@ -1,16 +1,16 @@
-"""Nettoyage des tableaux d'essais SAFFIRE-1, -2 et -3 téléchargés sur PSI.
+"""Clean the SAFFIRE-1, -2 and -3 test tables downloaded from PSI.
 
-Dans ces tableaux, les unités sont écrites dans les cellules (« 29 cm », « 80 W »)
-et certaines valeurs sont approchées (« ~ 21.5 ») ou textuelles (« Insignificant »).
-Le script sépare le nombre de son unité, convertit vers les unités du projet et garde
-le texte d'origine dans les colonnes *_raw. Il n'invente jamais de valeur.
+In these tables the units are written inside the cells ("29 cm", "80 W") and some
+values are approximate ("~ 21.5") or text ("Insignificant"). The script splits the
+number from its unit, converts to the project's units and keeps the original text in
+the *_raw columns. It never invents a value.
 
-Lancer depuis le dossier backend :
+Run from the backend folder:
     uv run python -m pipeline.clean_saffire
 
-Entrées : data/psi/SAFFIRE-1|2|3/test_matrix.csv   (fichiers bruts, jamais modifiés)
-Sorties : data/saffire/saffire_clean.csv           (tableau propre, 3 expériences)
-          data/saffire/saffire_alertes.csv         (points à vérifier à la main)
+Inputs : data/psi/SAFFIRE-1|2|3/test_matrix.csv   (raw files, never modified)
+Outputs: data/saffire/saffire_clean.csv           (clean table, 3 experiments)
+         data/saffire/saffire_alerts.csv          (points to check by hand)
 """
 
 import re
@@ -19,17 +19,17 @@ from pathlib import Path
 import pandas as pd
 
 # ---------------------------------------------------------------------------
-# 1. Les chemins des fichiers
+# 1. File paths
 # ---------------------------------------------------------------------------
-RACINE = Path(__file__).resolve().parents[2]  # le dossier "hestia"
-DOSSIER_PSI = RACINE / "data" / "psi"
-SORTIE = RACINE / "data" / "saffire" / "saffire_clean.csv"
-ALERTES = RACINE / "data" / "saffire" / "saffire_alertes.csv"
+ROOT = Path(__file__).resolve().parents[2]  # the "hestia" folder
+PSI_DIR = ROOT / "data" / "psi"
+OUTPUT = ROOT / "data" / "saffire" / "saffire_clean.csv"
+ALERTS = ROOT / "data" / "saffire" / "saffire_alerts.csv"
 
 # ---------------------------------------------------------------------------
-# 2. Les réglages
+# 2. Settings
 # ---------------------------------------------------------------------------
-# Les colonnes sont renommées par POSITION (les en-têtes ont des fautes et des espaces).
+# Columns are renamed by POSITION (the headers have typos and stray spaces).
 BASE = [
     "sample_id",
     "material_raw",
@@ -38,15 +38,15 @@ BASE = [
     "width_raw",
     "air_flow_raw",
 ]
-EXPERIENCES = {
+EXPERIMENTS = {
     "SAFFIRE-1": {
         "psi_id": "PSI-98",
-        "doi": None,  # métadonnées non téléchargées : à compléter
-        "colonnes": BASE
+        "doi": None,  # metadata not downloaded: to fill in
+        "columns": BASE
         + ["o2_raw", "ignition_power_raw", "ignition_time_raw", "burn_time_raw"]
         + ["flow_direction", "camera_1", "camera_2"],
-        # Unités écrites dans les en-têtes, utilisées quand la cellule n'en a pas.
-        "unites": {
+        # Units written in the headers, used when the cell has none.
+        "units": {
             "thickness": "cm",
             "length": "cm",
             "width": "cm",
@@ -56,21 +56,21 @@ EXPERIENCES = {
     "SAFFIRE-2": {
         "psi_id": "PSI-99",
         "doi": "10.60555/2chp-m469",
-        "colonnes": BASE
+        "columns": BASE
         + ["o2_raw", "ignition_power_raw", "ignition_time_raw", "burn_time_raw"]
         + ["flow_direction", "burn_length_microgravity_raw", "spread_microgravity_raw"]
         + ["burn_length_1g_raw", "spread_rate_1g_raw", "camera_1", "camera_2"],
-        "unites": {"width": "cm", "air_flow": "cm/s"},
+        "units": {"width": "cm", "air_flow": "cm/s"},
     },
     "SAFFIRE-3": {
         "psi_id": "PSI-100",
         "doi": "10.60555/040q-4h36",
-        "colonnes": BASE + ["flow_direction", "camera_1", "camera_2"],
-        "unites": {},
+        "columns": BASE + ["flow_direction", "camera_1", "camera_2"],
+        "units": {},
     },
 }
-# Grandeur : (unité du projet, conversions vers cette unité)
-GRANDEURS = {
+# Quantity: (project unit, conversions to that unit)
+QUANTITIES = {
     "thickness": ("mm", {"mm": 1.0, "cm": 10.0}),
     "length": ("cm", {"cm": 1.0, "mm": 0.1}),
     "width": ("cm", {"cm": 1.0, "mm": 0.1}),
@@ -79,22 +79,22 @@ GRANDEURS = {
     "ignition_time": ("s", {"s": 1.0}),
     "burn_time": ("s", {"s": 1.0}),
 }
-UNITES_PAR_DEFAUT_GLOBAL = {
+GLOBAL_DEFAULT_UNITS = {
     "ignition_power": "w",
     "ignition_time": "s",
     "burn_time": "s",
 }
-MOTIF_MESURE = re.compile(r"^(~)?\s*(\d*\.?\d+)\s*([A-Za-z/]*)$")
-MOTIF_O2 = re.compile(r"^(~)?\s*(\d+\.?\d*)\s*(?:-|to)?\s*(\d+\.?\d*)?$")
-MOTIF_ESSAI = re.compile(r"^(S\d+|\d+-\d+)$")  # S1, S2... ou 2-1, 2-2...
-FAMILLES = [
+MEASURE_PATTERN = re.compile(r"^(~)?\s*(\d*\.?\d+)\s*([A-Za-z/]*)$")
+O2_PATTERN = re.compile(r"^(~)?\s*(\d+\.?\d*)\s*(?:-|to)?\s*(\d+\.?\d*)?$")
+RUN_PATTERN = re.compile(r"^(S\d+|\d+-\d+)$")  # S1, S2... or 2-1, 2-2...
+FAMILIES = [
     ("silicone", "Silicone"),
     ("sibal", "SIBAL"),
     ("cotton-fiberglass", "SIBAL"),
     ("pmma", "PMMA"),
     ("nomex", "Nomex"),
 ]
-ORDRE_FINAL = [
+FINAL_ORDER = [
     "experiment_code",
     "sample_id",
     "material_raw",
@@ -124,43 +124,43 @@ ORDRE_FINAL = [
     "source_doi",
 ]
 
-alertes = []  # la liste des points à vérifier
+alerts = []  # points to check
 
 
-def noter(experience, sample, colonne, probleme, action):
-    """Ajoute une ligne dans la liste des alertes."""
-    alertes.append(
+def flag(experiment, sample, column, problem, action):
+    """Add one line to the alerts list."""
+    alerts.append(
         {
-            "experiment_code": experience,
+            "experiment_code": experiment,
             "sample_id": sample,
-            "colonne": colonne,
-            "probleme": probleme,
+            "column": column,
+            "problem": problem,
             "action": action,
         }
     )
 
 
-def lire_mesure(texte, grandeur, unite_en_tete):
-    """Sépare « 29 cm » en 29 (converti vers l'unité du projet). Renvoie (valeur, problème)."""
-    if pd.isna(texte):
+def read_measure(text, quantity, header_unit):
+    """Split "29 cm" into 29 (converted to the project unit). Returns (value, problem)."""
+    if pd.isna(text):
         return None, None
-    m = MOTIF_MESURE.match(texte.strip())
+    m = MEASURE_PATTERN.match(text.strip())
     if m is None:
-        return None, "texte non numérique"
-    nombre, unite = m.group(2), m.group(3).lower() or unite_en_tete
-    if re.match(r"^0\d+$", nombre):
-        return None, f"zéro initial suspect (« {nombre} » : 0.{nombre[1:]} ?)"
-    conversions = GRANDEURS[grandeur][1]
-    if unite not in conversions:
-        return None, f"unité absente ou inconnue (« {unite} »)"
-    return round(float(nombre) * conversions[unite], 4), None
+        return None, "non-numeric text"
+    number, unit = m.group(2), m.group(3).lower() or header_unit
+    if re.match(r"^0\d+$", number):
+        return None, f"suspicious leading zero ('{number}': 0.{number[1:]}?)"
+    conversions = QUANTITIES[quantity][1]
+    if unit not in conversions:
+        return None, f"missing or unknown unit ('{unit}')"
+    return round(float(number) * conversions[unit], 4), None
 
 
-def lire_o2(texte):
-    """« 21.5 - 21.7 », « ~ 22.1 » ou « 22.1 to 22.0 » en (min, max, approché)."""
-    if pd.isna(texte):
+def read_o2(text):
+    """ "21.5 - 21.7", "~ 22.1" or "22.1 to 22.0" as (min, max, approximate)."""
+    if pd.isna(text):
         return None, None, None
-    m = MOTIF_O2.match(texte.strip())
+    m = O2_PATTERN.match(text.strip())
     if m is None:
         return None, None, None
     a = float(m.group(2))
@@ -169,97 +169,77 @@ def lire_o2(texte):
 
 
 # ---------------------------------------------------------------------------
-# 3. Lecture et nettoyage de chaque expérience
+# 3. Read and clean each experiment
 # ---------------------------------------------------------------------------
 tables = []
-lignes_lues = 0
-for code, reglage in EXPERIENCES.items():
-    brut = pd.read_csv(DOSSIER_PSI / code / "test_matrix.csv", encoding="utf-8-sig", dtype=str)
-    assert len(brut.columns) == len(reglage["colonnes"]), f"{code} : colonnes inattendues"
-    brut.columns = reglage["colonnes"]
-    lignes_lues += len(brut)
-    for colonne in brut.columns:
-        brut[colonne] = brut[colonne].str.replace(r"\s+", " ", regex=True).str.strip()
+rows_read = 0
+for code, settings in EXPERIMENTS.items():
+    raw = pd.read_csv(PSI_DIR / code / "test_matrix.csv", encoding="utf-8-sig", dtype=str)
+    assert len(raw.columns) == len(settings["columns"]), f"{code}: unexpected columns"
+    raw.columns = settings["columns"]
+    rows_read += len(raw)
+    for column in raw.columns:
+        raw[column] = raw[column].str.replace(r"\s+", " ", regex=True).str.strip()
 
-    # On ne garde que les vrais essais (pas les notes ni les données de visualisation).
-    est_essai = brut["sample_id"].fillna("").map(lambda s: bool(MOTIF_ESSAI.match(s)))
-    for i in brut.index[~est_essai]:
-        noter(
-            code,
-            str(brut.loc[i, "sample_id"])[:40],
-            "sample_id",
-            "ligne qui n'est pas un essai",
-            "ignorée",
-        )
-    df = brut[est_essai].copy()
+    # Keep only real test runs (not notes or visualization data).
+    is_run = raw["sample_id"].fillna("").map(lambda s: bool(RUN_PATTERN.match(s)))
+    for i in raw.index[~is_run]:
+        sample = str(raw.loc[i, "sample_id"])[:40]
+        flag(code, sample, "sample_id", "row is not a test run", "skipped")
+    df = raw[is_run].copy()
 
-    # Nombres et unités.
-    for grandeur, (unite_projet, _) in GRANDEURS.items():
-        source = f"{grandeur}_raw"
+    # Numbers and units.
+    for quantity, (project_unit, _) in QUANTITIES.items():
+        source = f"{quantity}_raw"
         if source not in df.columns:
             continue
-        defaut = reglage["unites"].get(grandeur) or UNITES_PAR_DEFAUT_GLOBAL.get(grandeur)
-        valeurs = []
+        default = settings["units"].get(quantity) or GLOBAL_DEFAULT_UNITS.get(quantity)
+        values = []
         for i in df.index:
-            valeur, probleme = lire_mesure(df.loc[i, source], grandeur, defaut)
-            texte = df.loc[i, source]
-            if probleme and pd.notna(texte) and re.search(r"\d", texte):
-                noter(
-                    code,
-                    df.loc[i, "sample_id"],
-                    source,
-                    f"{probleme} : « {texte} »",
-                    "mise à vide",
-                )
-            valeurs.append(valeur)
-        suffixe = unite_projet.lower().replace("/", "_")
-        df[f"{grandeur}_{suffixe}"] = valeurs
+            value, problem = read_measure(df.loc[i, source], quantity, default)
+            text = df.loc[i, source]
+            if problem and pd.notna(text) and re.search(r"\d", text):
+                flag(code, df.loc[i, "sample_id"], source, f"{problem}: '{text}'", "set to empty")
+            values.append(value)
+        suffix = project_unit.lower().replace("/", "_")
+        df[f"{quantity}_{suffix}"] = values
 
-    # Oxygène (en % dans le fichier, en fraction dans le projet).
-    o2 = [lire_o2(t) for t in df["o2_raw"]] if "o2_raw" in df.columns else [(None,) * 3] * len(df)
+    # Oxygen (percent in the file, fraction in the project).
+    o2 = [read_o2(t) for t in df["o2_raw"]] if "o2_raw" in df.columns else [(None,) * 3] * len(df)
     df["o2_mole_fraction_min"] = [x[0] for x in o2]
     df["o2_mole_fraction_max"] = [x[1] for x in o2]
     df["o2_approximate"] = [x[2] for x in o2]
 
     df["material_family"] = df["material_raw"].map(
-        lambda t: "+".join(dict.fromkeys(n for mot, n in FAMILLES if mot in str(t).lower())) or None
+        lambda t: "+".join(dict.fromkeys(n for w, n in FAMILIES if w in str(t).lower())) or None
     )
     df["flow_direction"] = df["flow_direction"].str.lower()
     df["experiment_code"] = code
-    df["gravity"] = "microgravity"  # SAFFIRE a eu lieu à bord du cargo Cygnus
-    df["source_psi"] = reglage["psi_id"]
-    df["source_doi"] = reglage["doi"]
-    if reglage["doi"] is None:
-        noter(
-            code,
-            None,
-            "source_doi",
-            "DOI inconnu (métadonnées non téléchargées)",
-            "à compléter",
-        )
+    df["gravity"] = "microgravity"  # SAFFIRE ran aboard the Cygnus cargo vehicle
+    df["source_psi"] = settings["psi_id"]
+    df["source_doi"] = settings["doi"]
+    if settings["doi"] is None:
+        flag(code, None, "source_doi", "unknown DOI (metadata not downloaded)", "to fill in")
     tables.append(df)
 
-propre = pd.concat(tables, ignore_index=True)
-for colonne in ORDRE_FINAL:
-    if colonne not in propre.columns:
-        propre[colonne] = None  # colonne absente de ce tableau : case vide
+clean = pd.concat(tables, ignore_index=True)
+for column in FINAL_ORDER:
+    if column not in clean.columns:
+        clean[column] = None  # column missing from this table: empty cell
 
 # ---------------------------------------------------------------------------
-# 4. Sauvegarde
+# 4. Save
 # ---------------------------------------------------------------------------
-SORTIE.parent.mkdir(parents=True, exist_ok=True)
-propre[ORDRE_FINAL].to_csv(SORTIE, index=False, encoding="utf-8")
-colonnes_alertes = ["experiment_code", "sample_id", "colonne", "probleme", "action"]
-pd.DataFrame(alertes, columns=colonnes_alertes).to_csv(ALERTES, index=False, encoding="utf-8")
+OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+clean[FINAL_ORDER].to_csv(OUTPUT, index=False, encoding="utf-8")
+alert_columns = ["experiment_code", "sample_id", "column", "problem", "action"]
+pd.DataFrame(alerts, columns=alert_columns).to_csv(ALERTS, index=False, encoding="utf-8")
 
 # ---------------------------------------------------------------------------
-# 5. Petit compte rendu à l'écran
+# 5. Short summary
 # ---------------------------------------------------------------------------
-print(f"Lignes lues         : {lignes_lues} (dont {len(propre)} essais)")
-print(f"Alertes             : {len(alertes)} (voir {ALERTES.name})")
-print("Essais par expérience:", propre["experiment_code"].value_counts().to_dict())
-print(
-    "Matériaux           :",
-    propre["material_family"].value_counts(dropna=False).to_dict(),
-)
-print(f"Fichier propre      : {SORTIE}")
+print(f"Rows read           : {rows_read} ({len(clean)} test runs)")
+print(f"Alerts              : {len(alerts)} (see {ALERTS.name})")
+print("Runs per experiment :", clean["experiment_code"].value_counts().to_dict())
+print("Materials           :", clean["material_family"].value_counts(dropna=False).to_dict())
+print(f"Clean file          : {OUTPUT}")

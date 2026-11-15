@@ -1,15 +1,15 @@
-"""Prépare les données FLEX nettoyées pour le modèle de prédiction (guide 05).
+"""Prepare the cleaned FLEX data for the prediction model (guide 05).
 
-Lancer depuis le dossier backend :
+Run from the backend folder:
     uv run python -m pipeline.prepare_ml_flex
 
-Entrée  : data/flex/flex_psi_clean.csv      (tableau nettoyé par clean_flex.py)
-Sorties : data/flex/flex_ml_ready.csv       (une ligne par essai utilisable)
-          data/flex/flex_ml_ranges.json     (plages et effectifs pour la fiche du modèle)
+Input  : data/flex/flex_psi_clean.csv      (table cleaned by clean_flex.py)
+Outputs: data/flex/flex_ml_ready.csv       (one row per usable run)
+         data/flex/flex_ml_ranges.json     (ranges and counts for the model card)
 
-Le script ne garde que les colonnes connues AVANT l'essai. Les colonnes mesurées pendant
-ou après l'essai (durée de combustion, diamètre à l'extinction) sont exclues : les utiliser
-pour prédire le résultat serait une fuite d'information.
+The script keeps only the columns known BEFORE the run. Columns measured during or
+after the run (burn time, extinction diameter) are excluded: using them to predict
+the outcome would leak information.
 """
 
 import json
@@ -18,83 +18,82 @@ from pathlib import Path
 import pandas as pd
 
 # ---------------------------------------------------------------------------
-# 1. Les chemins et les réglages
+# 1. Paths and settings
 # ---------------------------------------------------------------------------
-RACINE = Path(__file__).resolve().parents[2]  # le dossier "hestia"
-ENTREE = RACINE / "data" / "flex" / "flex_psi_clean.csv"
-SORTIE = RACINE / "data" / "flex" / "flex_ml_ready.csv"
-PLAGES = RACINE / "data" / "flex" / "flex_ml_ranges.json"
+ROOT = Path(__file__).resolve().parents[2]  # the "hestia" folder
+INPUT = ROOT / "data" / "flex" / "flex_psi_clean.csv"
+OUTPUT = ROOT / "data" / "flex" / "flex_ml_ready.csv"
+RANGES = ROOT / "data" / "flex" / "flex_ml_ranges.json"
 
-ENTREES_NOMBRES = [
+NUMERIC_INPUTS = [
     "pressure_atm",
     "o2_mole_fraction",
     "co2_mole_fraction",
     "he_mole_fraction",
     "initial_diameter_mm",
 ]
-EXCLUES = {
-    "burn_time_s": "mesurée pendant l'essai : vaut à peu près d0² / K (fuite d'information)",
-    "extinction_diameter_mm": "mesuré pendant l'essai (fuite d'information)",
-    "test_number": "numéro d'ordre, sans lien physique avec le résultat",
-    "test_date": "date de l'essai, sans lien physique avec le résultat",
-    "test_gmt": "heure de l'essai, sans lien physique avec le résultat",
+EXCLUDED = {
+    "burn_time_s": "measured during the run: roughly d0² / K (information leak)",
+    "extinction_diameter_mm": "measured during the run (information leak)",
+    "test_number": "sequence number, no physical link to the outcome",
+    "test_date": "run date, no physical link to the outcome",
+    "test_gmt": "run time, no physical link to the outcome",
 }
 
 # ---------------------------------------------------------------------------
-# 2. Lecture et sélection des lignes utilisables
+# 2. Read and select the usable rows
 # ---------------------------------------------------------------------------
-df = pd.read_csv(ENTREE)
+df = pd.read_csv(INPUT)
 total = len(df)
 
-# Une ligne est utilisable si le carburant et toutes les entrées sont connus.
-complet = df.dropna(subset=["fuel", *ENTREES_NOMBRES]).copy()
-complet["extinction"] = (complet["outcome"] == "extinction").astype(int)
-complet["usable_for_regression"] = complet["burn_rate_k_mm2_s"].notna()
-complet["usable_for_classification"] = complet["outcome"] != "unknown"
+# A row is usable when the fuel and every input are known.
+complete = df.dropna(subset=["fuel", *NUMERIC_INPUTS]).copy()
+complete["extinction"] = (complete["outcome"] == "extinction").astype(int)
+complete["usable_for_regression"] = complete["burn_rate_k_mm2_s"].notna()
+complete["usable_for_classification"] = complete["outcome"] != "unknown"
 
-colonnes = ["test_id", "fuel", *ENTREES_NOMBRES]
-colonnes += ["burn_rate_k_mm2_s", "extinction", "outcome"]
-colonnes += ["usable_for_regression", "usable_for_classification"]
-prets = complet[colonnes]
+columns = ["test_id", "fuel", *NUMERIC_INPUTS]
+columns += ["burn_rate_k_mm2_s", "extinction", "outcome"]
+columns += ["usable_for_regression", "usable_for_classification"]
+ready = complete[columns]
 
 # ---------------------------------------------------------------------------
-# 3. Plages et effectifs (pour la fiche du modèle et pour signaler « hors plage »)
+# 3. Ranges and counts (for the model card and the "outside range" warning)
 # ---------------------------------------------------------------------------
-reg = prets[prets["usable_for_regression"]]
-cla = prets[prets["usable_for_classification"]]
-resume = {
+reg = ready[ready["usable_for_regression"]]
+cla = ready[ready["usable_for_classification"]]
+summary = {
     "source": "data/flex/flex_psi_clean.csv (PSI-69, DOI 10.60555/mbq8-0451)",
     "rows_total": int(total),
-    "rows_with_complete_inputs": len(prets),
+    "rows_with_complete_inputs": len(ready),
     "rows_for_regression": len(reg),
     "rows_for_classification": len(cla),
     "extinction_yes": int((cla["extinction"] == 1).sum()),
     "extinction_no": int((cla["extinction"] == 0).sum()),
-    "fuels": prets["fuel"].value_counts().to_dict(),
-    "input_ranges": {c: [float(prets[c].min()), float(prets[c].max())] for c in ENTREES_NOMBRES},
+    "fuels": ready["fuel"].value_counts().to_dict(),
+    "input_ranges": {c: [float(ready[c].min()), float(ready[c].max())] for c in NUMERIC_INPUTS},
     "k_mm2_s": {
         "min": float(reg["burn_rate_k_mm2_s"].min()),
         "max": float(reg["burn_rate_k_mm2_s"].max()),
         "mean": round(float(reg["burn_rate_k_mm2_s"].mean()), 4),
     },
-    "excluded_columns": EXCLUES,
-    "limits": "microgravité ISS uniquement ; pas de gravité lunaire ni martienne ; "
-    "carburants testés seulement",
+    "excluded_columns": EXCLUDED,
+    "limits": "ISS microgravity only; no lunar or Martian gravity; tested fuels only",
 }
 
 # ---------------------------------------------------------------------------
-# 4. Sauvegarde et compte rendu
+# 4. Save and report
 # ---------------------------------------------------------------------------
-prets.to_csv(SORTIE, index=False, encoding="utf-8")
-with open(PLAGES, "w", encoding="utf-8") as f:
-    json.dump(resume, f, ensure_ascii=False, indent=2)
+ready.to_csv(OUTPUT, index=False, encoding="utf-8")
+with open(RANGES, "w", encoding="utf-8") as f:
+    json.dump(summary, f, ensure_ascii=False, indent=2)
     f.write("\n")
 
-print(f"Essais au total              : {total}")
-print(f"Entrées complètes            : {len(prets)}")
-print(f"Utilisables (régression K)   : {len(reg)}")
-print(f"Utilisables (classification) : {len(cla)}")
-print(f"Extinction oui / non         : {resume['extinction_yes']} / {resume['extinction_no']}")
-for colonne, (mini, maxi) in resume["input_ranges"].items():
-    print(f"  {colonne:22s} de {mini:g} à {maxi:g}")
-print(f"Fichiers écrits              : {SORTIE.name}, {PLAGES.name}")
+print(f"Runs in total                : {total}")
+print(f"Complete inputs              : {len(ready)}")
+print(f"Usable (K regression)        : {len(reg)}")
+print(f"Usable (classification)      : {len(cla)}")
+print(f"Extinction yes / no          : {summary['extinction_yes']} / {summary['extinction_no']}")
+for column, (low, high) in summary["input_ranges"].items():
+    print(f"  {column:22s} from {low:g} to {high:g}")
+print(f"Files written                : {OUTPUT.name}, {RANGES.name}")

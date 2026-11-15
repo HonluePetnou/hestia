@@ -91,7 +91,7 @@ the parser.
 ### Cross-check against the PSI table (`flex/flex_psi_clean.csv`)
 
 `flex_psi_clean.csv` is the official PSI-69 experimental table, cleaned by `pipeline/clean_flex.py`
-(points to check are listed in `flex/flex_psi_alertes.csv`). Aligned row by row, it matches Table IX
+(points to check are listed in `flex/flex_psi_alerts.csv`). Aligned row by row, it matches Table IX
 on all 274 shared tests: same O2, pressure, K, extinction diameter, burn time and outcome. The only
 differences:
 

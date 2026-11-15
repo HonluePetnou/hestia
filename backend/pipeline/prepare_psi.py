@@ -1,12 +1,12 @@
-"""Prépare les dossiers data/psi/<EXPERIENCE>/ à partir des fichiers téléchargés sur PSI.
+"""Build the data/psi/<EXPERIMENT>/ folders from the files downloaded from PSI.
 
-Pour chaque expérience, le script :
-  1. copie le tableau d'essais sous le nom test_matrix.csv ;
-  2. extrait les fichiers de métadonnées (i_Investigation.txt, s_PSI-xx.txt) ;
-  3. écrit un résumé metadata.json (DOI, plateforme, responsable, objectif...).
+For each experiment the script:
+  1. copies the test table as test_matrix.csv;
+  2. extracts the metadata files (i_Investigation.txt, s_PSI-xx.txt);
+  3. writes a metadata.json summary (DOI, platform, PI, objective...).
 
-Lancer depuis le dossier backend, en donnant le dossier qui contient les fichiers PSI :
-    uv run python -m pipeline.prepare_psi "C:\\chemin\\vers\\NASA SPACE APP CHALLENGE"
+Run from the backend folder, giving the folder that holds the PSI downloads:
+    uv run python -m pipeline.prepare_psi "C:\\path\\to\\NASA SPACE APP CHALLENGE"
 """
 
 import json
@@ -16,11 +16,11 @@ import sys
 import zipfile
 from pathlib import Path
 
-RACINE = Path(__file__).resolve().parents[2]  # le dossier "hestia"
-DESTINATION = RACINE / "data" / "psi"
+ROOT = Path(__file__).resolve().parents[2]  # the "hestia" folder
+DESTINATION = ROOT / "data" / "psi"
 
-# (nom du dossier, numéro de la fiche PSI qui commence les noms de fichiers)
-EXPERIENCES = [
+# (folder name, PSI record number that starts the file names)
+EXPERIMENTS = [
     ("FLEX", "PSI-69"),
     ("FLEX-2", "PSI-68"),
     ("SAFFIRE-1", "PSI-98"),
@@ -31,90 +31,91 @@ EXPERIENCES = [
 ]
 
 
-def trouver(source, debut, fin):
-    """Cherche dans le dossier source un fichier dont le nom commence par `debut`."""
-    candidats = [
+def find(source, prefix, suffix):
+    """Find a file in the source folder whose name starts with `prefix`."""
+    candidates = [
         f
         for f in sorted(source.iterdir())
-        if f.name.startswith(debut) and f.name.endswith(fin) and "(1)" not in f.name
+        if f.name.startswith(prefix) and f.name.endswith(suffix) and "(1)" not in f.name
     ]
-    return candidats[0] if candidats else None
+    return candidates[0] if candidates else None
 
 
-def lire_champs(texte):
-    """Transforme i_Investigation.txt en dictionnaire {libellé: [valeurs]}."""
-    champs = {}
-    for ligne in texte.splitlines():
-        morceaux = [m.strip().strip('"') for m in ligne.split("\t")]
-        if len(morceaux) > 1 and any(morceaux[1:]):
-            champs.setdefault(morceaux[0], morceaux[1:])
-    return champs
+def read_fields(text):
+    """Turn i_Investigation.txt into a {label: [values]} dictionary."""
+    fields = {}
+    for line in text.splitlines():
+        parts = [m.strip().strip('"') for m in line.split("\t")]
+        if len(parts) > 1 and any(parts[1:]):
+            fields.setdefault(parts[0], parts[1:])
+    return fields
 
 
-def premier(champs, libelle):
-    """Première valeur d'un champ, ou None s'il est absent ou vide."""
-    valeurs = champs.get(libelle) or [None]
-    return valeurs[0] or None
+def first(fields, label):
+    """First value of a field, or None when it is missing or empty."""
+    values = fields.get(label) or [None]
+    return values[0] or None
 
 
-def date_iso(date):
-    """08-01-2007 (mois-jour-année) devient 2007-08-01."""
+def iso_date(date):
+    """08-01-2007 (month-day-year) becomes 2007-08-01."""
     m = re.match(r"(\d\d)-(\d\d)-(\d{4})$", date or "")
     return f"{m.group(3)}-{m.group(1)}-{m.group(2)}" if m else date
 
 
-def responsable(champs):
-    """Cherche la personne dont le rôle est Principal Investigator (PI)."""
-    roles = champs.get("Study Person Roles", [])
+def principal_investigator(fields):
+    """Find the person whose role is Principal Investigator (PI)."""
+    roles = fields.get("Study Person Roles", [])
     for i, role in enumerate(roles):
         if "Principal Investigator" in role:
-            prenom = champs.get("Study Person First Name", [])[i]
-            nom = champs.get("Study Person Last Name", [])[i]
-            affiliations = champs.get("Study Person Affiliation", [])
+            first_name = fields.get("Study Person First Name", [])[i]
+            last_name = fields.get("Study Person Last Name", [])[i]
+            affiliations = fields.get("Study Person Affiliation", [])
             affiliation = affiliations[i] if i < len(affiliations) else ""
-            return f"{prenom} {nom} ({affiliation})" if affiliation else f"{prenom} {nom}"
+            name = f"{first_name} {last_name}"
+            return f"{name} ({affiliation})" if affiliation else name
     return None
 
 
-def traiter(code, psi_id, source):
-    dossier = DESTINATION / code
-    dossier.mkdir(parents=True, exist_ok=True)
+def process(code, psi_id, source):
+    folder = DESTINATION / code
+    folder.mkdir(parents=True, exist_ok=True)
 
-    csv = trouver(source, f"{psi_id}_Experimental", ".csv")
+    csv = find(source, f"{psi_id}_Experimental", ".csv")
     if csv is None:
-        return f"{code}: tableau d'essais introuvable (ignoré)"
-    shutil.copyfile(csv, dossier / "test_matrix.csv")
+        return f"{code}: test table not found (skipped)"
+    shutil.copyfile(csv, folder / "test_matrix.csv")
 
-    archive = trouver(source, f"{psi_id}_metadata", ".zip")
+    archive = find(source, f"{psi_id}_metadata", ".zip")
     if archive is None:
-        return f"{code}: tableau copié, mais pas de zip de métadonnées à télécharger sur PSI"
+        return f"{code}: table copied, but no metadata zip (download it from PSI)"
 
     with zipfile.ZipFile(archive) as zf:
-        for nom in zf.namelist():
-            if not nom.endswith("/"):
-                (dossier / Path(nom).name).write_bytes(zf.read(nom))
-    texte = (dossier / "i_Investigation.txt").read_text(encoding="utf-8", errors="replace")
-    champs = lire_champs(texte)
+        for name in zf.namelist():
+            if not name.endswith("/"):
+                (folder / Path(name).name).write_bytes(zf.read(name))
+    text = (folder / "i_Investigation.txt").read_text(encoding="utf-8", errors="replace")
+    fields = read_fields(text)
 
     metadata = {
         "code": code,
-        "psi_id": premier(champs, "Study Identifier"),
-        "title": premier(champs, "Study Title"),
-        "doi": premier(champs, "Comment[DOI]"),
-        "platform": premier(champs, "Comment[Flight Platform]"),
-        "hardware": premier(champs, "Comment[Experiment Hardware]"),
-        "pi": responsable(champs),
-        "start_date": date_iso(premier(champs, "Comment[Investigation Start Date]")),
-        "end_date": date_iso(premier(champs, "Comment[Investigation End Date]")),
-        "objective": premier(champs, "Comment[Objective]"),
+        "psi_id": first(fields, "Study Identifier"),
+        "title": first(fields, "Study Title"),
+        "doi": first(fields, "Comment[DOI]"),
+        "platform": first(fields, "Comment[Flight Platform]"),
+        "hardware": first(fields, "Comment[Experiment Hardware]"),
+        "pi": principal_investigator(fields),
+        "start_date": iso_date(first(fields, "Comment[Investigation Start Date]")),
+        "end_date": iso_date(first(fields, "Comment[Investigation End Date]")),
+        "objective": first(fields, "Comment[Objective]"),
         "license": "CC0",
         "source_file": f"i_Investigation.txt ({archive.name})",
     }
-    with open(dossier / "metadata.json", "w", encoding="utf-8") as f:
+    with open(folder / "metadata.json", "w", encoding="utf-8") as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    vides = [cle for cle, valeur in metadata.items() if valeur is None]
-    note = f" (champs vides : {', '.join(vides)})" if vides else ""
+    empty = [key for key, value in metadata.items() if value is None]
+    note = f" (empty fields: {', '.join(empty)})" if empty else ""
     return f"{code}: OK, DOI {metadata['doi']}{note}"
 
 
@@ -124,11 +125,11 @@ def main():
         sys.exit(1)
     source = Path(sys.argv[1])
     if not source.is_dir():
-        print(f"Dossier introuvable : {source}")
+        print(f"Folder not found: {source}")
         sys.exit(1)
-    for code, psi_id in EXPERIENCES:
-        print(traiter(code, psi_id, source))
-    print(f"Résultat dans : {DESTINATION}")
+    for code, psi_id in EXPERIMENTS:
+        print(process(code, psi_id, source))
+    print(f"Output in: {DESTINATION}")
 
 
 if __name__ == "__main__":

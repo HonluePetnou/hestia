@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, ChevronDown, Pause, Play } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Pause, Play, TriangleAlert } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -283,11 +283,14 @@ function Simulator() {
         <CardHeader title="Prediction" meta={pred?.model ?? ""} />
         {error !== null && <ErrorBox error={error} />}
         {pred && !pred.in_training_range && (
-          <div className="flex flex-col gap-2 rounded-md border border-warn/40 bg-warn/10 px-3.5 py-3">
-            <Badge tone="warning" className="self-start">Outside the tested range · extrapolation</Badge>
-            {(pred.warnings ?? []).map((w) => (
-              <p key={w} className="t-body-s text-fg-2">{w}</p>
-            ))}
+          <div role="status" className="flex gap-3 rounded-md border border-warn/40 bg-warn/10 px-3.5 py-3">
+            <TriangleAlert aria-hidden size={16} className="mt-0.5 shrink-0 text-warn" />
+            <div className="flex min-w-0 flex-col gap-1">
+              <p className="t-caps-s text-warn">Extrapolation</p>
+              {(pred.warnings ?? []).map((w) => (
+                <p key={w} className="t-body-s text-fg-2">{w}</p>
+              ))}
+            </div>
           </div>
         )}
         <Gauge value={K / 1.2} display={K.toFixed(2)} unit="mm²/s" label="Burn rate K" color="var(--color-accent-default)" />

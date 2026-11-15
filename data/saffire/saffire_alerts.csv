@@ -1,4 +1,4 @@
-experiment_code,sample_id,colonne,probleme,action
+experiment_code,sample_id,column,problem,action
 SAFFIRE-1,F1C1/F1C2,sample_id,ligne qui n'est pas un essai,ignorée
 SAFFIRE-1,F2C1/F2C2,sample_id,ligne qui n'est pas un essai,ignorée
 SAFFIRE-1,,source_doi,DOI inconnu (métadonnées non téléchargées),à compléter
