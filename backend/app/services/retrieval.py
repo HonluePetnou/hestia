@@ -180,10 +180,15 @@ def search(
     provider = get_embedder()
     use_vectors = not isinstance(provider, MockProvider)
     conds = _conditions(source_types, meta_filters)
-    try:
-        vec: list[float] | None = None
-        if use_vectors:
+    vec: list[float] | None = None
+    if use_vectors:
+        try:
             vec = provider.embed([question], task="query")[0]
+        except Exception as exc:  # quota, network: degrade to keyword search, don't fail
+            log.warning("Query embedding failed (%s); keyword search only", exc.__class__.__name__)
+            use_vectors = False
+    try:
+        if vec is not None:
             check_dimension([vec], s.embedding_dim)
         vector_hits = _vector_search(session, vec, CANDIDATES, conds, embedding_id()) if vec else []
         keyword_hits = _keyword_search(session, question, vec, CANDIDATES, conds, embedding_id())
