@@ -1,9 +1,9 @@
 "use client";
 
-import { Html, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import { AdditiveBlending, BackSide, Color, DoubleSide, type Group, type Mesh, type MeshBasicMaterial, type MeshStandardMaterial } from "three";
+import { type RefObject, useMemo, useRef } from "react";
+import { AdditiveBlending, BackSide, Color, DoubleSide, type Group, type Mesh, type MeshBasicMaterial, type MeshStandardMaterial, Vector3 } from "three";
 
 /**
  * 3D droplet flame inside a simplified ISS droplet-combustion chamber (MDCA-style):
@@ -83,22 +83,50 @@ function Flame({ droplet, flame, intensity = 1, heat = 1, gravity = "micro" }: P
   );
 }
 
-function Label({ position, children, show }: { position: [number, number, number]; children: string; show: boolean }) {
-  // Always mounted (unmounting drei's Html mid-render warns); hidden with CSS instead.
-  return (
-    <Html position={position} center distanceFactor={11} zIndexRange={[10, 0]}>
-      <span className={`glass t-caps-s whitespace-nowrap rounded-full px-2.5 py-1 text-fg-2 select-none transition-opacity ${show ? "opacity-100" : "opacity-0"}`}>{children}</span>
-    </Html>
-  );
+type LabelSpot = { text: string; pos: [number, number, number] };
+
+const R = 2.3, H = 4.6; // chamber radius and height (scene units)
+const igniterOffset = (droplet: number, ignition: number) => droplet + 0.12 + ignition * 1.2;
+
+/** Where each label sits in the scene (same geometry as the chamber below). */
+function labelSpots({ droplet, flame, ignition = 1 }: Props): LabelSpot[] {
+  const igniterX = igniterOffset(droplet, ignition);
+  return [
+    { text: "Fuel droplet", pos: [-0.75, -0.45, 0.6] },
+    { text: "Flame", pos: [flame * 0.7, flame * 0.85, 0.3] },
+    { text: "Igniter", pos: [Math.min(igniterX + 0.6, 1.6), -0.3, 0.4] },
+    { text: "Camera", pos: [0.9, 1.9, -R + 0.1] },
+    { text: "Radiometer", pos: [-R + 0.9, 1.35, 0.4] },
+    { text: "Support needle", pos: [0.55, -1.7, 0] },
+  ];
+}
+
+/**
+ * Moves the HTML labels (plain DOM, outside the canvas) to the screen position of their 3D
+ * anchor every frame. Replaces drei's <Html>, which creates one React root per label and
+ * trips React 19's "synchronously unmount a root" error.
+ */
+function LabelProjector({ spots, nodes }: { spots: LabelSpot[]; nodes: RefObject<(HTMLSpanElement | null)[]> }) {
+  const v = useMemo(() => new Vector3(), []);
+  useFrame(({ camera, size }) => {
+    spots.forEach((s, i) => {
+      const el = nodes.current?.[i];
+      if (!el) return;
+      v.set(...s.pos).project(camera);
+      const behind = v.z > 1;
+      el.style.visibility = behind ? "hidden" : "visible";
+      el.style.transform = `translate(-50%, -50%) translate(${((v.x + 1) / 2) * size.width}px, ${((1 - v.y) / 2) * size.height}px)`;
+    });
+  });
+  return null;
 }
 
 const METAL = "#3A3F4B";
 
 /* Simplified MDCA chamber: glass cylinder, end rings, struts, needle, igniter, instruments. */
-function Chamber({ droplet, ignition = 1, labels = true, flame }: Props) {
-  const R = 2.3, H = 4.6;
+function Chamber({ droplet, ignition = 1 }: Props) {
   // The hot-wire igniter swings in next to the droplet, then retracts once the flame is lit.
-  const igniterX = droplet + 0.12 + ignition * 1.2;
+  const igniterX = igniterOffset(droplet, ignition);
   return (
     <group>
       {/* Glass wall */}
@@ -152,27 +180,34 @@ function Chamber({ droplet, ignition = 1, labels = true, flame }: Props) {
         <boxGeometry args={[0.22, 0.22, 0.36]} />
         <meshStandardMaterial color="#20242D" metalness={0.5} roughness={0.4} />
       </mesh>
-      {/* drei's first <Html> root gets torn down by React 19's double mount in dev; a hidden
-          placeholder takes that hit so every real label renders. */}
-      <Label show={false} position={[0, 0, 0]}>{" "}</Label>
-      <Label show={labels} position={[-0.75, -0.45, 0.6]}>Fuel droplet</Label>
-      <Label show={labels} position={[flame * 0.7, flame * 0.85, 0.3]}>Flame</Label>
-      <Label show={labels} position={[Math.min(igniterX + 0.6, 1.6), -0.3, 0.4]}>Igniter</Label>
-      <Label show={labels} position={[0.9, 1.9, -R + 0.1]}>Camera</Label>
-      <Label show={labels} position={[-R + 0.9, 1.35, 0.4]}>Radiometer</Label>
-      <Label show={labels} position={[0.55, -1.7, 0]}>Support needle</Label>
     </group>
   );
 }
 
 export default function DropletScene(props: Props) {
+  const spots = labelSpots(props);
+  const nodes = useRef<(HTMLSpanElement | null)[]>([]);
   return (
-    <Canvas camera={{ position: [2.4, 0.9, 13], fov: 38 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[3, 4, 3]} intensity={0.7} />
-      <Chamber {...props} />
-      <Flame {...props} />
-      <OrbitControls enablePan={false} minDistance={2.5} maxDistance={12} />
-    </Canvas>
+    <div className="relative h-full w-full">
+      <Canvas camera={{ position: [2.4, 0.9, 13], fov: 38 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+        <ambientLight intensity={0.35} />
+        <directionalLight position={[3, 4, 3]} intensity={0.7} />
+        <Chamber {...props} />
+        <Flame {...props} />
+        <LabelProjector spots={spots} nodes={nodes} />
+        <OrbitControls enablePan={false} minDistance={2.5} maxDistance={12} />
+      </Canvas>
+      <div aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden transition-opacity ${props.labels === false ? "opacity-0" : "opacity-100"}`}>
+        {spots.map((s, i) => (
+          <span
+            key={s.text}
+            ref={(el) => { nodes.current[i] = el; }}
+            className="glass t-caps-s absolute top-0 left-0 rounded-full px-2.5 py-1 whitespace-nowrap text-fg-2 select-none"
+          >
+            {s.text}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
