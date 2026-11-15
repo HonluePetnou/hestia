@@ -124,13 +124,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Predict
-         * @description Phase 1: deterministic MOCK formula, not physics.
-         *
-         *     TODO(hackathon): replace with a scikit-learn model trained on data/flex/flex_table_ix.csv.
-         */
-        post: operations["predict_predict_post"];
+        /** Predict Droplet */
+        post: operations["predict_droplet_predict_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -273,15 +268,21 @@ export interface components {
              */
             fuel: string;
             /**
-             * Oxygen Percent
-             * @example 21
+             * Pressure Atm
+             * @example 1
              */
-            oxygen_percent: number;
+            pressure_atm: number;
             /**
-             * Pressure Kpa
-             * @example 101.3
+             * O2 Mole Fraction
+             * @example 0.21
              */
-            pressure_kpa: number;
+            o2_mole_fraction: number;
+            /**
+             * Co2 Mole Fraction
+             * @default 0
+             * @example 0
+             */
+            co2_mole_fraction: number;
             /**
              * Initial Diameter Mm
              * @example 3
@@ -290,18 +291,20 @@ export interface components {
         };
         /** PredictResponse */
         PredictResponse: {
-            /**
-             * Burn Rate K
-             * @description Burning-rate constant K (mm^2/s)
-             */
+            /** Burn Rate K */
             burn_rate_k: number;
             /** Extinction Probability */
             extinction_probability: number;
-            /**
-             * Model
-             * @description Which model produced the prediction ('mock' in Phase 1)
-             */
+            /** Burn Time S */
+            burn_time_s: number;
+            /** Model */
             model: string;
+            /** Mae Mm2 S */
+            mae_mm2_s?: number | null;
+            /** Out Of Range */
+            out_of_range: boolean;
+            /** Warnings */
+            warnings: string[];
         };
         /** RankedFinding */
         RankedFinding: {
@@ -572,7 +575,7 @@ export interface operations {
             };
         };
     };
-    predict_predict_post: {
+    predict_droplet_predict_post: {
         parameters: {
             query?: never;
             header?: never;

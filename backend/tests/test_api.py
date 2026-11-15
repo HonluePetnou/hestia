@@ -59,13 +59,17 @@ def test_ask_mock() -> None:
 def test_predict() -> None:
     payload = {
         "fuel": "n-heptane",
-        "oxygen_percent": 21,
-        "pressure_kpa": 101.3,
-        "initial_diameter_mm": 3,
+        "pressure_atm": 1.0,
+        "o2_mole_fraction": 0.21,
+        "co2_mole_fraction": 0.0,
+        "initial_diameter_mm": 3.0,
     }
-    body = client.post("/predict", json=payload).json()
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 200
+    body = response.json()
     assert body["burn_rate_k"] > 0
     assert 0 <= body["extinction_probability"] <= 1
+    assert body["burn_time_s"] > 0
 
 
 def test_openapi_lists_all_routes() -> None:
