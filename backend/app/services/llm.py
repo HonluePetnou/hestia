@@ -10,6 +10,7 @@ import hashlib
 import logging
 import math
 import struct
+import time
 from functools import lru_cache
 from typing import Literal, Protocol
 
@@ -145,13 +146,21 @@ class OpenAIProvider:
 class GeminiProvider:
     def __init__(self, s: Settings) -> None:
         from google import genai
+        from google.genai import types
 
         self.client = genai.Client(api_key=s.gemini_api_key)
         # Embedding clients: the main key first, then the extra ones; rotate on quota errors.
         extra = [k.strip() for k in (s.gemini_api_keys or "").split(",") if k.strip()]
         keys = list(dict.fromkeys([k for k in [s.gemini_api_key, *extra] if k]))
-        self.embed_clients = [genai.Client(api_key=k) for k in keys] or [self.client]
+        # No SDK-level retries on embeddings: on a 429 we switch key at once (the SDK's own
+        # backoff made every question wait on each exhausted key).
+        no_retry = types.HttpOptions(retry_options=types.HttpRetryOptions(attempts=1))
+        self.embed_clients = [genai.Client(api_key=k, http_options=no_retry) for k in keys] or [
+            self.client
+        ]
         self.embed_index = 0
+        # Keys out of their daily quota are skipped until this monotonic time.
+        self.resting: dict[int, float] = {}
         self.model = s.llm_model or "gemini-3.8-flash"
         self.embedding_model = s.embedding_model or "gemini-embedding-001"
         self.dim = s.embedding_dim
@@ -182,23 +191,33 @@ class GeminiProvider:
             output_dimensionality=self.dim,
             task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
         )
-        # Try each key at most once, starting from the one that last worked.
+        # Try each key at most once, starting from the one that last worked; keys that ran out
+        # of their daily quota are skipped for an hour instead of being retried on every call.
         last: errors.ClientError | None = None
-        for _ in range(len(self.embed_clients)):
-            client = self.embed_clients[self.embed_index]
+        n = len(self.embed_clients)
+        for _ in range(n):
+            i = self.embed_index
+            if self.resting.get(i, 0) > time.monotonic() and n > 1:
+                self.embed_index = (i + 1) % n
+                continue
             try:
-                resp = client.models.embed_content(
+                resp = self.embed_clients[i].models.embed_content(
                     model=self.embedding_model, contents=texts, config=config
                 )
                 break
             except errors.ClientError as exc:
-                if exc.code != 429 or len(self.embed_clients) == 1:
+                if exc.code != 429 or n == 1:
                     raise
                 last = exc
-                self.embed_index = (self.embed_index + 1) % len(self.embed_clients)
-                log.warning("Gemini key quota hit, switching to key #%d", self.embed_index + 1)
+                if "PerDay" in str(exc):
+                    self.resting[i] = time.monotonic() + 3600
+                self.embed_index = (i + 1) % n
+                log.warning(
+                    "Gemini key #%d out of quota, switching to key #%d", i + 1, self.embed_index + 1
+                )
         else:
-            assert last is not None
+            if last is None:  # every key is resting
+                raise LLMError("All Gemini keys are out of embedding quota for today.")
             raise last  # every key is out of quota; the caller's backoff takes over
         vectors = [list(e.values or []) for e in resp.embeddings or []]
         # Google only pre-normalizes the full 3072-dim vector; shorter (MRL) ones need it.
