@@ -26,6 +26,8 @@ RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
 _RETRYABLE_WORDS = (
     "429", "rate limit", "resource_exhausted", "quota", "overload", "unavailable",
     "timed out", "timeout", "503", "502", "500",
+    # dropped connections (httpx RemoteProtocolError / ConnectError / ReadError)
+    "disconnected", "connection reset", "connection aborted", "connecterror", "readerror",
 )  # fmt: skip
 
 
@@ -35,7 +37,7 @@ def is_retryable(exc: Exception) -> bool:
         code = getattr(exc, attr, None)
         if isinstance(code, int):
             return code in RETRYABLE_STATUS
-    msg = str(exc).lower()
+    msg = f"{type(exc).__name__} {exc}".lower()
     return any(w in msg for w in _RETRYABLE_WORDS)
 
 
