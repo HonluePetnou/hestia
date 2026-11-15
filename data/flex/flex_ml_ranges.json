@@ -1,0 +1,48 @@
+{
+  "source": "data/flex/flex_psi_clean.csv (PSI-69, DOI 10.60555/mbq8-0451)",
+  "rows_total": 274,
+  "rows_with_complete_inputs": 261,
+  "rows_for_regression": 257,
+  "rows_for_classification": 261,
+  "extinction_yes": 179,
+  "extinction_no": 82,
+  "fuels": {
+    "methanol": 153,
+    "n-heptane": 108
+  },
+  "input_ranges": {
+    "pressure_atm": [
+      0.6925,
+      3.0525
+    ],
+    "o2_mole_fraction": [
+      0.12,
+      0.34
+    ],
+    "co2_mole_fraction": [
+      0.0,
+      0.7
+    ],
+    "he_mole_fraction": [
+      0.0,
+      0.45
+    ],
+    "initial_diameter_mm": [
+      1.1,
+      4.67
+    ]
+  },
+  "k_mm2_s": {
+    "min": 0.05,
+    "max": 1.06,
+    "mean": 0.5022
+  },
+  "excluded_columns": {
+    "burn_time_s": "mesurée pendant l'essai : vaut à peu près d0² / K (fuite d'information)",
+    "extinction_diameter_mm": "mesuré pendant l'essai (fuite d'information)",
+    "test_number": "numéro d'ordre, sans lien physique avec le résultat",
+    "test_date": "date de l'essai, sans lien physique avec le résultat",
+    "test_gmt": "heure de l'essai, sans lien physique avec le résultat"
+  },
+  "limits": "microgravité ISS uniquement ; pas de gravité lunaire ni martienne ; carburants testés seulement"
+}

@@ -1,0 +1,16 @@
+experiment_code,sample_id,colonne,probleme,action
+SAFFIRE-1,F1C1/F1C2,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-1,F2C1/F2C2,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-1,,source_doi,DOI inconnu (métadonnées non téléchargées),à compléter
+SAFFIRE-2,F1C1/F1C2,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-2,F2C1/F2C2,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-2,Note 1 Derived from measured CO2 product,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-2,Note 2 The PMMA portion was completely c,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-2,Note 3 This is the length of fuel with s,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-2,Note 4 The flames remain anchored at the,sample_id,ligne qui n'est pas un essai,ignorée
+SAFFIRE-2,2-4,thickness_raw,zéro initial suspect (« 037 » : 0.37 ?) : « 037 mm »,mise à vide
+SAFFIRE-2,2-5,thickness_raw,zéro initial suspect (« 037 » : 0.37 ?) : « 037 mm »,mise à vide
+SAFFIRE-2,2-6,thickness_raw,zéro initial suspect (« 037 » : 0.37 ?) : « 037 mm »,mise à vide
+SAFFIRE-2,2-7,thickness_raw,texte non numérique : « 0.85 and 0.37 mm »,mise à vide
+SAFFIRE-2,2-8,thickness_raw,texte non numérique : « See Fig. 5 »,mise à vide
+SAFFIRE-2,2-7,length_raw,texte non numérique : « 5 and 24 cm »,mise à vide

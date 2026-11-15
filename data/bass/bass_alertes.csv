@@ -1,0 +1,28 @@
+as_run_number,test_id,colonne,probleme,action
+42,35,test_date,date « 6/29/`12 » lue comme 2012-06-29,corrigée
+104,50,test_date,année impossible dans « 5/15/2103 »,mise à vide
+93,38,gmt_day_of_year,jour GMT 113 ≠ date,à vérifier
+111,109,gmt_day_of_year,jour GMT 137 ≠ date,à vérifier
+112,79,gmt_day_of_year,jour GMT 150 ≠ date,à vérifier
+113,80,gmt_day_of_year,jour GMT 150 ≠ date,à vérifier
+114,75,gmt_day_of_year,jour GMT 150 ≠ date,à vérifier
+115,53,gmt_day_of_year,jour GMT 150 ≠ date,à vérifier
+116,53a,gmt_day_of_year,jour GMT 150 ≠ date,à vérifier
+24,12-R,as_run_number,valeur « 24 » en double,à vérifier
+24,12-R2,as_run_number,valeur « 24 » en double,à vérifier
+85,117,as_run_number,valeur « 85 » en double,à vérifier
+85,117a,as_run_number,valeur « 85 » en double,à vérifier
+89,26,as_run_number,valeur « 89 » en double,à vérifier
+90,27,as_run_number,valeur « 90 » en double,à vérifier
+91,28,as_run_number,valeur « 91 » en double,à vérifier
+89,87,as_run_number,valeur « 89 » en double,à vérifier
+90,103,as_run_number,valeur « 90 » en double,à vérifier
+91,104,as_run_number,valeur « 91 » en double,à vérifier
+59,114,test_id,valeur « 114 » en double,à vérifier
+64,118,test_id,valeur « 118 » en double,à vérifier
+79,75,test_id,valeur « 75 » en double,à vérifier
+82,114,test_id,valeur « 114 » en double,à vérifier
+98,118,test_id,valeur « 118 » en double,à vérifier
+107,53,test_id,valeur « 53 » en double,à vérifier
+114,75,test_id,valeur « 75 » en double,à vérifier
+115,53,test_id,valeur « 53 » en double,à vérifier
