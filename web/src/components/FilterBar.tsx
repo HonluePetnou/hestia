@@ -4,6 +4,7 @@ import { ChevronDown, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { openSearch } from "@/components/CommandPalette";
 import { Segmented, cx } from "@/components/ui";
 
 const FUELS = ["n-heptane", "methanol", "PMMA", "cotton-fiberglass", "SIBAL cotton-fiberglass", "Nomex", "Teflon", "ethylene"];
@@ -31,11 +32,11 @@ export function SearchBox() {
       <input
         type="search"
         defaultValue={params.get("q") ?? ""}
-        placeholder="Search experiments, fuels, NTRS reports…"
+        placeholder="Filter experiments by name or fuel…"
         onChange={(e) => update({ q: e.target.value })}
         className="t-body-s min-w-0 flex-1 bg-transparent text-fg outline-none placeholder:text-fg-3"
       />
-      <kbd className="t-mono-s rounded-sm border border-line-strong px-1.5 py-0.5 text-fg-3">⌘K</kbd>
+      <button type="button" onClick={() => openSearch()} title="Search everything (Ctrl/⌘ K)" className="t-mono-s rounded-sm border border-line-strong px-1.5 py-0.5 text-fg-3 hover:text-fg">⌘K</button>
     </label>
   );
 }

@@ -90,6 +90,9 @@ export const api = {
       body: JSON.stringify({ question, history } satisfies Schemas["AskRequest"]),
     }),
 
+  search: (q: string, signal?: AbortSignal) =>
+    request<Schemas["SearchResponse"]>(`/search${query({ q })}`, { signal }),
+
   modelInfo: () => request<Schemas["ModelInfo"]>("/predict/model"),
 
   predict: (body: PredictInput) =>

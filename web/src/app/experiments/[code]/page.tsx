@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { BurnRateChart } from "@/components/BurnRateChart";
+import { SearchButton } from "@/components/CommandPalette";
 import { Badge, Bar, Button, Card, CardHeader, Citation, ErrorBox, Loading, type Tone } from "@/components/ui";
 import { api, attempt, type Outcome, type Schemas } from "@/lib/api";
 import { metaFor, shortPlatform } from "@/lib/content";
@@ -24,6 +25,27 @@ function RunRow({ r, highlight }: { r: Schemas["TestRunOut"]; highlight?: boolea
       <td className="px-2.5 py-2"><Badge tone={OUTCOME_TONE[r.outcome ?? "unknown"]}>{outcomeLabel(r.outcome ?? "unknown")}</Badge></td>
       <td className="rounded-r-sm px-2.5 py-2">{fmt(r.burn_rate_k)}</td>
     </tr>
+  );
+}
+
+/* Shown instead of an empty chart and table when an experiment has no imported test table. */
+function NoTestTable({ code }: { code: string }) {
+  return (
+    <Card className="gap-4 p-8">
+      <CardHeader title="Test data" meta="Not imported" />
+      <p className="t-body-m text-fg-2">
+        {code === "SAME"
+          ? "SAME heated materials until they smoked, without flames, to size the smoke particles: it has no burning rates or flame outcomes to chart."
+          : `${code}’s test table hasn’t been imported yet, so there is nothing to chart here.`}{" "}
+        Its results are in the findings and in the NASA reports.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <SearchButton q={code} label={`Search ${code} in NASA sources`} />
+        <Button variant="secondary" icon={false} href={`/assistant?q=${encodeURIComponent(`What were the main results of ${code}?`)}`}>
+          Ask about its results
+        </Button>
+      </div>
+    </Card>
   );
 }
 
@@ -100,6 +122,8 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
+          {runs.length === 0 && <NoTestTable code={e.code} />}
+          {points.length > 0 && (
           <Card>
             <CardHeader title="Burning rate K vs oxygen" meta={`${points.length} runs`} />
             <div className="flex gap-4">
@@ -108,6 +132,8 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
             </div>
             <BurnRateChart points={points} />
           </Card>
+          )}
+          {runs.length > 0 && (
           <Card className="flex-1">
             <CardHeader title="Test runs" meta={`${e.test_run_count} runs`} />
             <div className="overflow-x-auto">
@@ -136,6 +162,7 @@ async function Detail({ params }: { params: Promise<{ code: string }> }) {
             </div>
             {sourceNote && <p className="t-caps-s text-fg-3">Source · {sourceNote}</p>}
           </Card>
+          )}
         </div>
       </div>
     </div>

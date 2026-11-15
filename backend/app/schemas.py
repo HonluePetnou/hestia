@@ -227,3 +227,48 @@ class CompareInsights(_Base):
     codes: list[str]
     points: list[InsightPoint]
     generated_by: str = Field(description="'llm:<provider>' or 'findings' (no LLM)")
+
+
+# --- Search -----------------------------------------------------------------
+
+
+class SearchExperiment(_Base):
+    code: str
+    name: str
+    platform: str | None = None
+    fuels: str | None = None
+
+
+class SearchFinding(_Base):
+    experiment_code: str | None = None
+    statement: str
+    url: str | None = Field(None, description="Source page of the finding's first source")
+    source_label: str | None = Field(None, description="e.g. '20240002981, p.6'")
+
+
+class SearchDocument(_Base):
+    source_type: str = Field(description="ntrs, psi or nasa_resource")
+    external_id: str
+    title: str
+    page: int | None = None
+    snippet: str = Field(description="Matching passage; matched words wrapped in <mark></mark>")
+    url: str | None = None
+
+
+class SearchTest(_Base):
+    run_label: str
+    experiment_code: str
+    fuel: str | None = None
+    oxygen_percent: float | None = None
+    pressure_kpa: float | None = None
+    initial_diameter_mm: float | None = None
+    co2_percent: float = 0.0
+    outcome: str
+
+
+class SearchResponse(_Base):
+    query: str
+    experiments: list[SearchExperiment] = Field(default_factory=list)
+    findings: list[SearchFinding] = Field(default_factory=list)
+    documents: list[SearchDocument] = Field(default_factory=list)
+    tests: list[SearchTest] = Field(default_factory=list)

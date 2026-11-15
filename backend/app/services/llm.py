@@ -148,7 +148,13 @@ class GeminiProvider:
         from google import genai
         from google.genai import types
 
-        self.client = genai.Client(api_key=s.gemini_api_key)
+        # Chat: our own retry and fallback below, so the SDK doesn't stack its own backoff on top.
+        self.client = genai.Client(
+            api_key=s.gemini_api_key,
+            http_options=types.HttpOptions(
+                timeout=30_000, retry_options=types.HttpRetryOptions(attempts=1)
+            ),
+        )
         # Embedding clients: the main key first, then the extra ones; rotate on quota errors.
         extra = [k.strip() for k in (s.gemini_api_keys or "").split(",") if k.strip()]
         keys = list(dict.fromkeys([k for k in [s.gemini_api_key, *extra] if k]))
@@ -162,6 +168,8 @@ class GeminiProvider:
         # Keys out of their daily quota are skipped until this monotonic time.
         self.resting: dict[int, float] = {}
         self.model = s.llm_model or "gemini-3.8-flash"
+        fallbacks = [m.strip() for m in (s.llm_fallback_models or "").split(",") if m.strip()]
+        self.chat_models = list(dict.fromkeys([self.model, *fallbacks]))
         self.embedding_model = s.embedding_model or "gemini-embedding-001"
         self.dim = s.embedding_dim
 
@@ -179,10 +187,38 @@ class GeminiProvider:
         if json_schema is not None:
             config.response_mime_type = "application/json"
             config.response_json_schema = json_schema
-        resp = self.client.models.generate_content(
-            model=self.model, contents=contents, config=config
-        )
-        return resp.text or ""
+        return self._generate(contents, config)
+
+    def _generate(self, contents, config) -> str:
+        """Each model gets two tries on transient errors (5xx, 429, timeout), then the next
+        model in `chat_models` takes over; a model the key can't use (404) is skipped."""
+        from google.genai import errors
+
+        last: Exception | None = None
+        for model in self.chat_models:
+            for attempt in range(2):
+                try:
+                    resp = self.client.models.generate_content(
+                        model=model, contents=contents, config=config
+                    )
+                    if model != self.model:
+                        log.info("Answered by fallback chat model %s", model)
+                    return resp.text or ""
+                except errors.ClientError as exc:
+                    last = exc
+                    if exc.code == 429 and attempt == 0:
+                        time.sleep(1.5)
+                        continue
+                    if exc.code in (404, 429):
+                        break  # next model
+                    raise
+                except Exception as exc:  # ServerError (5xx), timeouts, dropped connections
+                    last = exc
+                    log.warning("Chat model %s failed (%s)", model, exc.__class__.__name__)
+                    if attempt == 0:
+                        time.sleep(1.0)
+            # this model failed twice or is unavailable: try the next one
+        raise LLMError(f"All chat models failed: {last.__class__.__name__ if last else 'unknown'}")
 
     def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
         from google.genai import errors, types

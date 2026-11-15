@@ -4,6 +4,7 @@ import { Bell, Flame, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { openSearch } from "@/components/CommandPalette";
 import { IconButton, cx } from "@/components/ui";
 
 const NAV = [
@@ -45,7 +46,7 @@ export function TopBar() {
       </nav>
 
       <div className="order-2 flex items-center gap-2 sm:gap-3 lg:order-3">
-        <IconButton icon={Search} label="Search" href="/experiments" />
+        <IconButton icon={Search} label="Search (Ctrl/⌘ K)" onClick={() => openSearch()} />
         <span className="hidden sm:contents"><IconButton icon={Bell} label="Notifications" /></span>
         <span className="glass flex items-center gap-2 rounded-full p-1.5 md:pr-3.5">
           <span aria-hidden className="size-8 rounded-full bg-[linear-gradient(135deg,#FF7A30,#5AA9FF)]" />

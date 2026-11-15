@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # embeddings with an Anthropic or OpenAI chat model (Anthropic has no embeddings API).
     embedding_provider: Literal["mock", "openai", "gemini"] | None = None
     llm_model: str | None = None
+    # Tried in order when the chat model fails (Google 5xx, timeouts, 429). Comma-separated.
+    llm_fallback_models: str | None = "gemini-3.5-flash-lite,gemini-3.1-flash-lite"
     embedding_model: str | None = None
     openai_api_key: str | None = None
     gemini_api_key: str | None = None

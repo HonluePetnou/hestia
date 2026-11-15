@@ -264,4 +264,4 @@ def ask(
     except LLMError:
         raise
     except Exception as exc:  # vendor SDK errors (rate limit, network) surface as 503
-        raise LLMError(f"The language model is unavailable: {exc.__class__.__name__}") from exc
+        raise LLMError(f"The language model is unavailable ({exc.__class__.__name__})") from exc
