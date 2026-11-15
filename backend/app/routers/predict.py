@@ -26,8 +26,10 @@ def predict(body: PredictRequest) -> PredictResponse:
         k = max(0.5 + 0.01 * (body.oxygen_percent - 21) + 0.02 * body.initial_diameter_mm, 0.05)
         z = 0.15 * (16 - body.oxygen_percent) + 0.3 * (body.initial_diameter_mm - 3)
         p, in_range, name = 1 / (1 + math.exp(-z)), False, "mock"
+        warnings = ["FLEX data missing: these numbers come from a placeholder formula."]
     else:
         k, p, in_range = flex_model.predict(model, x)
+        warnings = flex_model.range_warnings(model, x, body.fuel)
         name = flex_model.MODEL_NAME
     lifetime = body.initial_diameter_mm**2 / k if k > 0 else 0.0
     return PredictResponse(
@@ -36,6 +38,7 @@ def predict(body: PredictRequest) -> PredictResponse:
         droplet_lifetime_s=round(lifetime, 2),
         in_training_range=in_range,
         model=name,
+        warnings=warnings,
         nearest_test=NearestTest(**nearest) if nearest else None,
     )
 
@@ -56,5 +59,7 @@ def model_info() -> ModelInfo:
         k_mae_cv=m.k_mae,
         extinction_auc_cv=m.ext_auc,
         extinction_balanced_accuracy_cv=m.ext_balanced_accuracy,
+        k_mae_baseline_cv=m.k_mae_baseline,
+        extinction_balanced_accuracy_baseline_cv=m.ext_bacc_baseline,
         ranges=m.ranges,
     )

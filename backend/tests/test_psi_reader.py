@@ -46,10 +46,11 @@ def test_missing_doi_url_and_page_are_none(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(not REAL.exists(), reason="data/psi_corpus/out/chunks.jsonl not built")
 def test_real_corpus_is_read_unchanged() -> None:
+    lines = sum(1 for line in REAL.read_text(encoding="utf-8").splitlines() if line.strip())
     records, errors = read_psi_chunks(REAL)
-    assert errors == [] and len(records) == 323
+    assert errors == [] and len(records) == lines
     docs = build_documents(records)
-    assert sum(len(d.chunks) for d in docs) == 323
+    assert sum(len(d.chunks) for d in docs) == lines
     assert {d.source_type for d in docs} == {"psi", "nasa_resource"}
     assert not any("curated habitat" in c.content for d in docs for c in d.chunks)
     psi = next(d for d in docs if d.external_id == "PSI-102")

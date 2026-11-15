@@ -431,6 +431,16 @@ export interface components {
             extinction_auc_cv?: number | null;
             /** Extinction Balanced Accuracy Cv */
             extinction_balanced_accuracy_cv?: number | null;
+            /**
+             * K Mae Baseline Cv
+             * @description Same CV, always predicting the mean K: the error to beat
+             */
+            k_mae_baseline_cv?: number | null;
+            /**
+             * Extinction Balanced Accuracy Baseline Cv
+             * @description Same CV, always predicting the most frequent outcome
+             */
+            extinction_balanced_accuracy_baseline_cv?: number | null;
             /** Ranges */
             ranges?: {
                 [key: string]: [
@@ -545,6 +555,11 @@ export interface components {
              * @description Which model produced the prediction ('mock' without data)
              */
             model: string;
+            /**
+             * Warnings
+             * @description One message per input outside the FLEX test range
+             */
+            warnings?: string[];
             /** @description The real FLEX test closest to these conditions, with its ISS outcome */
             nearest_test?: components["schemas"]["NearestTest"] | null;
         };

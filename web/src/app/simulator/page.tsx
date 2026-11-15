@@ -175,6 +175,12 @@ export default function Page() {
               ? `Trained on ${info.k_samples} ISS tests · R² ${info.k_r2_cv?.toFixed(2)} · AUC ${info.extinction_auc_cv?.toFixed(2)}`
               : `Model · ${pred?.model ?? "—"}`}
           </p>
+          {info?.trained && info.k_mae_cv != null && info.k_mae_baseline_cv != null && (
+            <p className="t-body-s text-center text-fg-2">
+              K error {info.k_mae_cv.toFixed(3)} mm²/s, {(info.k_mae_baseline_cv / info.k_mae_cv).toFixed(1)}× smaller
+              than always guessing the average ({info.k_mae_baseline_cv.toFixed(3)}).
+            </p>
+          )}
           <p className="t-caps-s text-center text-fg-3">Microgravity only · FLEX, NASA/TP-2015-216046</p>
         </div>
       </Card>
@@ -250,7 +256,12 @@ export default function Page() {
         <CardHeader title="Prediction" meta={pred?.model ?? ""} />
         {error !== null && <ErrorBox error={error} />}
         {pred && !pred.in_training_range && (
-          <Badge tone="warning" className="self-start">Outside the tested range · extrapolation</Badge>
+          <div className="flex flex-col gap-2 rounded-md border border-warn/40 bg-warn/10 px-3.5 py-3">
+            <Badge tone="warning" className="self-start">Outside the tested range · extrapolation</Badge>
+            {(pred.warnings ?? []).map((w) => (
+              <p key={w} className="t-body-s text-fg-2">{w}</p>
+            ))}
+          </div>
         )}
         <Gauge value={K / 1.2} display={K.toFixed(2)} unit="mm²/s" label="Burn rate K" color="var(--color-accent-default)" />
         <Gauge value={pred?.extinction_probability ?? 0} display={`${Math.round((pred?.extinction_probability ?? 0) * 100)}%`} unit="chance" label="Extinction probability" color="var(--color-data-primary)" />

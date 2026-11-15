@@ -171,6 +171,9 @@ class PredictResponse(_Base):
     droplet_lifetime_s: float = Field(description="Estimated burn time from the d^2 law, D0^2/K")
     in_training_range: bool = Field(description="False when inputs are outside the FLEX tests")
     model: str = Field(description="Which model produced the prediction ('mock' without data)")
+    warnings: list[str] = Field(
+        default_factory=list, description="One message per input outside the FLEX test range"
+    )
     nearest_test: NearestTest | None = Field(
         None, description="The real FLEX test closest to these conditions, with its ISS outcome"
     )
@@ -186,6 +189,12 @@ class ModelInfo(_Base):
     k_mae_cv: float | None = Field(None, description="5-fold cross-validated MAE for K (mm^2/s)")
     extinction_auc_cv: float | None = None
     extinction_balanced_accuracy_cv: float | None = None
+    k_mae_baseline_cv: float | None = Field(
+        None, description="Same CV, always predicting the mean K: the error to beat"
+    )
+    extinction_balanced_accuracy_baseline_cv: float | None = Field(
+        None, description="Same CV, always predicting the most frequent outcome"
+    )
     ranges: dict[str, tuple[float, float]] = Field(default_factory=dict)
 
 
