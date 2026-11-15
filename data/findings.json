@@ -303,5 +303,44 @@
         "page": 32
       }
     ]
+  },
+  {
+    "experiment_code": "ACME",
+    "statement": "In the ACME Burning Rate Emulator tests, low-momentum microgravity flames burned for minutes with no air flow and no flame spread in elevated-oxygen atmospheres like those considered for future spacecraft, but self-extinguished below about 25% oxygen; larger flames generally went out within 1.5 minutes. Turning off ventilation may not be enough in an oxygen-enriched cabin.",
+    "relevance_moon": 0.9,
+    "relevance_mars": 0.9,
+    "confidence": 0.8,
+    "sources": [
+      {
+        "ntrs_id": "20210022542",
+        "page": 4
+      }
+    ]
+  },
+  {
+    "experiment_code": "ACME",
+    "statement": "ACME CLD Flame found that sooty microgravity flames are taller and wider and contain 5 to 8 times more soot than equivalent 1 g flames, and that microgravity widens the fuel-dilution limits: near-limit flames are more stable and can stay lit (lifted) at lower fuel concentrations.",
+    "relevance_moon": 0.6,
+    "relevance_mars": 0.55,
+    "confidence": 0.75,
+    "sources": [
+      {
+        "ntrs_id": "20210022542",
+        "page": 5
+      }
+    ]
+  },
+  {
+    "experiment_code": "ACME",
+    "statement": "In ACME Flame Design, large spherical flames kept growing until radiative heat loss extinguished them, after an unstable phase of partial extinction and re-formation; flame size decreased as ambient oxygen increased, while very small flames approached a steady state.",
+    "relevance_moon": 0.5,
+    "relevance_mars": 0.5,
+    "confidence": 0.7,
+    "sources": [
+      {
+        "ntrs_id": "20210022542",
+        "page": 8
+      }
+    ]
   }
 ]

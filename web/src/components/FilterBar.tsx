@@ -69,7 +69,7 @@ export function FilterBar() {
 
   return (
     <div className="glass flex flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-[28px] px-5 py-2.5 xl:flex-nowrap xl:rounded-full">
-      <label className="flex items-center shrink-0 gap-2.5">
+      <label className="flex min-w-0 max-w-full items-center gap-2.5 xl:shrink-0">
         <span className="t-caps-s text-fg-3">Fuel</span>
         <span className="relative flex items-center">
           <select
@@ -84,14 +84,14 @@ export function FilterBar() {
         </span>
       </label>
 
-      <div className="flex items-center shrink-0 gap-2.5">
+      <div className="flex min-w-0 max-w-full items-center gap-2.5 xl:shrink-0">
         <span className="t-caps-s text-fg-3">Gravity</span>
-        <Segmented size="sm" label="Gravity" options={GRAVITY} value={params.get("gravity") ?? ""} onChange={(v) => update({ gravity: v })} />
+        <Segmented size="sm" className="min-w-0 overflow-x-auto [scrollbar-width:none]" label="Gravity" options={GRAVITY} value={params.get("gravity") ?? ""} onChange={(v) => update({ gravity: v })} />
       </div>
 
-      <div className="flex items-center shrink-0 gap-2.5">
+      <div className="flex min-w-0 max-w-full items-center gap-2.5 xl:shrink-0">
         <span className="t-caps-s text-fg-3">Outcome</span>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {OUTCOMES.map((o) => {
             const on = outcome === o.value;
             return (
@@ -110,7 +110,7 @@ export function FilterBar() {
         </div>
       </div>
 
-      <div className="flex items-center shrink-0 gap-2.5">
+      <div className="flex min-w-0 max-w-full items-center gap-2.5 xl:shrink-0">
         <span className="t-caps-s text-fg-3">O₂</span>
         <div
           className="range-dual w-[90px] rounded-full"
