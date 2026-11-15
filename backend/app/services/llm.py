@@ -7,12 +7,15 @@ external requirements.
 """
 
 import hashlib
+import logging
 import math
 import struct
 from functools import lru_cache
 from typing import Literal, Protocol
 
 from app.config import Settings, get_settings
+
+log = logging.getLogger(__name__)
 
 EmbedTask = Literal["document", "query"]
 
@@ -144,6 +147,11 @@ class GeminiProvider:
         from google import genai
 
         self.client = genai.Client(api_key=s.gemini_api_key)
+        # Embedding clients: the main key first, then the extra ones; rotate on quota errors.
+        extra = [k.strip() for k in (s.gemini_api_keys or "").split(",") if k.strip()]
+        keys = list(dict.fromkeys([k for k in [s.gemini_api_key, *extra] if k]))
+        self.embed_clients = [genai.Client(api_key=k) for k in keys] or [self.client]
+        self.embed_index = 0
         self.model = s.llm_model or "gemini-3.8-flash"
         self.embedding_model = s.embedding_model or "gemini-embedding-001"
         self.dim = s.embedding_dim
@@ -168,16 +176,30 @@ class GeminiProvider:
         return resp.text or ""
 
     def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
-        from google.genai import types
+        from google.genai import errors, types
 
-        resp = self.client.models.embed_content(
-            model=self.embedding_model,
-            contents=texts,
-            config=types.EmbedContentConfig(
-                output_dimensionality=self.dim,
-                task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
-            ),
+        config = types.EmbedContentConfig(
+            output_dimensionality=self.dim,
+            task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
         )
+        # Try each key at most once, starting from the one that last worked.
+        last: errors.ClientError | None = None
+        for _ in range(len(self.embed_clients)):
+            client = self.embed_clients[self.embed_index]
+            try:
+                resp = client.models.embed_content(
+                    model=self.embedding_model, contents=texts, config=config
+                )
+                break
+            except errors.ClientError as exc:
+                if exc.code != 429 or len(self.embed_clients) == 1:
+                    raise
+                last = exc
+                self.embed_index = (self.embed_index + 1) % len(self.embed_clients)
+                log.warning("Gemini key quota hit, switching to key #%d", self.embed_index + 1)
+        else:
+            assert last is not None
+            raise last  # every key is out of quota; the caller's backoff takes over
         vectors = [list(e.values or []) for e in resp.embeddings or []]
         # Google only pre-normalizes the full 3072-dim vector; shorter (MRL) ones need it.
         return [l2_normalize(v) for v in vectors] if self.dim < 3072 else vectors

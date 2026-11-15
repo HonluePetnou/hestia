@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     embedding_model: str | None = None
     openai_api_key: str | None = None
     gemini_api_key: str | None = None
+    # Extra Gemini keys, comma-separated, each from a different Google Cloud project (quotas are
+    # per project). Embeddings switch to the next key when one hits its quota.
+    gemini_api_keys: str | None = None
     anthropic_api_key: str | None = None
     embedding_dim: int = 1536
 
