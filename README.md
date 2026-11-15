@@ -166,7 +166,7 @@ data/      Datasets. See data/README.md for how to obtain each one
 | Frédéric Armel Petnou Honlue (team owner) | [@HonluePetnou](https://github.com/HonluePetnou) |
 | Merveilles Fohom | [@Mervy21](https://github.com/Mervy21) |
 | Jacques Eyoum | |
-| Gustave Cyriac Mekounde Elame | |
+| Gustave Cyriac Mekounde Elame | [@kikat234](https://github.com/kikat234) |
 | Ismaïla Mohammed El Bachir | |
 | Damien Anthony Nkamoloum Tene | |
 
