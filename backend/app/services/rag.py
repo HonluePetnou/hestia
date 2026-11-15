@@ -42,7 +42,8 @@ pages and other NASA resources). Rules:
 8. Only say what a result implies for lunar (0.17 g) or martian (0.38 g) habitats if a
    passage supports it, and name the limits.
 9. Be concise (2 to 6 sentences), clear scientific language, no markdown headings.
-10. Answer in the language of the question (French question -> French answer)."""
+10. Write in English. Only if the whole question is written in another language, answer in
+   that language instead."""
 
 ANSWER_SCHEMA = {
     "type": "object",

@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     # RAG: passages sent to the LLM, and minimum cosine similarity to count as relevant
     retrieval_k: int = 8
-    retrieval_min_score: float = 0.55
+    retrieval_min_score: float = 0.62  # calibrated 2026-11-15, see .env.example
     # at most this many passages from one document, so a 89-chunk guide cannot crowd out the rest
     retrieval_max_per_doc: int = 3
 
