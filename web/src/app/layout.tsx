@@ -18,7 +18,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${unbounded.variable} ${inter.variable} ${jetbrains.variable} h-full`}>
+    // suppressHydrationWarning: browser extensions add attributes to <html> before React loads
+    // (e.g. webcrx); it only silences attribute mismatches on this one element.
+    <html lang="en" suppressHydrationWarning className={`${unbounded.variable} ${inter.variable} ${jetbrains.variable} h-full`}>
       <body className="min-h-full">
         <SpaceBackdrop />
         <div className="sticky top-0 z-40 w-full border-b border-line bg-[var(--color-bg-glass)] backdrop-blur-md">
