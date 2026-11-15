@@ -40,6 +40,7 @@ from app.models import (
 from app.services.llm import LLMProvider, MockProvider, embedding_id, get_embedder
 from pipeline.chunk import chunk_file, context_prefix
 from pipeline.psi import build_documents, read_psi_chunks
+from pipeline.psi_runs import bass2_runs, bass_runs, saffire_runs
 from pipeline.sync import (
     ChunkSpec,
     check_db_dimension,
@@ -258,7 +259,8 @@ def flex_runs() -> list[dict]:
 
 def ingest_experiments(session: Session) -> dict[str, int]:
     """Upsert data/experiments.json into `experiments` and replace each experiment's
-    test runs (FLEX runs come from data/flex/flex_table_ix.csv)."""
+    test runs (FLEX from data/flex/flex_table_ix.csv; BASS, BASS-II and Saffire I-III from
+    the cleaned PSI tables in data/bass/ and data/saffire/, see pipeline/psi_runs.py)."""
     data = json.loads((DATA_DIR / "experiments.json").read_text(encoding="utf-8"))
     counts = {"experiments": 0, "test_runs": 0}
     for e in data:
@@ -271,7 +273,11 @@ def ingest_experiments(session: Session) -> dict[str, int]:
         session.flush()
 
         session.execute(delete(TestRun).where(TestRun.experiment_id == exp.id))
-        runs = flex_runs() if e["code"] == "FLEX" else []
+        runs = {
+            "FLEX": flex_runs,
+            "BASS": lambda: bass_runs() + bass2_runs(),
+            "SAFFIRE": saffire_runs,
+        }.get(e["code"], list)()
         for r in e.get("runs", []):
             runs.append(
                 r

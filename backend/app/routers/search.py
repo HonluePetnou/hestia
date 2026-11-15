@@ -136,9 +136,14 @@ def _tests(session: Session, q: str) -> list[SearchTest]:
     label = RUN_LABEL.search(q)
     pct = PERCENT.search(q)
     fuel = next((FUELS[w] for w in WORD.findall(q.lower()) if w in FUELS), None)
-    if label and label.group(1).lower() in {"flex", "saffire"}:
+    named = len(q) >= 3 and session.scalar(
+        select(TestRun.id).where(TestRun.run_label.ilike(f"%{q}%")).limit(1)
+    )
+    if label and label.group(1).lower() == "flex":
         num = int(label.group(2))
         stmt = stmt.where(TestRun.run_label.ilike(f"%{label.group(1)}%{num:03d}%"))
+    elif named:  # BASS-II B1, Saffire II 2-5, BASS run 24…
+        stmt = stmt.where(TestRun.run_label.ilike(f"%{q}%"))
     elif fuel or pct:
         if fuel:
             stmt = stmt.where(TestRun.fuel == fuel)
