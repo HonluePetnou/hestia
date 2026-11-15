@@ -99,7 +99,9 @@ async function Comparison({ codes }: { codes: string[] }) {
   const best = [...rows].sort((a, b) => b.s.mars - a.s.mars)[0];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[repeat(3,300px)_1fr]">
+    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,1.15fr)]">
+      {/* The investigation cards share one height among themselves, independent of the AI panel */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {rows.map(({ e, s }) => (
         <Card key={e.code} className="p-5">
           <ArtStrip colors={metaFor(e.code).art} className="h-[72px]" />
@@ -139,8 +141,9 @@ async function Comparison({ codes }: { codes: string[] }) {
           </div>
         </Card>
       ))}
+      </div>
 
-      <Card accent className="p-[22px] lg:col-span-2 xl:col-span-1 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,122,48,0.16),transparent_60%),var(--color-bg-glass)]">
+      <Card accent className="p-[22px] xl:sticky xl:top-[120px] bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,122,48,0.16),transparent_60%),var(--color-bg-glass)]">
         <CardHeader title="Key differences" meta="AI · cited" />
         <Sparkles aria-hidden size={22} strokeWidth={1.75} className="text-ember" />
         <Suspense fallback={<p className="t-body-s text-fg-3">Reading the NASA sources…</p>}>
