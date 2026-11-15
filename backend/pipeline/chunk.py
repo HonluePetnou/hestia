@@ -1,7 +1,7 @@
 """Split per-page text (data/ntrs/text/*.jsonl) into retrieval chunks.
 
 Usage (from backend/):
-    uv run python -m pipeline.chunk [--max-tokens 400] [--overlap 60]
+    uv run python -m pipeline.chunk [--max-tokens 400] [--overlap 50]
 
 Prints a summary only; `pipeline.ingest` calls `chunk_file` directly.
 
@@ -56,7 +56,7 @@ def _split_sentences(text: str, max_words: int) -> list[str]:
 
 
 def chunk_pages(
-    ntrs_id: str, pages: list[dict], max_tokens: int = 400, overlap: int = 60
+    ntrs_id: str, pages: list[dict], max_tokens: int = 400, overlap: int = 50
 ) -> list[Chunk]:
     """Split pages ([{"page", "text"}]) into sentence-packed chunks of ~max_tokens,
     with ~overlap tokens of trailing context repeated at the start of the next chunk
@@ -98,12 +98,21 @@ def _flush(chunks: list[Chunk], ntrs_id: str, page: int, sentences: list[str]) -
         chunks.append(Chunk(ntrs_id, page, len(chunks), content, estimate_tokens(content)))
 
 
+def context_prefix(title: str, year: int | None, page: int | None) -> str:
+    """Header prepended to a chunk *before embedding* (not stored, not cited)."""
+    parts = [title.strip()]
+    if year:
+        parts.append(f"({year})")
+    head = " ".join(parts)
+    return f"{head}, p.{page}" if page is not None else head
+
+
 def read_pages(jsonl_path: Path) -> list[dict]:
     with jsonl_path.open(encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
 
-def chunk_file(jsonl_path: Path, max_tokens: int = 400, overlap: int = 60) -> list[Chunk]:
+def chunk_file(jsonl_path: Path, max_tokens: int = 400, overlap: int = 50) -> list[Chunk]:
     """Read one <id>.jsonl file and chunk it."""
     return chunk_pages(jsonl_path.stem, read_pages(jsonl_path), max_tokens, overlap)
 
@@ -112,7 +121,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--in", dest="text_dir", type=Path, default=DATA_DIR / "ntrs" / "text")
     parser.add_argument("--max-tokens", type=int, default=400)
-    parser.add_argument("--overlap", type=int, default=60)
+    parser.add_argument("--overlap", type=int, default=50)
     args = parser.parse_args()
 
     total = 0

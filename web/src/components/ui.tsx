@@ -93,7 +93,7 @@ export function CardHeader({ title, meta }: { title: string; meta?: string }) {
 }
 
 /* ---------------- Stat (stats rail) ---------------- */
-export function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: string; label: string }) {
+export function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: ReactNode; label: string }) {
   return (
     <div className="flex w-[120px] flex-col items-center gap-1.5 text-center">
       <Icon aria-hidden size={18} strokeWidth={1.75} className="text-ember" />
@@ -104,8 +104,8 @@ export function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: st
 }
 
 /* ---------------- Citation chip ---------------- */
-export function Citation({ ntrsId, page, url }: { ntrsId: string; page: number; url?: string }) {
-  const body = <span className="t-mono-s text-ember-soft normal-case">[{ntrsId}, p.{page}]</span>;
+export function Citation({ ntrsId, page, url }: { ntrsId: string; page?: number | null; url?: string | null }) {
+  const body = <span className="t-mono-s text-ember-soft normal-case">[{ntrsId}{page != null ? `, p.${page}` : ""}]</span>;
   const cls = "inline-flex rounded-sm border border-ember-line bg-ember-tint px-2 py-0.5";
   return url ? (
     <a href={url} target="_blank" rel="noreferrer" className={cx(cls, "hover:border-ember")}>{body}</a>
@@ -126,8 +126,11 @@ export function Bar({ value, color = "bg-ember", height = 4, className }: { valu
 
 /* ---------------- Segmented control ---------------- */
 export function Segmented<T extends string>({
-  options, value, onChange, label, className,
-}: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label: string; className?: string }) {
+  options, value, onChange, label, className, size = "md",
+}: {
+  options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label: string;
+  className?: string; size?: "sm" | "md";
+}) {
   return (
     <div role="radiogroup" aria-label={label} className={cx("inline-flex gap-0.5 rounded-full border border-line bg-raised p-[3px]", className)}>
       {options.map((o) => {
@@ -140,7 +143,8 @@ export function Segmented<T extends string>({
             aria-checked={on}
             onClick={() => onChange(o.value)}
             className={cx(
-              "flex-1 rounded-full px-3 py-1.5 text-[13px] whitespace-nowrap transition",
+              "flex-1 rounded-full whitespace-nowrap transition",
+              size === "sm" ? "px-2.5 py-1 text-[12px]" : "px-3 py-1.5 text-[13px]",
               on ? "bg-ember font-medium text-fg-inverse" : "text-fg-2 hover:text-fg",
             )}
           >

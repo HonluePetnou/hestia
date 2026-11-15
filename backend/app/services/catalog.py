@@ -28,7 +28,7 @@ def _to_detail(e: Experiment) -> ExperimentDetail:
             confidence=f.confidence,
             sources=[
                 SourceRef(
-                    ntrs_id=s.document.ntrs_id,
+                    ntrs_id=s.document.external_id,
                     title=s.document.title,
                     page=s.page,
                     url=s.document.page_url(s.page),
@@ -99,7 +99,7 @@ def load_findings(session: Session) -> list[FindingOut]:
                     confidence=f.confidence,
                     sources=[
                         SourceRef(
-                            ntrs_id=s.document.ntrs_id,
+                            ntrs_id=s.document.external_id,
                             title=s.document.title,
                             page=s.page,
                             url=s.document.page_url(s.page),

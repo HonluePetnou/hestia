@@ -88,6 +88,21 @@ the parser.
 | `test_date` | as printed (M/D/YY) |
 | `source_page` | PDF page the row was read from |
 
+### Cross-check against the PSI table (`flex/flex_psi_clean.csv`)
+
+`flex_psi_clean.csv` is the official PSI-69 experimental table, cleaned by `pipeline/clean_flex.py`
+(points to check are listed in `flex/flex_psi_alertes.csv`). Aligned row by row, it matches Table IX
+on all 274 shared tests: same O2, pressure, K, extinction diameter, burn time and outcome. The only
+differences:
+
+- Table IX has 2 tests that PSI lacks: `FLEX-216` and `FLEX-230`.
+- PSI numbers its tests 1-274 in sequence, while Table IX keeps the report's numbers (with gaps).
+  Join the two tables on content, not on the test number.
+- PSI gives `193F001` to two different tests (its #70 and #73). Use `test_number` as the key.
+- Two PSI burn times (`~6`, `~9`) are approximate and left empty.
+
+The model keeps training on Table IX (276 tests, a superset of PSI's 274 with identical values).
+
 ---
 
 ## 4. Curated catalog and findings

@@ -103,13 +103,28 @@ class ChatMessage(_Base):
 
 class AskRequest(_Base):
     question: str = Field(min_length=3, max_length=2000)
+    sources: list[Literal["ntrs", "psi", "nasa_resource"]] | None = Field(
+        default=None, description="Restrict retrieval to these source types (default: all)"
+    )
     history: list[ChatMessage] = Field(
         default_factory=list, description="Previous turns, oldest first (last 6 are used)"
     )
 
 
-class Citation(SourceRef):
-    pass
+class Citation(_Base):
+    """A source cited in an answer, rebuilt by the backend from database metadata.
+
+    `ntrs_id` carries the external identifier of the source (an NTRS id, "PSI-159" or a NASA
+    resource slug): the name is kept so existing clients keep working. `page` and `url` are
+    null when the source has no page / no link (never invented).
+    """
+
+    ntrs_id: str
+    title: str
+    page: int | None = None
+    url: str | None = None
+    source_type: Literal["ntrs", "psi", "nasa_resource"] = "ntrs"
+    doi: str | None = None
 
 
 class AskResponse(_Base):
@@ -130,6 +145,24 @@ class PredictRequest(_Base):
     he_percent: float = Field(0.0, ge=0, le=100, description="Helium diluent")
 
 
+class NearestTest(_Base):
+    test_id: str
+    fuel: str
+    oxygen_percent: float
+    pressure_kpa: float
+    initial_diameter_mm: float
+    co2_percent: float
+    he_percent: float
+    outcome: str = Field(
+        description="What happened on the ISS: extinction, disruption, complete_burn"
+    )
+    burn_rate_k: float | None = None
+    extinction_diameter_mm: float | None = None
+    distance: float = Field(description="Distance to the inputs in standard deviations (0 = same)")
+    source_page: int | None = None
+    url: str = Field(description="FLEX report PDF at the Table IX page holding this test")
+
+
 class PredictResponse(_Base):
     burn_rate_k: float = Field(description="Burning-rate constant K (mm^2/s)")
     extinction_probability: float = Field(
@@ -138,6 +171,9 @@ class PredictResponse(_Base):
     droplet_lifetime_s: float = Field(description="Estimated burn time from the d^2 law, D0^2/K")
     in_training_range: bool = Field(description="False when inputs are outside the FLEX tests")
     model: str = Field(description="Which model produced the prediction ('mock' without data)")
+    nearest_test: NearestTest | None = Field(
+        None, description="The real FLEX test closest to these conditions, with its ISS outcome"
+    )
 
 
 class ModelInfo(_Base):

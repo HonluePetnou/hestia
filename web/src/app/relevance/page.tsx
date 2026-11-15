@@ -79,14 +79,15 @@ async function Body({ searchParams }: { searchParams: Promise<Record<string, str
         subtitle="Which microgravity findings matter most for fire safety on the next destination."
         aside={<Toggle target={target} />}
       />
-      <div className="grid gap-4 xl:grid-cols-[440px_1fr]">
-        <Card className="gap-[18px] p-[22px]">
+      <div className="grid items-start gap-4 xl:grid-cols-[440px_1fr]">
+        {/* Auto height, and it stays in view while the findings list scrolls */}
+        <Card className="gap-[18px] p-[22px] xl:sticky xl:top-[120px]">
           <CardHeader title={`Target · ${t.label}`} meta={t.program} />
           <Planet target={target} />
           <div>
             {t.facts.map(([l, v]) => <Fact key={l} label={l} value={v} />)}
           </div>
-          <p className="t-body-s mt-auto rounded-md border border-ember-line bg-ember-tint px-3.5 py-3 text-ember-soft">{t.note}</p>
+          <p className="t-body-s rounded-md border border-ember-line bg-ember-tint px-3.5 py-3 text-ember-soft">{t.note}</p>
         </Card>
         <div className="flex flex-col gap-2.5">
           <div className="flex justify-between px-1">

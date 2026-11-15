@@ -5,7 +5,7 @@ Built from the challenge's Resources tab (https://www.spaceappschallenge.org/202
 ## Contents
 
 ```
-out/chunks.jsonl          <- READY TO INDEX: 223 chunks (1 JSON per line), text + metadata
+out/chunks.jsonl          <- READY TO INDEX: 323 chunks (1 JSON per line), text + metadata
 out/investigations.json   <- 24 PSI investigations, structured (for the dashboard: filters, ranking)
 out/investigations.csv    <- same thing, flat (Excel / pandas)
 out/psi_md/*.md           <- 1 readable markdown file per investigation

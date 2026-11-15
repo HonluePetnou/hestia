@@ -7,12 +7,15 @@ external requirements.
 """
 
 import hashlib
+import logging
 import math
 import struct
 from functools import lru_cache
 from typing import Literal, Protocol
 
 from app.config import Settings, get_settings
+
+log = logging.getLogger(__name__)
 
 EmbedTask = Literal["document", "query"]
 
@@ -27,6 +30,45 @@ class LLMProvider(Protocol):
 
 class LLMError(RuntimeError):
     pass
+
+
+class EmbeddingDimensionError(LLMError):
+    """The provider returned vectors whose size differs from EMBEDDING_DIM (the DB column)."""
+
+
+def l2_normalize(vec: list[float]) -> list[float]:
+    norm = math.sqrt(sum(v * v for v in vec))
+    return [v / norm for v in vec] if norm else vec
+
+
+def check_dimension(vectors: list[list[float]], dim: int) -> None:
+    """Raise if any vector is not exactly `dim` long (never write a mismatched vector)."""
+    for v in vectors:
+        if len(v) != dim:
+            raise EmbeddingDimensionError(
+                f"Embedding size {len(v)} != EMBEDDING_DIM={dim}. Fix EMBEDDING_DIM / the model, "
+                "or migrate the chunks.embedding column (see docs/RAG.md)."
+            )
+
+
+def embedding_id() -> str:
+    """Identifier of the embedding setup ("<provider>:<model>:<dim>") stored with each chunk.
+
+    Chunks embedded with a different id are never mixed in a search: ingestion re-embeds them.
+    """
+    s = get_settings()
+    name = embedding_provider_name()
+    if name == "mock":
+        return f"mock:hash:{s.embedding_dim}"
+    default = {"openai": "text-embedding-3-small", "gemini": "gemini-embedding-001"}.get(
+        name, "none"
+    )
+    return f"{name}:{s.embedding_model or default}:{s.embedding_dim}"
+
+
+def embedding_provider_name() -> str:
+    s = get_settings()
+    return s.embedding_provider or s.llm_provider
 
 
 # --- Mock -------------------------------------------------------------------
@@ -105,7 +147,12 @@ class GeminiProvider:
         from google import genai
 
         self.client = genai.Client(api_key=s.gemini_api_key)
-        self.model = s.llm_model or "gemini-2.5-flash"
+        # Embedding clients: the main key first, then the extra ones; rotate on quota errors.
+        extra = [k.strip() for k in (s.gemini_api_keys or "").split(",") if k.strip()]
+        keys = list(dict.fromkeys([k for k in [s.gemini_api_key, *extra] if k]))
+        self.embed_clients = [genai.Client(api_key=k) for k in keys] or [self.client]
+        self.embed_index = 0
+        self.model = s.llm_model or "gemini-3.8-flash"
         self.embedding_model = s.embedding_model or "gemini-embedding-001"
         self.dim = s.embedding_dim
 
@@ -129,17 +176,33 @@ class GeminiProvider:
         return resp.text or ""
 
     def embed(self, texts: list[str], task: EmbedTask = "document") -> list[list[float]]:
-        from google.genai import types
+        from google.genai import errors, types
 
-        resp = self.client.models.embed_content(
-            model=self.embedding_model,
-            contents=texts,
-            config=types.EmbedContentConfig(
-                output_dimensionality=self.dim,
-                task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
-            ),
+        config = types.EmbedContentConfig(
+            output_dimensionality=self.dim,
+            task_type="RETRIEVAL_QUERY" if task == "query" else "RETRIEVAL_DOCUMENT",
         )
-        return [list(e.values or []) for e in resp.embeddings or []]
+        # Try each key at most once, starting from the one that last worked.
+        last: errors.ClientError | None = None
+        for _ in range(len(self.embed_clients)):
+            client = self.embed_clients[self.embed_index]
+            try:
+                resp = client.models.embed_content(
+                    model=self.embedding_model, contents=texts, config=config
+                )
+                break
+            except errors.ClientError as exc:
+                if exc.code != 429 or len(self.embed_clients) == 1:
+                    raise
+                last = exc
+                self.embed_index = (self.embed_index + 1) % len(self.embed_clients)
+                log.warning("Gemini key quota hit, switching to key #%d", self.embed_index + 1)
+        else:
+            assert last is not None
+            raise last  # every key is out of quota; the caller's backoff takes over
+        vectors = [list(e.values or []) for e in resp.embeddings or []]
+        # Google only pre-normalizes the full 3072-dim vector; shorter (MRL) ones need it.
+        return [l2_normalize(v) for v in vectors] if self.dim < 3072 else vectors
 
 
 # --- Anthropic --------------------------------------------------------------
@@ -185,13 +248,23 @@ _KEYS = {"openai": "openai_api_key", "gemini": "gemini_api_key", "anthropic": "a
 _CLASSES = {"openai": OpenAIProvider, "gemini": GeminiProvider, "anthropic": AnthropicProvider}
 
 
+def _build(name: str) -> LLMProvider:
+    s = get_settings()
+    if name == "mock":
+        return MockProvider(s.embedding_dim)
+    if not getattr(s, _KEYS[name]):
+        raise LLMError(f"Provider '{name}' selected but {_KEYS[name].upper()} is not set.")
+    return _CLASSES[name](s)
+
+
 @lru_cache
 def get_provider() -> LLMProvider:
-    s = get_settings()
-    if s.llm_provider == "mock":
-        return MockProvider(s.embedding_dim)
-    if not getattr(s, _KEYS[s.llm_provider]):
-        raise LLMError(
-            f"LLM_PROVIDER={s.llm_provider} but {_KEYS[s.llm_provider].upper()} is not set."
-        )
-    return _CLASSES[s.llm_provider](s)
+    """Chat/generation provider (LLM_PROVIDER)."""
+    return _build(get_settings().llm_provider)
+
+
+@lru_cache
+def get_embedder() -> LLMProvider:
+    """Embedding provider: EMBEDDING_PROVIDER, else the same as the chat provider."""
+    name = embedding_provider_name()
+    return get_provider() if name == get_settings().llm_provider else _build(name)

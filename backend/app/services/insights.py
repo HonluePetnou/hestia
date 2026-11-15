@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -17,10 +18,21 @@ log = logging.getLogger(__name__)
 PER_EXPERIMENT = 4
 
 INSTRUCTION = """Compare these NASA experiments: {names}.
-Write 3 or 4 short points on the key differences that matter for spacecraft and habitat
-fire safety (scale, fuel, flow, atmosphere, what each one can and cannot tell us).
-Return them in "answer" as separate lines, each starting with "- " and each ending with
-at least one citation [NTRS-ID, p.PAGE]."""
+Write in English. Give 3 or 4 short points (one or two sentences each) on the key differences
+that matter for spacecraft and habitat fire safety: scale, fuel, flow, atmosphere, and what
+each one can and cannot tell us.
+Return them in "answer" as separate lines, each starting with "- " and ending with one or two
+passage tags such as [PASSAGE 2]. Use a given passage in one point only.
+Only state what the passages support. Do not write points about the passages themselves or
+about missing data: if something is not covered, leave it out."""
+
+CACHE_VERSION = "v2"  # bump when the prompt or post-processing changes, to regenerate
+MAX_CITES_PER_POINT = 2
+# Points that talk about the sources instead of the experiments are dropped.
+META = re.compile(
+    r"\b(passages?|provided (text|sources)|insufficient|not (enough|sufficient))\b", re.I
+)
+CITE_TAG = re.compile(r"\s*\[[A-Za-z0-9][\w.-]*(?:, p\.\s?\d+)?\]")
 
 
 def _from_findings(experiments: list[ExperimentDetail]) -> list[InsightPoint]:
@@ -64,7 +76,7 @@ def compare_insights(session: Session, experiments: list[ExperimentDetail]) -> C
             codes=codes, points=_from_findings(experiments), generated_by="findings"
         )
 
-    key = f"compare:{get_settings().llm_provider}:{','.join(sorted(codes))}"
+    key = f"compare:{CACHE_VERSION}:{get_settings().llm_provider}:{','.join(sorted(codes))}"
     if cached := _cache_get(session, key):
         return cached
 
@@ -78,22 +90,22 @@ def compare_insights(session: Session, experiments: list[ExperimentDetail]) -> C
     result = rag.grounded_completion(INSTRUCTION.format(names=names), chunks)
 
     points: list[InsightPoint] = []
-    for line in result.answer.splitlines():
+    # One point per line; if the model returned a single block, split it on " - " bullets.
+    lines = result.answer.splitlines()
+    if len([ln for ln in lines if ln.strip()]) < 2:
+        lines = re.split(r"\s+-\s+(?=[A-Z])", result.answer)
+    for line in lines:
         line = line.strip().lstrip("-•* ").strip()
-        if not line:
+        if not line or META.search(line):
             continue
         text, cited = rag.verify_citations(line, chunks)
-        if cited:  # keep only points backed by a real source
-            points.append(
-                InsightPoint(
-                    text=text,
-                    citations=[
-                        Citation(ntrs_id=c.ntrs_id, title=c.title, page=c.page, url=c.url)
-                        for c in cited
-                    ],
-                )
-            )
-    if not points:
+        if not cited:  # keep only points backed by a real source
+            continue
+        citations = list({(c.ntrs_id, c.page): c for c in rag.build_citations(cited)}.values())
+        # Sources are shown as chips under each point, so the text itself stays clean.
+        clean = CITE_TAG.sub("", text).strip()
+        points.append(InsightPoint(text=clean, citations=citations[:MAX_CITES_PER_POINT]))
+    if len(points) < 2:
         return CompareInsights(
             codes=codes, points=_from_findings(experiments), generated_by="findings"
         )

@@ -18,6 +18,10 @@ challenge *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity 
 > on FLEX. Grounded answers need an LLM key (Gemini recommended); without one the assistant
 > quotes the top passages verbatim. The original brief is in [PROJECT_SPEC.md](PROJECT_SPEC.md).
 
+## Module IA / RAG
+
+`/ask` retrieves passages from PostgreSQL/pgvector (NTRS reports, PSI investigations, NASA resources), has the LLM answer from numbered passages and returns citations rebuilt and verified by the backend. Documentation, ingestion commands, hackathon runbook and test status: **[docs/RAG.md](docs/RAG.md)**. First thing to run with real keys: `make check-llm`.
+
 ## Architecture
 
 ```

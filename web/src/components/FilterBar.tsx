@@ -68,14 +68,14 @@ export function FilterBar() {
   const outcome = params.get("outcome");
 
   return (
-    <div className="glass flex flex-wrap items-center gap-x-5 gap-y-3 rounded-[28px] px-5 py-3 xl:rounded-full">
-      <label className="flex items-center gap-3">
+    <div className="glass flex flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-[28px] px-5 py-2.5 xl:flex-nowrap xl:rounded-full">
+      <label className="flex items-center shrink-0 gap-2.5">
         <span className="t-caps-s text-fg-3">Fuel</span>
         <span className="relative flex items-center">
           <select
             value={params.get("fuel") ?? ""}
             onChange={(e) => update({ fuel: e.target.value })}
-            className="appearance-none rounded-full border border-line bg-raised py-[7px] pr-9 pl-3.5 text-[13px] text-fg outline-none focus-visible:border-ember"
+            className="w-[150px] appearance-none truncate rounded-full border border-line bg-raised py-[6px] pr-8 pl-3.5 text-[13px] text-fg outline-none focus-visible:border-ember"
           >
             <option value="">All fuels</option>
             {FUELS.map((f) => <option key={f} value={f}>{f}</option>)}
@@ -84,12 +84,12 @@ export function FilterBar() {
         </span>
       </label>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center shrink-0 gap-2.5">
         <span className="t-caps-s text-fg-3">Gravity</span>
-        <Segmented label="Gravity" options={GRAVITY} value={params.get("gravity") ?? ""} onChange={(v) => update({ gravity: v })} />
+        <Segmented size="sm" label="Gravity" options={GRAVITY} value={params.get("gravity") ?? ""} onChange={(v) => update({ gravity: v })} />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center shrink-0 gap-2.5">
         <span className="t-caps-s text-fg-3">Outcome</span>
         <div className="flex gap-2">
           {OUTCOMES.map((o) => {
@@ -100,7 +100,7 @@ export function FilterBar() {
                 type="button"
                 aria-pressed={on}
                 onClick={() => update({ outcome: on ? null : o.value })}
-                className={cx("inline-flex items-center gap-2 rounded-full border px-3 py-2 transition", on ? "border-ember-line bg-ember-tint" : "border-line bg-glass hover:border-line-strong")}
+                className={cx("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 whitespace-nowrap transition", on ? "border-ember-line bg-ember-tint" : "border-line bg-glass hover:border-line-strong")}
               >
                 <span className={cx("size-1.5 rounded-full", o.dot)} />
                 <span className={cx("t-caps-s", o.text)}>{o.label}</span>
@@ -110,10 +110,10 @@ export function FilterBar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center shrink-0 gap-2.5">
         <span className="t-caps-s text-fg-3">O₂</span>
         <div
-          className="range-dual w-[120px] rounded-full"
+          className="range-dual w-[90px] rounded-full"
           style={{ background: `linear-gradient(to right, var(--color-bg-surface-raised) ${pct(o2[0])}%, var(--color-accent-default) ${pct(o2[0])}% ${pct(o2[1])}%, var(--color-bg-surface-raised) ${pct(o2[1])}%) center / 100% 4px no-repeat` }}
         >
           <input
@@ -128,15 +128,15 @@ export function FilterBar() {
           />
         </div>
         <span className="t-mono-s w-[56px] text-fg">{o2[0]}–{o2[1]}%</span>
+        {/* Kept with the O₂ group so it never wraps onto a line of its own */}
+        <button
+          type="button"
+          onClick={() => { setO2([O2_MIN, O2_MAX]); update({ fuel: null, gravity: null, outcome: null, o2_min: null, o2_max: null, q: null }); }}
+          className="t-body-s border-l border-line pl-3 text-ember hover:text-ember-soft"
+        >
+          Reset
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={() => { setO2([O2_MIN, O2_MAX]); update({ fuel: null, gravity: null, outcome: null, o2_min: null, o2_max: null, q: null }); }}
-        className="t-body-s ml-auto text-ember hover:text-ember-soft"
-      >
-        Reset
-      </button>
     </div>
   );
 }

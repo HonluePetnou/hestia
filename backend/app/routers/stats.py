@@ -21,7 +21,7 @@ def stats(session: Session = Depends(get_session)) -> StatsResponse:
         if docs:
             year_min, year_max = session.execute(
                 select(func.min(Document.year), func.max(Document.year)).where(
-                    Document.ntrs_id.not_like("MOCK-%")
+                    Document.external_id.not_like("MOCK-%")
                 )
             ).one()
             flex = session.scalar(
@@ -31,7 +31,9 @@ def stats(session: Session = Depends(get_session)) -> StatsResponse:
                 documents=docs,
                 chunks=session.scalar(select(func.count(Chunk.id))) or 0,
                 pages=session.scalar(
-                    select(func.count(distinct(tuple_(Chunk.document_id, Chunk.page))))
+                    select(func.count(distinct(tuple_(Chunk.document_id, Chunk.page)))).where(
+                        Chunk.page.is_not(None)
+                    )
                 )
                 or 0,
                 experiments=session.scalar(select(func.count(Experiment.id))) or 0,

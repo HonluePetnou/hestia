@@ -18,13 +18,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${unbounded.variable} ${inter.variable} ${jetbrains.variable} h-full`}>
+    // suppressHydrationWarning: browser extensions add attributes to <html> before React loads
+    // (e.g. webcrx); it only silences attribute mismatches on this one element.
+    <html lang="en" suppressHydrationWarning className={`${unbounded.variable} ${inter.variable} ${jetbrains.variable} h-full`}>
       <body className="min-h-full">
         <SpaceBackdrop />
-        <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col gap-9 px-6 pt-7 pb-10 lg:px-12">
-          <Suspense>
-            <TopBar />
-          </Suspense>
+        <div className="sticky top-0 z-40 w-full border-b border-line bg-[var(--color-bg-glass)] backdrop-blur-md">
+          <div className="mx-auto w-full max-w-[1440px] px-6 pt-7 pb-4 lg:px-12">
+            <Suspense>
+              <TopBar />
+            </Suspense>
+          </div>
+        </div>
+        <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-6 pt-9 pb-10 lg:px-12">
           <main className="flex flex-1 flex-col">{children}</main>
         </div>
       </body>

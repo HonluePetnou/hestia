@@ -1,0 +1,351 @@
+{
+  "_comment": "Expected sources and terms were checked against data/psi_corpus/out/chunks.jsonl (see backend/tests/test_eval_set.py). NTRS entries are marked unverified until NTRS text is ingested. No expected answer text is invented.",
+  "questions": [
+    {
+      "id": "same-1",
+      "question": "What does the SAME experiment measure?",
+      "language": "en",
+      "topic": "SAME",
+      "expected_sources": [
+        "PSI-102",
+        "PSI-101"
+      ],
+      "expected_terms": [
+        "smoke"
+      ],
+      "needed_information": "Purpose of SAME (smoke / aerosol measurement) from the PSI page",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "same-2",
+      "question": "Quel est l'objectif de l'expérience SAME sur les fumées ?",
+      "language": "fr",
+      "topic": "SAME",
+      "expected_sources": [
+        "PSI-102",
+        "PSI-101"
+      ],
+      "expected_terms": [
+        "smoke"
+      ],
+      "needed_information": "Même information, question en français (retrieval multilingue)",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "spice-1",
+      "question": "What is the Smoke Point In Co-flow Experiment (SPICE) designed to study?",
+      "language": "en",
+      "topic": "SPICE",
+      "expected_sources": [
+        "PSI-107",
+        "PSI-60"
+      ],
+      "expected_terms": [
+        "smoke point"
+      ],
+      "needed_information": "Objectif de SPICE",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "acme-bre-1",
+      "question": "What is the ACME Burning Rate Emulator (BRE) used for?",
+      "language": "en",
+      "topic": "ACME BRE",
+      "expected_sources": [
+        "PSI-20"
+      ],
+      "expected_terms": [
+        "burning rate"
+      ],
+      "needed_information": "Objectif de ACME BRE",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "bass-1",
+      "question": "What was the purpose of the BASS experiment on solid fuel burning and suppression?",
+      "language": "en",
+      "topic": "BASS",
+      "expected_sources": [
+        "PSI-26",
+        "PSI-25"
+      ],
+      "expected_terms": [
+        "flame spread"
+      ],
+      "needed_information": "Objectif de BASS (solides, propagation, extinction)",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "bass2-table",
+      "question": "Quelle vitesse de propagation de flamme BASS-II a-t-il mesurée pour chaque condition d'essai ?",
+      "language": "fr",
+      "topic": "BASS-II",
+      "expected_sources": [
+        "PSI-25"
+      ],
+      "expected_terms": [],
+      "needed_information": "Valeurs par essai : le tableau complet (130 essais) n'est pas dans le corpus",
+      "expected_behavior": "partial",
+      "notes": "Seules des lignes d'exemple existent : la réponse doit signaler le manque de données, pas inventer des valeurs"
+    },
+    {
+      "id": "cfig-1",
+      "question": "What are cool flames and what did CFI-G investigate?",
+      "language": "en",
+      "topic": "CFI-G",
+      "expected_sources": [
+        "PSI-159",
+        "PSI-39"
+      ],
+      "expected_terms": [
+        "cool flame"
+      ],
+      "needed_information": "Définition et objectif de CFI-G",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "cool-fr",
+      "question": "Que sont les flammes froides observées en microgravité ?",
+      "language": "fr",
+      "topic": "Flammes froides",
+      "expected_sources": [
+        "PSI-39",
+        "PSI-159",
+        "PSI-117",
+        "PSI-142"
+      ],
+      "expected_terms": [
+        "cool flame"
+      ],
+      "needed_information": "Le corpus emploie « cool flame » : teste le retrieval multilingue",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "apollo1-1",
+      "question": "What caused the Apollo 1 cabin fire and in what atmosphere did it happen?",
+      "language": "en",
+      "topic": "Apollo 1",
+      "expected_sources": [
+        "apollo-1"
+      ],
+      "expected_terms": [
+        "pure oxygen"
+      ],
+      "needed_information": "Contexte de l'incendie Apollo 1",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "apollo13-1",
+      "question": "What happened on Apollo 13 with the oxygen tank?",
+      "language": "en",
+      "topic": "Apollo 13",
+      "expected_sources": [
+        "apollo-13"
+      ],
+      "expected_terms": [
+        "oxygen tank"
+      ],
+      "needed_information": "Incident du réservoir d'oxygène",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "mir-1",
+      "question": "Quel incendie a eu lieu à bord de la station Mir en 1997 ?",
+      "language": "fr",
+      "topic": "Mir",
+      "expected_sources": [
+        "mir-fire-1997"
+      ],
+      "expected_terms": [
+        "1997"
+      ],
+      "needed_information": "Récit de l'incendie Mir",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "spread-1",
+      "question": "How does flame spread over solid fuels behave in microgravity according to the indexed sources?",
+      "language": "en",
+      "topic": "Propagation des flammes",
+      "expected_sources": [
+        "PSI-25",
+        "PSI-26",
+        "PSI-62",
+        "researchers-guide-combustion-full"
+      ],
+      "expected_terms": [
+        "flame spread"
+      ],
+      "needed_information": "Propagation sur solides en microgravité",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "extinction-1",
+      "question": "What did the Flame Extinguishment Experiment (FLEX) study?",
+      "language": "en",
+      "topic": "Extinction",
+      "expected_sources": [
+        "PSI-69",
+        "PSI-68"
+      ],
+      "expected_terms": [
+        "extinguish"
+      ],
+      "needed_information": "Objectif de FLEX",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "extinction-2",
+      "question": "Comment l'extinction des flammes a-t-elle été étudiée sur l'ISS ?",
+      "language": "fr",
+      "topic": "Extinction",
+      "expected_sources": [
+        "PSI-69",
+        "PSI-68",
+        "PSI-25",
+        "researchers-guide-combustion-full"
+      ],
+      "expected_terms": [
+        "extinguish"
+      ],
+      "needed_information": "Études d'extinction sur l'ISS",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "soot-1",
+      "question": "How is soot formation studied in microgravity flames?",
+      "language": "en",
+      "topic": "Suie",
+      "expected_sources": [
+        "PSI-107",
+        "PSI-106",
+        "PSI-60",
+        "PSI-22",
+        "PSI-21"
+      ],
+      "expected_terms": [
+        "soot"
+      ],
+      "needed_information": "Études sur la suie",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "flex-ntrs",
+      "question": "What results did the FLEX droplet extinction experiments report?",
+      "language": "en",
+      "topic": "FLEX (NTRS)",
+      "expected_sources": [
+        "20150023456",
+        "PSI-69"
+      ],
+      "expected_terms": [],
+      "needed_information": "Résultats de FLEX dans le rapport NTRS",
+      "expected_behavior": "answer",
+      "notes": "ID NTRS tiré de docs/HANDOFF.md ; texte NTRS absent de l'archive, non vérifié ici"
+    },
+    {
+      "id": "bass2-ntrs",
+      "question": "What test conditions does the BASS-II report describe?",
+      "language": "en",
+      "topic": "BASS-II (NTRS)",
+      "expected_sources": [
+        "20210011385",
+        "PSI-25"
+      ],
+      "expected_terms": [],
+      "needed_information": "Conditions d'essai BASS-II",
+      "expected_behavior": "answer",
+      "notes": "ID NTRS tiré de docs/HANDOFF.md ; non vérifié ici"
+    },
+    {
+      "id": "habitat-1",
+      "question": "What does the Flame in Freefall challenge say about fire safety for the Moon and Mars?",
+      "language": "en",
+      "topic": "Habitats lunaire et martien",
+      "expected_sources": [
+        "challenge-details"
+      ],
+      "expected_terms": [
+        "moon"
+      ],
+      "needed_information": "Énoncé du challenge sur Lune et Mars",
+      "expected_behavior": "answer",
+      "notes": ""
+    },
+    {
+      "id": "habitat-2",
+      "question": "Que disent les sources indexées sur la sécurité incendie dans les habitats lunaires ?",
+      "language": "fr",
+      "topic": "Habitats lunaire et martien",
+      "expected_sources": [
+        "challenge-details",
+        "nasa-glenn-combustion-science",
+        "apollo-13"
+      ],
+      "expected_terms": [
+        "lunar"
+      ],
+      "needed_information": "Éléments sur la Lune ; la réponse doit rester prudente",
+      "expected_behavior": "partial",
+      "notes": "Les sources ne donnent pas de résultat expérimental lunaire : la réponse doit signaler les limites"
+    },
+    {
+      "id": "ooc-1",
+      "question": "Quelle est la recette de la tarte aux pommes ?",
+      "language": "fr",
+      "topic": "Hors corpus",
+      "expected_sources": [],
+      "expected_terms": [],
+      "needed_information": "Aucune",
+      "expected_behavior": "insufficient",
+      "notes": ""
+    },
+    {
+      "id": "ooc-2",
+      "question": "What is the cargo mass of the Artemis III lander?",
+      "language": "en",
+      "topic": "Hors corpus",
+      "expected_sources": [],
+      "expected_terms": [],
+      "needed_information": "Aucune : le corpus cite Artemis II une seule fois (une remarque sur une alarme fumée), jamais la masse d'un atterrisseur",
+      "expected_behavior": "insufficient",
+      "notes": ""
+    },
+    {
+      "id": "ooc-3",
+      "question": "Quel est le prix du Bitcoin aujourd'hui ?",
+      "language": "fr",
+      "topic": "Hors corpus",
+      "expected_sources": [],
+      "expected_terms": [],
+      "needed_information": "Aucune",
+      "expected_behavior": "insufficient",
+      "notes": ""
+    },
+    {
+      "id": "ooc-4",
+      "question": "What is the boiling point of liquid helium in microgravity?",
+      "language": "en",
+      "topic": "Hors corpus",
+      "expected_sources": [],
+      "expected_terms": [],
+      "needed_information": "Aucune : l'hélium n'apparaît que comme diluant des mélanges de combustion, jamais son point d'ébullition",
+      "expected_behavior": "insufficient",
+      "notes": ""
+    }
+  ]
+}
